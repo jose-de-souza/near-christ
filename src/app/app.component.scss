@@ -1,16 +1,20 @@
 @use 'palette';
 
 .app-title {
-    color: palette.$primary-color;
+  color: palette.$wine;
 }
 
 .header {
-    display: flex;
-    align-items: center; /* Aligns the icon and title vertically */
-    gap: 10px; /* Adds space between the icon and the title */
-  }
-  
-  .icon {
-    width: 70px;
-    height: 70px;
-  }
+  display: flex;
+  align-items: center;
+  /* Aligns the icon and title vertically */
+  justify-content: center;
+  /* Centers the content horizontally */
+  gap: 10px;
+  /* Adds space between the icon and the title */
+}
+
+.icon {
+  width: 70px;
+  height: 70px;
+}
