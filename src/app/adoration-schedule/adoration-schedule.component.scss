@@ -1,0 +1,158 @@
+@use '../palette';
+
+body {
+    background-color: palette.$background-color;
+    font-family: Arial, sans-serif;
+}
+
+// Main container styling
+.adoration-schedule {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+
+    h2 {
+        color: palette.$primary-color;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+
+        th, td {
+            border: 1px solid palette.$secondary-color;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: palette.$secondary-color;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: darken(palette.$background-color, 5%);
+            cursor: pointer;
+        }
+    }
+
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+        padding: 15px;
+        background: palette.$background-color;
+        border-radius: 8px;
+
+        /* Stacked sections */
+        .section {
+            position: relative;
+            border: 1px solid palette.$secondary-color;
+            border-radius: 8px;
+            padding: 25px 15px 15px; /* Extra padding on top for title */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: flex-start;
+            width: 100%; /* Ensure sections fit inside container */
+            box-sizing: border-box; /* Prevent overflow */
+
+            /* Classic label divider style */
+            &::before {
+                content: attr(data-title);
+                position: absolute;
+                top: -10px;
+                left: 10px;
+                background: palette.$background-color;
+                padding: 0 8px;
+                font-size: 0.9em; /* Slightly smaller than form labels */
+                font-weight: normal; /* Remove bold */
+                color: palette.$primary-color;
+            }
+
+            div {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                flex: 1; /* Ensures even spacing */
+
+                label {
+                    color: palette.$primary-color;
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                }
+
+                select, input {
+                    width: 100%; /* Make fields responsive */
+                    max-width: 180px; /* Prevent fields from stretching too wide */
+                    padding: 6px;
+                    border: 1px solid palette.$secondary-color;
+                    border-radius: 4px;
+                    box-sizing: border-box; /* Avoid exceeding container width */
+                }
+            }
+        }
+
+        /* Adoration section */
+        .adoration {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        /* Location section */
+        .location {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+
+        button:nth-child(1), // Add button
+        button:nth-child(2) { // Modify button
+            background-color: palette.$button-bg;
+        }
+
+        button:nth-child(1):hover,
+        button:nth-child(2):hover {
+            background-color: palette.$button-hover-bg;
+        }
+
+        button:nth-child(3) { // Delete button
+            background-color: palette.$delete-button-bg;
+        }
+
+        button:nth-child(3):hover {
+            background-color: palette.$delete-button-hover-bg;
+        }
+
+        button:nth-child(4) { // Cancel button
+            background-color: palette.$neutral-color;
+        }
+
+        button:nth-child(4):hover {
+            background-color: darken(palette.$neutral-color, 10%);
+        }
+    }
+}
