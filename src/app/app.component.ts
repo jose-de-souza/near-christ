@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { AdorationScheduleComponent } from './adoration-schedule/adoration-schedule.component'; // Import AdorationScheduleComponent
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss'],
+  standalone: true,  // This is optional depending on your setup, but useful if using standalone components
+  imports: [AdorationScheduleComponent] // Import the AdorationScheduleComponent here
 })
 export class AppComponent {
-  title = 'near-christ';
+  title = 'National Eucharistic Adoration and Rosary Crusade';
 }
