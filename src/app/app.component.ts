@@ -1,23 +1,29 @@
 import { Component } from '@angular/core';
-import { AdorationScheduleComponent } from './adoration-schedule/adoration-schedule.component';
-import { DioceseMaintenanceComponent } from "./diocese-maintenance/diocese-maintenance.component";
-import { ParishMaintenanceComponent } from "./parish-maintenance/parish-maintenance.component";
-import { RosaryCrusadeComponent } from "./rosary-crusade/rosary-crusade.component";
-
+import { RouterModule, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService } from './auth.service';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  standalone: true,  // This is optional depending on your setup, but useful if using standalone components
-  imports: [
-    AdorationScheduleComponent, 
-    DioceseMaintenanceComponent,
-    ParishMaintenanceComponent,
-    RosaryCrusadeComponent
-  ]
+  styleUrls: ['./app.component.scss']
 })
-
 export class AppComponent {
   title = 'National Eucharistic Adoration and Rosary Crusade';
+
+  constructor(public auth: AuthService, private router: Router) {}
+
+  login() {
+    this.auth.login();
+    // Optionally redirect somewhere after login, e.g.:
+    // this.router.navigate(['/adoration-schedule']);
+  }
+
+  logout() {
+    this.auth.logout();
+    // Redirect to home page on logout
+    this.router.navigate(['/']);
+  }
 }
