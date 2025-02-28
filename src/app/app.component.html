@@ -1,4 +1,3 @@
-<!-- Navigation Bar -->
 <nav class="navbar">
   <!-- Header with logo and title -->
   <div class="header">
@@ -6,27 +5,29 @@
     <h1 class="app-title">{{ title }}</h1>
   </div>
 
-  <!-- Navigation Links -->
   <ul class="nav-links">
-    <!-- Public (no login needed) links -->
+    <!-- No-auth links always visible -->
     <li><a routerLink="/adoration-query">Adoration Query</a></li>
     <li><a routerLink="/crusade-query">Crusade Query</a></li>
 
-    <!-- Logged-in only links -->
-    <ng-container *ngIf="auth.isLoggedIn">
-      <li><a routerLink="/adoration-schedule">Adoration Schedule</a></li>
-      <li><a routerLink="/diocese-maintenance">Diocese Maintenance</a></li>
-      <li><a routerLink="/parish-maintenance">Parish Maintenance</a></li>
-      <li><a routerLink="/rosary-crusade">Rosary Crusade</a></li>
-    </ng-container>
+    <!-- Only show these links if user is logged in -->
+    @if (auth.isLoggedIn) {
+    <li><a routerLink="/adoration-schedule">Adoration Schedule</a></li>
+    <li><a routerLink="/diocese-maintenance">Diocese Maintenance</a></li>
+    <li><a routerLink="/parish-maintenance">Parish Maintenance</a></li>
+    <li><a routerLink="/rosary-crusade">Rosary Crusade</a></li>
+    }
   </ul>
 
   <!-- Auth Buttons -->
   <div class="auth-buttons">
-    <button *ngIf="!auth.isLoggedIn" (click)="login()">Login</button>
-    <button *ngIf="auth.isLoggedIn" (click)="logout()">Logout</button>
+    @if (!auth.isLoggedIn) {
+    <button (click)="login()">Login</button>
+    }
+    @else {
+    <button (click)="logout()">Logout</button>
+    }
   </div>
 </nav>
 
-<!-- Router outlet for child pages (home, etc.) -->
 <router-outlet></router-outlet>
