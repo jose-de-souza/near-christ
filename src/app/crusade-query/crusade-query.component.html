@@ -1,0 +1,74 @@
+<div class="crusade-query">
+    <h2>Rosary Crusade Query</h2>
+
+    <div class="filters-container">
+        <!-- State Selection -->
+        <div class="filter-section" data-title="State Selection">
+            <label>
+                <input type="radio" [(ngModel)]="stateSelection" value="all" />
+                All
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="stateSelection" value="specific" />
+                Specific
+            </label>
+            <select [(ngModel)]="selectedState" [disabled]="stateSelection === 'all'">
+                <option value="">-- select state --</option>
+                <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+            </select>
+        </div>
+
+        <!-- Diocese Selection -->
+        <div class="filter-section" data-title="Diocese Selection">
+            <label>
+                <input type="radio" [(ngModel)]="dioceseSelection" value="all" />
+                All
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="dioceseSelection" value="specific" />
+                Specific
+            </label>
+            <select [(ngModel)]="selectedDiocese" [disabled]="dioceseSelection === 'all'">
+                <option value="">-- select diocese --</option>
+                <option *ngFor="let d of dioceses" [value]="d">{{ d }}</option>
+            </select>
+        </div>
+
+        <!-- Parish Selection -->
+        <div class="filter-section" data-title="Parish Selection">
+            <label>
+                <input type="radio" [(ngModel)]="parishSelection" value="all" />
+                All
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="parishSelection" value="specific" />
+                Specific
+            </label>
+            <select [(ngModel)]="selectedParish" [disabled]="parishSelection === 'all'">
+                <option value="">-- select parish --</option>
+                <option *ngFor="let p of parishes" [value]="p">{{ p }}</option>
+            </select>
+        </div>
+    </div>
+
+    <button (click)="searchCrusade()">Search</button>
+
+    <div class="results-area">
+        <table>
+            <thead>
+                <tr>
+                    <th>Crusade</th>
+                    <th>Location</th>
+                    <th>Schedule</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let r of results">
+                    <td>{{ r.crusade }}</td>
+                    <td>{{ r.location }}</td>
+                    <td>{{ r.schedule }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

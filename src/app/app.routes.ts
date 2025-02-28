@@ -8,10 +8,15 @@ import { AdorationScheduleComponent } from './adoration-schedule/adoration-sched
 import { DioceseMaintenanceComponent } from './diocese-maintenance/diocese-maintenance.component';
 import { ParishMaintenanceComponent } from './parish-maintenance/parish-maintenance.component';
 import { RosaryCrusadeComponent } from './rosary-crusade/rosary-crusade.component';
+import { AdorationQueryComponent } from './adoration-query/adoration-query.component';
+import { CrusadeQueryComponent } from './crusade-query/crusade-query.component';
 
 export const appRoutes: Routes = [
-  // The main layout is in AppComponent, so no route for it
-  { path: '', component: HomeComponent }, // Public home
+
+  { path: '', component: HomeComponent },
+  { path: 'adoration-query', component: AdorationQueryComponent },
+  { path: 'crusade-query', component: CrusadeQueryComponent }, 
+
   {
     path: 'adoration-schedule',
     component: AdorationScheduleComponent,

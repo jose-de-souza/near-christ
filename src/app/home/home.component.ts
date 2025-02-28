@@ -1,13 +1,11 @@
 import { Component } from '@angular/core';
+import { AdorationQueryComponent } from '../adoration-query/adoration-query.component';
 
 @Component({
+  imports: [AdorationQueryComponent],
   standalone: true,
   selector: 'app-home',
-  template: `
-    <div class="home-container">
-      <h2>Welcome to the Home Page</h2>
-      <p>Please log in to access the features.</p>
-    </div>
-  `
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {}
+export class HomeComponent { }

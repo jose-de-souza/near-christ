@@ -1,0 +1,72 @@
+@use '../palette';
+
+.adoration-query {
+  h2 {
+    color: palette.$primary-color;
+    margin-bottom: 20px;
+  }
+
+  .filters-container {
+    display: flex;
+    gap: 10px;
+
+    .filter-section {
+      position: relative;
+      border: 1px solid palette.$secondary-color;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      &::before {
+        content: attr(data-title);
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        background: palette.$background-color;
+        padding: 0 5px;
+        color: palette.$primary-color;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+    }
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: palette.$default-button-bg;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: palette.$default-button-hover-bg;
+    }
+  }
+
+  .results-area {
+    margin-top: 20px;
+    border: 1px solid palette.$secondary-color;
+    border-radius: 8px;
+    padding: 10px;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        border: 1px solid palette.$secondary-color;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: palette.$secondary-color;
+        color: white;
+      }
+    }
+  }
+}

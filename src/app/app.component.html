@@ -6,20 +6,27 @@
     <h1 class="app-title">{{ title }}</h1>
   </div>
 
-  <!-- Nav links: only if logged in -->
-  <ul class="nav-links" *ngIf="auth.isLoggedIn">
-    <li><a routerLink="/adoration-schedule">Adoration</a></li>
-    <li><a routerLink="/diocese-maintenance">Dioceses</a></li>
-    <li><a routerLink="/parish-maintenance">Parishes</a></li>
-    <li><a routerLink="/rosary-crusade">Rosary Crusade</a></li>
+  <!-- Navigation Links -->
+  <ul class="nav-links">
+    <!-- Public (no login needed) links -->
+    <li><a routerLink="/adoration-query">Adoration Query</a></li>
+    <li><a routerLink="/crusade-query">Crusade Query</a></li>
+
+    <!-- Logged-in only links -->
+    <ng-container *ngIf="auth.isLoggedIn">
+      <li><a routerLink="/adoration-schedule">Adoration Schedule</a></li>
+      <li><a routerLink="/diocese-maintenance">Diocese Maintenance</a></li>
+      <li><a routerLink="/parish-maintenance">Parish Maintenance</a></li>
+      <li><a routerLink="/rosary-crusade">Rosary Crusade</a></li>
+    </ng-container>
   </ul>
 
-  <!-- Auth buttons: conditional login/logout -->
+  <!-- Auth Buttons -->
   <div class="auth-buttons">
     <button *ngIf="!auth.isLoggedIn" (click)="login()">Login</button>
     <button *ngIf="auth.isLoggedIn" (click)="logout()">Logout</button>
   </div>
 </nav>
 
-<!-- Outlet for pages -->
+<!-- Router outlet for child pages (home, etc.) -->
 <router-outlet></router-outlet>
