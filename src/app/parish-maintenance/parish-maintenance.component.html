@@ -1,0 +1,92 @@
+<div class="parish-maintenance">
+    <h2>Parish Maintenance</h2>
+
+    <!-- Form container -->
+    <div class="form-container">
+        <!-- Parish Details Section -->
+        <div class="section parish" data-title="Parish Details">
+            <div>
+                <label>Parish Name</label>
+                <input type="text" [(ngModel)]="selectedParish.name" />
+            </div>
+            <div>
+                <label>Street No</label>
+                <input type="text" [(ngModel)]="selectedParish.streetNo" />
+            </div>
+            <div>
+                <label>Street Name</label>
+                <input type="text" [(ngModel)]="selectedParish.streetName" />
+            </div>
+            <div>
+                <label>Suburb</label>
+                <input type="text" [(ngModel)]="selectedParish.suburb" />
+            </div>
+        </div>
+
+        <!-- Location/Contact Section -->
+        <div class="section location" data-title="Location / Contact">
+            <div>
+                <label>State</label>
+                <input type="text" [(ngModel)]="selectedParish.state" />
+            </div>
+            <div>
+                <label>Postcode</label>
+                <input type="text" [(ngModel)]="selectedParish.postcode" />
+            </div>
+            <div>
+                <label>Phone</label>
+                <input type="text" [(ngModel)]="selectedParish.phone" />
+            </div>
+            <div>
+                <label>Email</label>
+                <input type="text" [(ngModel)]="selectedParish.email" />
+            </div>
+            <div>
+                <label>Website</label>
+                <input type="text" [(ngModel)]="selectedParish.website" />
+            </div>            
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+        <button (click)="addParish()">Add</button>
+        <button (click)="modifyParish()">Modify</button>
+        <button (click)="deleteParish()">Delete</button>
+        <button (click)="cancel()">Cancel</button>
+    </div>
+
+    <!-- Scrollable table wrapper -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Parish Name</th>
+                    <th>St No</th>
+                    <th>Street Name</th>
+                    <th>Suburb</th>
+                    <th>State</th>
+                    <th>PostCode</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Website</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (parish of parishes; track parish.id) {
+                <tr (click)="selectParish(parish)">
+                    <td>{{ parish.name }}</td>
+                    <td>{{ parish.streetNo }}</td>
+                    <td>{{ parish.streetName }}</td>
+                    <td>{{ parish.suburb }}</td>
+                    <td>{{ parish.state }}</td>
+                    <td>{{ parish.postcode }}</td>
+                    <td>{{ parish.phone }}</td>
+                    <td>{{ parish.email }}</td>
+                    <td>{{ parish.website }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

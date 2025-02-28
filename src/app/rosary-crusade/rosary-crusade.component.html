@@ -1,0 +1,120 @@
+<div class="rosary-crusade">
+    <h2>Rosary Crusade</h2>
+  
+    <!-- Form container -->
+    <div class="form-container">
+      <!-- Row 1: Confession, Mass, Rosary Crusade -->
+      <div class="row-1">
+        <!-- Confession -->
+        <div class="section confession" data-title="Confession">
+          <div>
+            <label>Start</label>
+            <input type="time" [(ngModel)]="selectedCrusade.confessionStart" />
+          </div>
+          <div>
+            <label>End</label>
+            <input type="time" [(ngModel)]="selectedCrusade.confessionEnd" />
+          </div>
+        </div>
+  
+        <!-- Mass -->
+        <div class="section mass" data-title="Mass">
+          <div>
+            <label>Start</label>
+            <input type="time" [(ngModel)]="selectedCrusade.massStart" />
+          </div>
+          <div>
+            <label>End</label>
+            <input type="time" [(ngModel)]="selectedCrusade.massEnd" />
+          </div>
+        </div>
+  
+        <!-- Rosary Crusade -->
+        <div class="section crusade" data-title="Rosary Crusade">
+          <div>
+            <label>Start</label>
+            <input type="time" [(ngModel)]="selectedCrusade.crusadeStart" />
+          </div>
+          <div>
+            <label>End</label>
+            <input type="time" [(ngModel)]="selectedCrusade.crusadeEnd" />
+          </div>
+        </div>
+      </div>
+  
+      <!-- Row 2: Contact -->
+      <div class="row-2">
+        <div class="section contact" data-title="Contact">
+          <div class="contact-row">
+            <div>
+              <label>Contact Name</label>
+              <input type="text" [(ngModel)]="selectedCrusade.contactName" />
+            </div>
+            <div>
+              <label>Contact Phone</label>
+              <input type="text" [(ngModel)]="selectedCrusade.contactPhone" />
+            </div>
+            <div>
+              <label>Contact Email</label>
+              <input type="text" [(ngModel)]="selectedCrusade.contactEmail" />
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Row 3: Observations -->
+      <div class="row-3">
+        <div class="section observations" data-title="Observations">
+          <div class="observations-row">
+            <textarea [(ngModel)]="selectedCrusade.observations"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Buttons -->
+    <div class="buttons">
+      <button (click)="addCrusade()">Add</button>
+      <button (click)="modifyCrusade()">Modify</button>
+      <button (click)="deleteCrusade()">Delete</button>
+      <button (click)="saveCrusade()">Save</button>
+      <button (click)="cancel()">Cancel</button>
+    </div>
+  
+    <!-- Table with horizontal scrolling -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Confession Start Time</th>
+            <th>Confession End Time</th>
+            <th>Mass Start Time</th>
+            <th>Mass End Time</th>
+            <th>Crusade Start Time</th>
+            <th>Crusade End Time</th>
+            <th>Contact Name</th>
+            <th>Contact Phone</th>
+            <th>Contact Email</th>
+            <th>Observations</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (crusade of crusades; track crusade.id) {
+          <tr (click)="selectCrusade(crusade)">
+            <td>{{ crusade.confessionStart }}</td>
+            <td>{{ crusade.confessionEnd }}</td>
+            <td>{{ crusade.massStart }}</td>
+            <td>{{ crusade.massEnd }}</td>
+            <td>{{ crusade.crusadeStart }}</td>
+            <td>{{ crusade.crusadeEnd }}</td>
+            <td>{{ crusade.contactName }}</td>
+            <td>{{ crusade.contactPhone }}</td>
+            <td>{{ crusade.contactEmail }}</td>
+            <td>{{ crusade.observations }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  

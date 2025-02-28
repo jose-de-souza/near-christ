@@ -1,0 +1,105 @@
+@use '../palette';
+
+.adoration-query {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+
+  h2 {
+    color: palette.$primary-color;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: palette.$background-color;
+    border-radius: 8px;
+    padding: 15px;
+
+    .row-1,
+    .row-2 {
+      display: flex;
+      gap: 15px;
+    }
+
+    .section {
+      position: relative;
+      border: 1px solid palette.$secondary-color;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 250px;
+
+      &::before {
+        content: attr(data-title);
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        background: palette.$background-color;
+        padding: 0 5px;
+        color: palette.$primary-color;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+    }
+
+    .search-container {
+      display: flex;
+      align-items: center;
+      /* Give some spacing if needed */
+    }
+
+    .search-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      /* Make the icon bigger if you like */
+      line-height: 1;
+      margin: 0;
+      /* Remove default button margins/padding if desired */
+      padding: 0;
+      color: #555;
+      /* Icon color */
+      /* Adjust color to suit your palette theme */
+
+      &:hover {
+        color: #000;
+        /* Darker on hover, for instance */
+      }
+    }
+
+  }
+
+  .results-area {
+    margin-top: 20px;
+    border: 1px solid palette.$secondary-color;
+    border-radius: 8px;
+    padding: 10px;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th,
+      td {
+        border: 1px solid palette.$secondary-color;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: palette.$secondary-color;
+        color: white;
+      }
+    }
+  }
+}
