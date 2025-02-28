@@ -1,95 +1,93 @@
 <div class="diocese-maintenance">
     <h2>Diocese Maintenance</h2>
-
+  
     <!-- Form container -->
     <div class="form-container">
-        <!-- Diocese Details -->
-        <div class="section diocese" data-title="Diocese Details">
-            <div>
-                <label>Diocese Name</label>
-                <input type="text" [(ngModel)]="selectedDiocese.name" />
-            </div>
-            <div>
-                <label>Street No</label>
-                <input type="text" [(ngModel)]="selectedDiocese.streetNo" />
-            </div>
-            <div>
-                <label>Street Name</label>
-                <input type="text" [(ngModel)]="selectedDiocese.streetName" />
-            </div>
-            <div>
-                <label>Suburb</label>
-                <input type="text" [(ngModel)]="selectedDiocese.suburb" />
-            </div>
+      <!-- Diocese Details -->
+      <div class="section diocese" data-title="Diocese Details">
+        <div>
+          <label>Diocese Name</label>
+          <input type="text" [(ngModel)]="selectedDiocese.name" />
         </div>
-
-        <!-- Location / Contact Section -->
-        <div class="section location" data-title="Location / Contact">
-            <div>
-                <label>State</label>
-                <input type="text" [(ngModel)]="selectedDiocese.state" />
-            </div>
-            <div>
-                <label>Postcode</label>
-                <input type="text" [(ngModel)]="selectedDiocese.postcode" />
-            </div>
-            <div>
-                <label>Phone</label>
-                <input type="text" [(ngModel)]="selectedDiocese.phone" />
-            </div>
-            <div>
-                <label>Email</label>
-                <input type="text" [(ngModel)]="selectedDiocese.email" />
-            </div>
-            <div>
-                <label>Website</label>
-                <input type="text" [(ngModel)]="selectedDiocese.website" />
-            </div>
+        <div>
+          <label>Street No</label>
+          <input type="text" [(ngModel)]="selectedDiocese.streetNo" />
         </div>
+        <div>
+          <label>Street Name</label>
+          <input type="text" [(ngModel)]="selectedDiocese.streetName" />
+        </div>
+        <div>
+          <label>Suburb</label>
+          <input type="text" [(ngModel)]="selectedDiocese.suburb" />
+        </div>
+      </div>
+  
+      <!-- Location / Contact Section -->
+      <div class="section location" data-title="Location / Contact">
+        <div>
+          <label>State</label>
+          <input type="text" [(ngModel)]="selectedDiocese.state" />
+        </div>
+        <div>
+          <label>Postcode</label>
+          <input type="text" [(ngModel)]="selectedDiocese.postcode" />
+        </div>
+        <div>
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="selectedDiocese.phone" />
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="text" [(ngModel)]="selectedDiocese.email" />
+        </div>
+        <div>
+          <label>Website</label>
+          <input type="text" [(ngModel)]="selectedDiocese.website" />
+        </div>
+      </div>
     </div>
-
-    <!-- Buttons -->
+  
+    <!-- Buttons (same order/names as Adoration Schedule) -->
     <div class="buttons">
-        <button (click)="addDiocese()">Add</button>
-        <button (click)="modifyDiocese()">Modify</button>
-        <button (click)="deleteDiocese()">Delete</button>
-        <button (click)="saveDiocese()">Save</button>
-        <button (click)="cancel()">Cancel</button>
+      <button (click)="addDiocese()">Add</button>
+      <button (click)="modifyDiocese()">Modify</button>
+      <button (click)="deleteDiocese()">Delete</button>
+      <button (click)="cancel()">Cancel</button>
     </div>
-
+  
     <!-- Table to display existing dioceses -->
-    <!-- Table Wrapper -->
     <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Diocese Name</th>
-                    <th>Street No</th>
-                    <th>Street Name</th>
-                    <th>Suburb</th>
-                    <th>State</th>
-                    <th>Post Code</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Website</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (diocese of dioceses; track diocese.id) {
-                <tr (click)="selectDiocese(diocese)">
-                    <td>{{ diocese.name }}</td>
-                    <td>{{ diocese.streetNo }}</td>
-                    <td>{{ diocese.streetName }}</td>
-                    <td>{{ diocese.suburb }}</td>
-                    <td>{{ diocese.state }}</td>
-                    <td>{{ diocese.postcode }}</td>
-                    <td>{{ diocese.phone }}</td>
-                    <td>{{ diocese.email }}</td>
-                    <td>{{ diocese.website }}</td>
-                </tr>
-                }
-            </tbody>
-        </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Diocese Name</th>
+            <th>Street No</th>
+            <th>Street Name</th>
+            <th>Suburb</th>
+            <th>State</th>
+            <th>Post Code</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Website</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (diocese of dioceses; track diocese.id) {
+          <tr (click)="selectDiocese(diocese)">
+            <td>{{ diocese.name }}</td>
+            <td>{{ diocese.streetNo }}</td>
+            <td>{{ diocese.streetName }}</td>
+            <td>{{ diocese.suburb }}</td>
+            <td>{{ diocese.state }}</td>
+            <td>{{ diocese.postcode }}</td>
+            <td>{{ diocese.phone }}</td>
+            <td>{{ diocese.email }}</td>
+            <td>{{ diocese.website }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
-
-</div>
+  </div>
+  
