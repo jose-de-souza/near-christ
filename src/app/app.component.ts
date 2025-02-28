@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AdorationScheduleComponent } from './adoration-schedule/adoration-schedule.component';
 import { DioceseMaintenanceComponent } from "./diocese-maintenance/diocese-maintenance.component";
 import { ParishMaintenanceComponent } from "./parish-maintenance/parish-maintenance.component";
+import { RosaryCrusadeComponent } from "./rosary-crusade/rosary-crusade.component";
 
 
 @Component({
@@ -12,7 +13,8 @@ import { ParishMaintenanceComponent } from "./parish-maintenance/parish-maintena
   imports: [
     AdorationScheduleComponent, 
     DioceseMaintenanceComponent,
-    ParishMaintenanceComponent
+    ParishMaintenanceComponent,
+    RosaryCrusadeComponent
   ]
 })
 
