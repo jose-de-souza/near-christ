@@ -17,8 +17,8 @@ export class AppComponent {
 
   login() {
     this.auth.login();
-    // Optionally redirect somewhere after login, e.g.:
-    // this.router.navigate(['/adoration-schedule']);
+    // Redirect to Adoration Schedule after logging in
+    this.router.navigate(['/adoration-schedule']);
   }
 
   logout() {
