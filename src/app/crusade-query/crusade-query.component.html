@@ -12,9 +12,12 @@
                 <input type="radio" [(ngModel)]="stateSelection" value="specific" />
                 Specific
             </label>
+
             <select [(ngModel)]="selectedState" [disabled]="stateSelection === 'all'">
                 <option value="">-- select state --</option>
-                <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+                @for (s of states; track s) {
+                <option [value]="s">{{ s }}</option>
+                }
             </select>
         </div>
 
@@ -28,9 +31,12 @@
                 <input type="radio" [(ngModel)]="dioceseSelection" value="specific" />
                 Specific
             </label>
+
             <select [(ngModel)]="selectedDiocese" [disabled]="dioceseSelection === 'all'">
                 <option value="">-- select diocese --</option>
-                <option *ngFor="let d of dioceses" [value]="d">{{ d }}</option>
+                @for (d of dioceses; track d) {
+                <option [value]="d">{{ d }}</option>
+                }
             </select>
         </div>
 
@@ -44,9 +50,12 @@
                 <input type="radio" [(ngModel)]="parishSelection" value="specific" />
                 Specific
             </label>
+
             <select [(ngModel)]="selectedParish" [disabled]="parishSelection === 'all'">
                 <option value="">-- select parish --</option>
-                <option *ngFor="let p of parishes" [value]="p">{{ p }}</option>
+                @for (p of parishes; track p) {
+                <option [value]="p">{{ p }}</option>
+                }
             </select>
         </div>
     </div>
@@ -63,11 +72,13 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let r of results">
+                @for (r of results; track r.crusade) {
+                <tr>
                     <td>{{ r.crusade }}</td>
                     <td>{{ r.location }}</td>
                     <td>{{ r.schedule }}</td>
                 </tr>
+                }
             </tbody>
         </table>
     </div>
