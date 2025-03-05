@@ -16,9 +16,8 @@ export class AppComponent {
   constructor(public auth: AuthService, private router: Router) {}
 
   login() {
-    this.auth.login();
     // Redirect to Adoration Schedule after logging in
-    this.router.navigate(['/adoration-schedule']);
+    this.router.navigate(['/login']);
   }
 
   logout() {
