@@ -11,6 +11,9 @@
       <button type="submit">Login</button>
     </form>
   
-    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+    @if (errorMessage) {
+        <p class="error">{{ errorMessage }}</p>
+      }
+      
   </div>
   

@@ -9,54 +9,34 @@ import { tap } from 'rxjs/operators';
 })
 export class AuthService {
   private apiUrl = 'https://greatapps4you.us/nearchrist/api/auth/login.php';  // Backend JWT authentication API
-  private tokenKey = 'accessToken';
-  private isLoggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  // Create a BehaviorSubject to track login status
+  private isLoggedInSubject = new BehaviorSubject<boolean>(!!localStorage.getItem('accessToken'));
 
-  /** Checks if token exists in localStorage */
-  private hasToken(): boolean {
-    return !!localStorage.getItem(this.tokenKey);
-  }
+  // Expose login status as an observable
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
 
-  /** Observable for login status */
-  get isLoggedIn(): Observable<boolean> {
-    return this.isLoggedInSubject.asObservable();
-  }
+  constructor(private http: HttpClient, private router: Router) { }
 
-  /** Logs in user and stores JWT */
   login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(this.apiUrl, { email, password }).pipe(
-      tap(response => {
-        if (response.accessToken) {
-          localStorage.setItem(this.tokenKey, response.accessToken);
-          this.isLoggedInSubject.next(true);
-          this.router.navigate(['/adoration-schedule']);  // Redirect after login
+    return new Observable((observer) => {
+      this.http.post<any>(this.apiUrl, { email, password }).subscribe({
+        next: (response) => {
+          localStorage.setItem('accessToken', response.accessToken);
+          this.isLoggedInSubject.next(true); // Update login status
+          observer.next(response);
+          observer.complete();
+        },
+        error: (err) => {
+          observer.error(err);
         }
-      })
-    );
+      });
+    });
   }
 
-  /** Logs out user */
-  logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    this.isLoggedInSubject.next(false);
-    this.router.navigate(['/']);  // Redirect to home
-  }
-
-  /** Retrieves token */
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
-  }
-
-  /** Checks if user is authenticated */
-  isAuthenticated(): boolean {
-    return this.hasToken();
-  }
-
-  /** Adds JWT token to request headers */
-  getAuthHeaders(): HttpHeaders {
-    const token = this.getToken();
-    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
+  logout() {
+    localStorage.removeItem('accessToken'); // Remove token
+    this.isLoggedInSubject.next(false); // Update login status
+    this.router.navigate(['/']); // Redirect to home
   }
 }
