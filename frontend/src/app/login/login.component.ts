@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
-import { throwError } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -15,19 +14,19 @@ export class LoginComponent {
   email = '';
   password = '';
   errorMessage = '';
+  private router = inject(Router); // Ensure Router is properly injected
 
-  constructor(private auth: AuthService, private router: Router) { }
+  constructor(private auth: AuthService) { }
 
   onLogin() {
     this.auth.login(this.email, this.password).subscribe({
       next: () => {
-        this.router.navigate(['/adoration-schedule']); // Redirect on success
+        // console.log('Login successful, navigating...');
+        this.router.navigate(['/adoration-schedule']);
       },
-      error: (err) => {
-        this.errorMessage = 'Invalid email or password';
-        // console.error('Login error:', err);
-        return throwError(() => err);
-      }
+      error: () => {
+        this.errorMessage = 'Invalid credentials. Please try again.';
+      },
     });
   }
 }

@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
-import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
-import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './auth.guard';
 
 // Feature components
-import { AdorationScheduleComponent } from './adoration-schedule/adoration-schedule.component';
+//import { AdorationScheduleComponent } from './adoration-schedule/adoration-schedule.component';
 import { DioceseMaintenanceComponent } from './diocese-maintenance/diocese-maintenance.component';
 import { ParishMaintenanceComponent } from './parish-maintenance/parish-maintenance.component';
 import { RosaryCrusadeComponent } from './rosary-crusade/rosary-crusade.component';
@@ -14,16 +11,18 @@ import { CrusadeQueryComponent } from './crusade-query/crusade-query.component';
 
 export const appRoutes: Routes = [
 
-  { path: '', component: HomeComponent },
-  { path: 'login', component: LoginComponent },
+  //{ path: '', component: HomeComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'adoration-query', component: AdorationQueryComponent },
-  { path: 'crusade-query', component: CrusadeQueryComponent }, 
-
-  {
-    path: 'adoration-schedule',
-    component: AdorationScheduleComponent,
-    canActivate: [AuthGuard]
-  },
+  { path: 'crusade-query', component: CrusadeQueryComponent },
+  { 
+    path: 'login', 
+    loadComponent: () => import('./login/login.component').then(m => m.LoginComponent) 
+  },    
+  { 
+    path: 'adoration-schedule', 
+    loadComponent: () => import('./adoration-schedule/adoration-schedule.component').then(m => m.AdorationScheduleComponent), 
+    canActivate: [AuthGuard] },
   {
     path: 'diocese-maintenance',
     component: DioceseMaintenanceComponent,
@@ -39,5 +38,5 @@ export const appRoutes: Routes = [
     component: RosaryCrusadeComponent,
     canActivate: [AuthGuard]
   },
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: 'login' }
 ];
