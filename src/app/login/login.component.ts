@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
+import { throwError } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -10,13 +11,12 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [FormsModule]
 })
-
 export class LoginComponent {
   email = '';
   password = '';
   errorMessage = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) { }
 
   onLogin() {
     this.auth.login(this.email, this.password).subscribe({
@@ -25,7 +25,8 @@ export class LoginComponent {
       },
       error: (err) => {
         this.errorMessage = 'Invalid email or password';
-        console.error('Login error:', err);
+        // console.error('Login error:', err);
+        return throwError(() => err);
       }
     });
   }
