@@ -22,12 +22,12 @@ export class AppComponent {
   }
 
 
-  ngOnInit() {
-    // ✅ Subscribe to login status
-    this.auth.isLoggedIn$.subscribe((status) => {
-      this.isLoggedIn$ = status;
-    });
-  }
+  // ngOnInit() {
+  //   // ✅ Subscribe to login status
+  //   this.auth.isLoggedIn$.subscribe((status) => {
+  //     this.isLoggedIn$ = status;
+  //   });
+  // }
 
   logout() {
     this.auth.logout();
