@@ -11,7 +11,7 @@
     <li><a routerLink="/crusade-query">Crusade Query</a></li>
 
     <!-- Only show these links if user is logged in -->
-    @if (auth.isLoggedIn) {
+    @if (auth.isAuthenticated()) {
     <li><a routerLink="/adoration-schedule">Adoration Schedule</a></li>
     <li><a routerLink="/diocese-maintenance">Diocese Maintenance</a></li>
     <li><a routerLink="/parish-maintenance">Parish Maintenance</a></li>
@@ -21,11 +21,11 @@
 
   <!-- Auth Buttons -->
   <div class="auth-buttons">
-    @if (!auth.isLoggedIn) {
-    <button (click)="login()">Login</button>
+    @if (!auth.isAuthenticated()) {
+    <a routerLink="/login"><button>Login</button></a>
     }
     @else {
-    <button (click)="logout()">Logout</button>
+    <button (click)="auth.logout()">Logout</button>
     }
   </div>
 </nav>

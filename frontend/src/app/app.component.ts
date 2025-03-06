@@ -12,18 +12,25 @@ import { AuthService } from './auth.service';
 })
 export class AppComponent {
   title = 'NEAR CHRIST';
+  isLoggedIn$ = false;
 
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(public auth: AuthService, private router: Router) { }
 
   login() {
-    this.auth.login();
     // Redirect to Adoration Schedule after logging in
-    this.router.navigate(['/adoration-schedule']);
+    this.router.navigate(['/login']);
   }
+
+
+  // ngOnInit() {
+  //   // ✅ Subscribe to login status
+  //   this.auth.isLoggedIn$.subscribe((status) => {
+  //     this.isLoggedIn$ = status;
+  //   });
+  // }
 
   logout() {
     this.auth.logout();
-    // Redirect to home page on logout
-    this.router.navigate(['/']);
   }
 }
+
