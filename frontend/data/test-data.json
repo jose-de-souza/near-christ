@@ -1,0 +1,112 @@
+{
+  "Diocese": [
+    {
+      "DioceseID": 1,
+      "DioceseName": "Sydney Archdiocese",
+      "DioceseStreetNo": "38",
+      "DioceseStreetName": "Renwick St",
+      "DioceseSuburb": "Leichardt",
+      "DioceseState": "NSW",
+      "DiocesePostcode": "2040",
+      "DiocesePhone": "(02) 9390 5100",
+      "DioceseEmail": "chancery@sydneycatholic.org",
+      "DioceseWebsite": "www.sydneycatholic.org.au"
+    },
+    {
+      "DioceseID": 2,
+      "DioceseName": "Test Diocese1",
+      "DioceseStreetNo": "11",
+      "DioceseStreetName": "Test St1",
+      "DioceseSuburb": "Testville1",
+      "DioceseState": "ACT",
+      "DiocesePostcode": "123451",
+      "DiocesePhone": "(02) 9999 88881",
+      "DioceseEmail": "test@test.com1",
+      "DioceseWebsite": "www.test.com1"
+    },
+    {
+      "DioceseID": 3,
+      "DioceseName": "Wollongong Diocese",
+      "DioceseStreetNo": "38",
+      "DioceseStreetName": "Harbour St",
+      "DioceseSuburb": "Wollongong",
+      "DioceseState": "NSW",
+      "DiocesePostcode": "2500",
+      "DiocesePhone": "(02) 4222 2400",
+      "DioceseEmail": "info@dow.org.au",
+      "DioceseWebsite": "dow.org.au"
+    }
+  ],
+  "Parish": [
+    {
+      "ParishID": 1,
+      "DioceseID": 1,
+      "ParishName": "All Hallows",
+      "ParishStNumber": "2",
+      "ParishStName": "Hallow St",
+      "ParishSuburb": "Five Dock",
+      "ParishState": "NSW",
+      "ParishPostcode": "20461",
+      "ParishPhone": "02 9713 5172",
+      "ParishEmail": "admin@allhallows.org.au",
+      "ParishWebsite": "allhallows.org.au"
+    },
+    {
+      "ParishID": 2,
+      "DioceseID": 1,
+      "ParishName": "All Saints",
+      "ParishStNumber": "48",
+      "ParishStName": "George St",
+      "ParishSuburb": "Liverpool",
+      "ParishState": "NSW",
+      "ParishPostcode": "2170",
+      "ParishPhone": "02 9573 6500",
+      "ParishEmail": "info@cpasl.org.au",
+      "ParishWebsite": ""
+    }
+  ],
+  "Adoration": [
+    {
+      "AdorationID": 4,
+      "DioceseID": 1,
+      "ParishID": 6,
+      "State": "NSW",
+      "AdorationType": "Perpetual",
+      "AdorationLocation": "Adoration Chapel",
+      "AdorationLocationType": "Other",
+      "AdorationDay": "",
+      "AdorationStart": "",
+      "AdorationEnd": ""
+    },
+    {
+      "AdorationID": 6,
+      "DioceseID": 1,
+      "ParishID": 6,
+      "State": "NSW",
+      "AdorationType": "Regular",
+      "AdorationLocation": "Blessed Sacrament 59 Bradleys Head Rd Clifton Gardens",
+      "AdorationLocationType": "Parish Church",
+      "AdorationDay": "Sunday",
+      "AdorationStart": "18:00:00",
+      "AdorationEnd": "19:00:00"
+    }
+  ],
+  "Crusade": [
+    {
+      "CrusadeID": 1,
+      "DioceseID": 1,
+      "ParishID": 1,
+      "State": "NSW",
+      "ConfessionStartTime": "17:00:00",
+      "ConfessionEndTime": "17:30:00",
+      "MassStartTime": "18:00:00",
+      "MassEndTime": "19:00:00",
+      "CrusadeStartTime": "19:30:00",
+      "CrusadeEndTime": "21:00:00",
+      "ContactName": "John Doe",
+      "ContactPhone": "02 9390 5100",
+      "ContactEmail": "john.doe@example.com",
+      "Comments": "Monthly rosary crusade for peace."
+    }
+  ]
+}

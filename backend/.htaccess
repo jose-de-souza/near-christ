@@ -1,0 +1,4 @@
+<Directory /var/www/nearchrist/data>
+    Order Deny,Allow
+    Deny from all
+</Directory>

@@ -1,0 +1,48 @@
+# Ignore Composer's vendor directory (install on deploy with `composer install`)
+/vendor/
+
+# Ignore environment variables (store credentials safely in .env)
+.env
+.env.local
+.env.development
+.env.production
+.env.testing
+
+# Ignore IDE and editor files
+/.idea/
+/.vscode/
+/nbproject/
+.DS_Store
+Thumbs.db
+
+# Ignore logs, cache, and debug files
+/storage/logs/
+storage/debugbar/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/oauth-private.key
+storage/oauth-public.key
+
+# Ignore PHPUnit test results and coverage reports
+/tests/output/
+/tests/logs/
+/coverage/
+phpunit.xml
+phpunit.xml.dist
+
+# Ignore Node.js dependencies (if frontend exists)
+node_modules/
+npm-debug.log
+yarn.lock
+
+# Ignore database files (if generated locally)
+data/*.sql
+*.sqlite
+*.sql.bak
+
+# Ignore build and deployment files
+/public/storage
+/public/hot
+/public/mix-manifest.json
+/public/build/

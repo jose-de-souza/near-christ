@@ -1,97 +1,94 @@
-<?php 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
+<?php
 
-/**
- * CORS headers
- */
-header("Access-Control-Allow-Origin: *");// Allow all origins (Change to a specific origin for security in production)
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");// Allow specific HTTP methods
-header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allow specific headers
-header("Content-Type: application/json"); // Ensure JSON response
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-require __DIR__ . '/vendor/autoload.php'; // Composer autoload
+require __DIR__ . '/../../../vendor/autoload.php';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Factory\AppFactory;
+use Dotenv\Dotenv;
 
-header('Content-Type: application/json');
+// Load environment variables
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../../');
+$dotenv->load();
 
-// Hard-coded credentials (ONLY for testing)
-$validEmail = 'johnwayne@company.com';
-$validPassword = '1234';
-
-/** 
- * Read JSON input
- */
-$input = json_decode(file_get_contents('php://input'), true);
-if (!isset($input['email'], $input['password'])) {
-    http_response_code(400);
-    echo json_encode(["error" => "Missing email or password"]);
-    exit();
-}
-
-/** 
- * Validate credentials
- */
-if ($input['email'] !== $validEmail || $input['password'] !== $validPassword) {
-    http_response_code(401);
-    echo json_encode(["error" => "Invalid credentials"]);
-    exit();
-}
-
-/** 
- * Generate JWT token
- */
-// Ensure JWT Secret Key is available
-$HOME = getenv('HOME');
-$JWT_SECRET_KEY = file_get_contents($HOME.".JWT_SECRET_KEY");
-putenv("JWT_SECRET_KEY=$JWT_SECRET_KEY");
-$secretKey = getenv('JWT_SECRET_KEY');
-if (!$secretKey) {
-    http_response_code(500);
-    echo json_encode(["error" => "JWT_SECRET_KEY is missing"]);
-    exit();
-}
-$issuedAt = time();
-$expirationTime = $issuedAt + 3600; // 1 hour validity
-$payload = [
-    'iss' => 'greatapps4you.us',
-    'iat' => $issuedAt,
-    'exp' => $expirationTime,
-    'sub' => $validEmail, // or user ID from DB
-    'user_id' => 7,       // example ID for John Wayne
-    'role' => 'user'      // optional user role
-];
-
-/** 
- * Encode JWT token
- */
-try {
-    $accessToken = JWT::encode($payload, $secretKey, 'HS256');
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(["error" => "JWT encoding failed", "details" => $e->getMessage()]);
-    exit();
-}
+// Create Slim App
+$app = AppFactory::create();
 
 /**
- * Return JSON response
+ * CORS Middleware
  */
-http_response_code(200);
-echo json_encode([
-    "accessToken" => $accessToken,
-    "user" => [
-        "id" => 7,
-        "name" => "John Wayne",
-        "email" => $validEmail
-    ]
-]);
-exit();
+$app->add(function ($request, $handler) {
+    $response = $handler->handle($request);
+    return $response->withHeader('Access-Control-Allow-Origin', '*')
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+                    ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+});
+
+/**
+ * Handle Preflight Requests (CORS)
+ */
+$app->options('/{routes:.+}', function (Request $request, Response $response, $args) {
+    return $response;
+});
+
+/**
+ * Login Route (JWT Authentication)
+ */
+$app->post('/auth/login', function (Request $request, Response $response) {
+    $input = json_decode($request->getBody(), true);
+
+    // Validate input
+    if (!isset($input['email'], $input['password'])) {
+        return $response->withStatus(400)->withJson(["error" => "Missing email or password"]);
+    }
+
+    // Hard-coded credentials (For Testing Only - Replace with DB validation)
+    $validEmail = 'johnwayne@company.com';
+    $validPassword = '1234';
+
+    if ($input['email'] !== $validEmail || $input['password'] !== $validPassword) {
+        return $response->withStatus(401)->withJson(["error" => "Invalid credentials"]);
+    }
+
+    // Generate JWT Token
+    $secretKey = $_ENV['JWT_SECRET_KEY'] ?? null;
+    if (!$secretKey) {
+        return $response->withStatus(500)->withJson(["error" => "JWT_SECRET_KEY is missing"]);
+    }
+
+    $issuedAt = time();
+    $expirationTime = $issuedAt + 3600; // 1-hour token validity
+    $payload = [
+        'iss' => $_ENV['APP_URL'] ?? 'http://localhost',
+        'iat' => $issuedAt,
+        'exp' => $expirationTime,
+        'sub' => $validEmail,
+        'user_id' => 7, // Example User ID
+        'role' => 'user'
+    ];
+
+    try {
+        $accessToken = JWT::encode($payload, $secretKey, 'HS256');
+    } catch (Exception $e) {
+        return $response->withStatus(500)->withJson(["error" => "JWT encoding failed", "details" => $e->getMessage()]);
+    }
+
+    // Return the response with the token
+    $response->getBody()->write(json_encode([
+        "accessToken" => $accessToken,
+        "user" => [
+            "id" => 7,
+            "name" => "John Wayne",
+            "email" => $validEmail
+        ]
+    ]));
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
+/**
+ * Run Slim App
+ */
+$app->run();
