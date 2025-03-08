@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\Parish;
+use App\models\Parish;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 

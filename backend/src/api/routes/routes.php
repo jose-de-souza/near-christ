@@ -1,23 +1,72 @@
 <?php
 
 use Slim\App;
+use App\Controllers\AuthController;
+use App\Controllers\AdorationController;
+use App\Controllers\CrusadeController;
 use App\Controllers\DioceseController;
+use App\Controllers\ParishController;
 use App\Middlewares\AuthMiddleware;
 
 return function (App $app) {
 
-    // Public Routes (No Authentication Required)
-    $app->get('/dioceses', DioceseController::class . ':getAll'); // Get all dioceses
-    $app->get('/dioceses/{id}', DioceseController::class . ':getById'); // Get diocese by ID
+    /**
+     * AUTH CONTROLLER
+     * POST /auth/login
+     */
+    $app->post('/auth/login', [AuthController::class, 'login']);
 
-    // Protected Routes (Require JWT Authentication)
-    $app->group('/dioceses', function ($group) {
-        $group->post('', DioceseController::class . ':create'); // Create new diocese
-        $group->put('/{id}', DioceseController::class . ':update'); // Update existing diocese
-        $group->delete('/{id}', DioceseController::class . ':delete'); // Delete a diocese
-    })->add(new AuthMiddleware());
+    /**
+     * ADORATION CONTROLLER
+     */
+    // Public
+    $app->get('/adorations', [AdorationController::class, 'getAll']);
+    $app->get('/adorations/{id}', [AdorationController::class, 'getById']);
 
-    // Handle Preflight Requests for CORS
+    // Protected
+    $app->post('/adorations', [AdorationController::class, 'create'])->add(AuthMiddleware::class);
+    $app->put('/adorations/{id}', [AdorationController::class, 'update'])->add(AuthMiddleware::class);
+    $app->delete('/adorations/{id}', [AdorationController::class, 'delete'])->add(AuthMiddleware::class);
+
+    /**
+     * CRUSADE CONTROLLER
+     */
+    // Public
+    $app->get('/crusades', [CrusadeController::class, 'getAll']);
+    $app->get('/crusades/{id}', [CrusadeController::class, 'getById']);
+
+    // Protected
+    $app->post('/crusades', [CrusadeController::class, 'create'])->add(AuthMiddleware::class);
+    $app->put('/crusades/{id}', [CrusadeController::class, 'update'])->add(AuthMiddleware::class);
+    $app->delete('/crusades/{id}', [CrusadeController::class, 'delete'])->add(AuthMiddleware::class);
+
+    /**
+     * DIOCESE CONTROLLER
+     */
+    // Public
+    $app->get('/dioceses', [DioceseController::class, 'getAll']);
+    $app->get('/dioceses/{id}', [DioceseController::class, 'getById']);
+
+    // Protected
+    $app->post('/dioceses', [DioceseController::class, 'create'])->add(AuthMiddleware::class);
+    $app->put('/dioceses/{id}', [DioceseController::class, 'update'])->add(AuthMiddleware::class);
+    $app->delete('/dioceses/{id}', [DioceseController::class, 'delete'])->add(AuthMiddleware::class);
+
+    /**
+     * PARISH CONTROLLER
+     */
+    // Public
+    $app->get('/parishes', [ParishController::class, 'getAll']);
+    $app->get('/parishes/{id}', [ParishController::class, 'getById']);
+
+    // Protected
+    $app->post('/parishes', [ParishController::class, 'create'])->add(AuthMiddleware::class);
+    $app->put('/parishes/{id}', [ParishController::class, 'update'])->add(AuthMiddleware::class);
+    $app->delete('/parishes/{id}', [ParishController::class, 'delete'])->add(AuthMiddleware::class);
+
+    /**
+     * Handle CORS Preflight Requests
+     */
     $app->options('/{routes:.+}', function ($request, $response, $args) {
         return $response;
     });

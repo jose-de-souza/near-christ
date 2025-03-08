@@ -6,14 +6,18 @@ use App\Middlewares\CorsMiddleware;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Load environment variables from .env file
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
-$dotenv->load();
+// Load environment variables safely
+try {
+    $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv->load();
+} catch (\Exception $e) {
+    die("Error loading .env file: " . $e->getMessage());
+}
 
 // Create Slim app instance
 $app = AppFactory::create();
 
-// Enable error reporting in development
+// Enable error reporting in development mode
 if ($_ENV['APP_ENV'] === 'development') {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
@@ -22,16 +26,11 @@ if ($_ENV['APP_ENV'] === 'development') {
     ini_set('display_errors', '0');
 }
 
-// Load CORS Middleware
-$app->add(new CorsMiddleware());
+// Register Middlewares
+$app->add(CorsMiddleware::class);
 
 // Load API Routes
 (require __DIR__ . '/../src/api/routes/routes.php')($app);
 
-// Handle CORS preflight requests
-$app->options('/{routes:.+}', function ($request, $response, $args) {
-    return $response;
-});
-
-// Run the app
+// Run the application
 $app->run();
