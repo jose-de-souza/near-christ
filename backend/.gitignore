@@ -37,9 +37,9 @@ npm-debug.log
 yarn.lock
 
 # Ignore database files (if generated locally)
-data/*.sql
-*.sqlite
-*.sql.bak
+#data/*.sql
+#*.sqlite
+#*.sql.bak
 
 # Ignore build and deployment files
 /public/storage
