@@ -60,3 +60,44 @@ composer install
 ```bash
 composer install --no-dev --optimize-autoloader
 ```
+
+## Test API
+### Authentication
+
+### Unix curl
+```bash
+curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d '{"email":"johnwayne@company.com","password":"1234"}'
+```
+
+### Windows curl
+```bat
+curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
+```
+
+### Sample return
+```json
+{"accessToken":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE2MzU3NTcsImV4cCI6MTc0MTYzOTM1Nywic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.6Bj71kZ8fQ6SzYBNm56tdHR9heih4-Tf6GgOuV1fCrw","user":{"id":7,"name":"John Wayne","email":"johnwayne@company.com"}}
+```
+
+## Security
+
+### .env
+
+```ini
+APP_ENV=development
+DB_HOST=127.0.0.1
+DB_NAME=NEAR_CHRIST
+DB_USER=root
+DB_PASS=
+JWT_SECRET_KEY=b57f579f7fb214aec11daab231ed641b13d5d1d348539a58a937b5b4c6bfaa7d
+```
+
+### Generating JWT_SECRET_KEY
+
+### Unix
+```bash
+openssl rand -hex 32
+```
+
+### Windows
+Use the Git Bash terminal and issue the name command above.
