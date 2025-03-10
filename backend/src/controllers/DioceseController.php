@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\models\Diocese;
+use App\Models\Diocese;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 

@@ -19,20 +19,22 @@ The order of DROP TABLE should follow the reverse order of creation, starting wi
 This ensures that you can safely run the DROP TABLE commands without foreign key errors and then recreate them in the correct dependency order.
 
 ## Composer
-
 ### Run compose require commands on the project root before commiting
 
+### PHP 7.3 - 8.2
 ```bash
 composer require slim/slim:^4.0 slim/psr7:^1.4 illuminate/database:^8.0
 composer require firebase/php-jwt:^5.2 vlucas/phpdotenv
 composer require --dev phpunit/phpunit
+composer dump-autoload
 ```
 
-## For PHP 8
+## PHP 8.4
 ```bash
 composer require slim/slim slim/psr7 illuminate/database
 composer require firebase/php-jwt vlucas/phpdotenv
 composer require --dev phpunit/phpunit
+composer dump-autoload
 ```
 
 ## Git
