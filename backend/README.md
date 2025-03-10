@@ -28,6 +28,13 @@ composer require firebase/php-jwt:^5.2 vlucas/phpdotenv
 composer require --dev phpunit/phpunit
 ```
 
+## For PHP 8
+```bash
+composer require slim/slim slim/psr7 illuminate/database
+composer require firebase/php-jwt vlucas/phpdotenv
+composer require --dev phpunit/phpunit
+```
+
 ## Git
 ### Commit
 ```bash
