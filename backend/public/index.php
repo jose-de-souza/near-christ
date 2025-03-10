@@ -2,7 +2,7 @@
 
 use Slim\Factory\AppFactory;
 use Dotenv\Dotenv;
-use App\Middlewares\CorsMiddleware;
+use App\middlewares\CorsMiddleware;
 
 require __DIR__ . '/../vendor/autoload.php';
 

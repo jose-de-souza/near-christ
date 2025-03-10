@@ -1,12 +1,12 @@
 <?php
 
 use Slim\App;
-use App\Controllers\AuthController;
-use App\Controllers\AdorationController;
-use App\Controllers\CrusadeController;
-use App\Controllers\DioceseController;
-use App\Controllers\ParishController;
-use App\Middlewares\AuthMiddleware;
+use app\controllers\AuthController;
+use app\controllers\AdorationController;
+use app\controllers\CrusadeController;
+use app\controllers\DioceseController;
+use app\controllers\ParishController;
+use App\middlewares\AuthMiddleware;
 
 return function (App $app) {
 
