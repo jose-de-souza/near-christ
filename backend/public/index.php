@@ -14,6 +14,9 @@ try {
     die("Error loading .env file: " . $e->getMessage());
 }
 
+// ✅ Load database configuration (before models are used!)
+require __DIR__ . '/../src/config/database.php'; 
+
 // Create Slim app instance
 $app = AppFactory::create();
 

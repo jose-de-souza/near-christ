@@ -6,6 +6,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Psr7\Response as SlimResponse;
 use Exception;
 
 class AuthController
@@ -13,14 +14,13 @@ class AuthController
     /**
      * Handle POST /auth/login
      */
-    public function login(Request $request, Response $response)
+    public function login(Request $request, Response $response): Response
     {
         $input = json_decode($request->getBody(), true);
 
         // Validate input
         if (!isset($input['email'], $input['password'])) {
-            $response->getBody()->write(json_encode(["error" => "Missing email or password"]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            return $this->jsonResponse($response, 400, false, "Missing email or password");
         }
 
         // Hard-coded credentials (FOR TESTING ONLY - Replace with DB validation)
@@ -28,15 +28,13 @@ class AuthController
         $validPassword = '1234';
 
         if ($input['email'] !== $validEmail || $input['password'] !== $validPassword) {
-            $response->getBody()->write(json_encode(["error" => "Invalid credentials"]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+            return $this->jsonResponse($response, 401, false, "Invalid credentials");
         }
 
         // Generate JWT token
         $secretKey = $_ENV['JWT_SECRET_KEY'] ?? null;
         if (!$secretKey) {
-            $response->getBody()->write(json_encode(["error" => "JWT_SECRET_KEY is missing"]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $this->jsonResponse($response, 500, false, "JWT_SECRET_KEY is missing");
         }
 
         $issuedAt = time();
@@ -53,23 +51,32 @@ class AuthController
         try {
             $accessToken = JWT::encode($payload, $secretKey, 'HS256');
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode([
-                "error" => "JWT encoding failed",
-                "details" => $e->getMessage()
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $this->jsonResponse($response, 500, false, "JWT encoding failed", ["details" => $e->getMessage()]);
         }
 
         // Return response with JWT token
-        $response->getBody()->write(json_encode([
+        return $this->jsonResponse($response, 200, true, "Login successful", [
             "accessToken" => $accessToken,
             "user" => [
                 "id" => 7,
                 "name" => "John Wayne",
                 "email" => $validEmail
             ]
-        ]));
+        ]);
+    }
 
-        return $response->withHeader('Content-Type', 'application/json');
+    /**
+     * Utility function to create a JSON response
+     */
+    private function jsonResponse(Response $response, int $status, bool $success, string $message, array $data = []): Response
+    {
+        $response->getBody()->write(json_encode([
+            "success" => $success,
+            "status" => $status,
+            "message" => $message,
+            "data" => $data
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+        return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
     }
 }
