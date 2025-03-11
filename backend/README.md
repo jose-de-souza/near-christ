@@ -2,6 +2,13 @@
 
 ## Database
 
+### Connecting to local MySQL
+For the password just hit enter since it is blank.
+
+```bash
+c:\xampp\mysql\bin\mysql.exe mysql -u root -p
+```
+
 The order of DROP TABLE should follow the reverse order of creation, starting with the most dependent tables and ending with the base table.
 
 ### Drop tables in the correct order:
@@ -64,13 +71,8 @@ composer install --no-dev --optimize-autoloader
 ## Test API
 ### Authentication
 
-### Unix curl
-```bash
-curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d '{"email":"johnwayne@company.com","password":"1234"}'
-```
-
 ### Windows curl
-```bat
+```sh
 curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
 ```
 
@@ -101,3 +103,109 @@ openssl rand -hex 32
 
 ### Windows
 Use the Git Bash terminal and issue the name command above.
+
+## Diocese Endpoints
+### Get all dioceses
+```sh
+curl -X GET http://localhost:8000/dioceses -H "Accept: application/json"
+```
+
+### Get a diocese by ID
+```sh
+curl -X GET http://localhost:8000/dioceses/1 -H "Accept: application/json"
+```
+
+### Create a new diocese
+```sh
+curl -X POST http://localhost:8000/dioceses -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"DioceseName\":\"New Diocese\",\"DioceseStreetNo\":\"999\",\"DioceseStreetName\":\"Example St\",\"DioceseSuburb\":\"Newtown\",\"DioceseState\":\"NSW\",\"DiocesePostcode\":\"7000\",\"DiocesePhone\":\"(02) 8888 9999\",\"DioceseEmail\":\"contact@newdiocese.org\",\"DioceseWebsite\":\"www.newdiocese.org\"}"
+```
+
+### Update a diocese
+```sh
+curl -X PUT http://localhost:8000/dioceses/8 -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"DioceseName\":\"Updated Diocese Name\"}"
+```
+
+### Delete a diocese
+```sh
+curl -X DELETE http://localhost:8000/dioceses/8 -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ"
+```
+
+## Parish Endpoints
+### Get all Parishes
+```sh
+curl -X GET http://localhost:8000/parishes -H "Accept: application/json"
+```
+
+### Get a parish by ID
+```sh
+curl -X GET http://localhost:8000/parishes/1 -H "Accept: application/json"
+```
+
+### Create a new parish
+```sh
+curl -X POST http://localhost:8000/parishes -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"ParishName\":\"New Parish\",\"ParishStNumber\":\"123\",\"ParishStName\":\"Main St\",\"ParishSuburb\":\"Downtown\",\"ParishState\":\"NSW\",\"ParishPostcode\":\"8000\",\"ParishPhone\":\"(02) 7777 7777\",\"ParishEmail\":\"contact@newparish.org\",\"ParishWebsite\":\"www.newparish.org\"}"
+```
+
+### Update a parish
+```sh
+curl -X PUT http://localhost:8000/parishes/1 -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"ParishName\":\"Updated Parish Name\"}"
+```
+
+### Delete a parish
+```sh
+curl -X DELETE http://localhost:8000/parishes/1 -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ"
+```
+
+## Adoration Endpoints
+### Get all Adorations
+```sh
+curl -X GET http://localhost:8000/adorations -H "Accept: application/json"
+```
+
+### Get an Adoration by ID
+```sh
+curl -X GET http://localhost:8000/adorations/4 -H "Accept: application/json"
+```
+
+### Create a new Adoration
+```sh
+curl -X POST http://localhost:8000/adorations -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"DioceseID\":1,\"ParishID\":2,\"State\":\"NSW\",\"AdorationType\":\"Perpetual\",\"AdorationLocation\":\"Chapel\",\"AdorationLocationType\":\"Church\",\"AdorationDay\":\"Monday\",\"AdorationStart\":\"08:00:00\",\"AdorationEnd\":\"20:00:00\"}"
+```
+
+### Update an Adoration
+```sh
+curl -X PUT http://localhost:8000/adorations/4 -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"AdorationType\":\"Regular\",\"AdorationLocation\":\"Main Church Hall\",\"AdorationDay\":\"Friday\"}"
+```
+
+### Delete an Adoration
+```sh
+curl -X DELETE http://localhost:8000/adorations/4 -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ"
+```
+
+## Crusade Endpoints
+### Get all Crusades
+```sh
+curl -X GET http://localhost:8000/crusades -H "Accept: application/json"
+```
+
+### Get a Crusade by ID
+```sh
+curl -X GET http://localhost:8000/crusades/2 -H "Accept: application/json"
+```
+
+### Create a new Crusade
+```sh
+curl -X POST http://localhost:8000/crusades -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"DioceseID\":1,\"ParishID\":2,\"State\":\"NSW\",\"CrusadeType\":\"Perpetual\",\"CrusadeLocation\":\"Chapel\",\"CrusadeLocationType\":\"Church\",\"CrusadeDay\":\"Monday\",\"CrusadeStart\":\"08:00:00\",\"CrusadeEnd\":\"20:00:00\"}"
+```
+
+### Update a Crusade
+```sh
+curl -X PUT http://localhost:8000/crusades/2 -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ" -d "{\"CrusadeStartTime\":\"20:00:00\",\"CrusadeEndTime\":\"22:00:00\",\"Comments\":\"Updated crusade details.\"}"
+```
+
+### Delete a Crusade
+```sh
+curl -X DELETE http://localhost:8000/crusades/2 -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE3MTYwMjEsImV4cCI6MTc0MTcxOTYyMSwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.5tVA8ntd6g0Ln9sBNw7q-h1YfqXpN89vOVRdAJo4NAQ"
+```
+
+

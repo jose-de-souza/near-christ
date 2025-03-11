@@ -53,9 +53,11 @@ yarn.lock
 ### macOS ###
 # General
 .DS_Store
+backend/.DS_Store
+backend/src/.DS_Store
 .AppleDouble
 .LSOverride
-
+backend/src/api/.DS_Store
 # Icon must end with two \r
 Icon
 
