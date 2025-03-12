@@ -12,6 +12,13 @@ use App\Middlewares\AuthMiddleware;
 return function (App $app) {
 
     /**
+     * Allow OPTIONS FOR ALL ROUTES
+     */
+    $app->options('/{routes:.+}', function ($request, $response, $args) {
+        return $response;
+    });
+
+    /**
      * AUTH CONTROLLER
      */
     $app->post('/auth/login', [AuthController::class, 'login']);

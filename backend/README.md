@@ -1,7 +1,12 @@
 # NEAR CHRIST BACKEND
 
-## Database
+## Starting a local server
+```bash
+cd backend
+php -S localhost:8000 -t public
+```
 
+## Database
 ### Connecting to local MySQL
 For the password just hit enter since it is blank.
 
