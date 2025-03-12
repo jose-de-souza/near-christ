@@ -1,124 +1,172 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CrusadeService, Crusade } from './crusade.service';
 
-interface RosaryCrusade {
-  id: number;
-  confessionStart: string;
-  confessionEnd: string;
-  massStart: string;
-  massEnd: string;
-  crusadeStart: string;
-  crusadeEnd: string;
-  contactName: string;
-  contactPhone: string;
-  contactEmail: string;
-  observations: string;
-}
+// Also import DioceseService, ParishService
+import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
+import { ParishService, Parish } from '../parish-maintenance/parish.service';
 
 @Component({
-  standalone: true,
   selector: 'app-rosary-crusade',
   templateUrl: './rosary-crusade.component.html',
   styleUrls: ['./rosary-crusade.component.scss'],
-  imports: [FormsModule]
+  standalone: true,
+  imports: [CommonModule, FormsModule]
 })
-export class RosaryCrusadeComponent {
-  crusades: RosaryCrusade[] = [
-    {
-      id: 1,
-      confessionStart: '09:00',
-      confessionEnd: '09:30',
-      massStart: '10:00',
-      massEnd: '11:00',
-      crusadeStart: '11:15',
-      crusadeEnd: '12:00',
-      contactName: 'John Doe',
-      contactPhone: '555-1234',
-      contactEmail: 'john@example.com',
-      observations: 'First Sunday of the month'
-    },
-    {
-      id: 2,
-      confessionStart: '08:30',
-      confessionEnd: '09:00',
-      massStart: '09:15',
-      massEnd: '10:00',
-      crusadeStart: '10:15',
-      crusadeEnd: '11:00',
-      contactName: 'Jane Smith',
-      contactPhone: '555-5678',
-      contactEmail: 'jane@example.com',
-      observations: 'Weekday schedule'
-    }
-  ];
+export class RosaryCrusadeComponent implements OnInit {
 
-  selectedCrusade: RosaryCrusade = {
-    id: 0,
-    confessionStart: '',
-    confessionEnd: '',
-    massStart: '',
-    massEnd: '',
-    crusadeStart: '',
-    crusadeEnd: '',
-    contactName: '',
-    contactPhone: '',
-    contactEmail: '',
-    observations: ''
+  // Table data
+  crusades: Crusade[] = [];
+
+  // For the diocese/parish dropdowns
+  dioceseList: Diocese[] = [];
+  parishList: Parish[] = [];
+
+  // The crusade record currently being edited
+  selectedCrusade: Partial<Crusade> = {
+    DioceseID: 0,
+    ParishID: 0,
+    State: '',
+    ConfessionStartTime: '',
+    ConfessionEndTime: '',
+    MassStartTime: '',
+    MassEndTime: '',
+    CrusadeStartTime: '',
+    CrusadeEndTime: '',
+    ContactName: '',
+    ContactPhone: '',
+    ContactEmail: '',
+    Observations: ''
   };
 
-  selectCrusade(crusade: RosaryCrusade) {
-    this.selectedCrusade = { ...crusade };
+  constructor(
+    private crusadeService: CrusadeService,
+    private dioceseService: DioceseService,
+    private parishService: ParishService
+  ) { }
+
+  ngOnInit(): void {
+    this.loadAllCrusades();
+    this.loadAllDioceses();
+    this.loadAllParishes();
   }
 
-  addCrusade() {
-    const newId = this.crusades.length
-      ? Math.max(...this.crusades.map(c => c.id)) + 1
-      : 1;
-
-    this.crusades.push({ ...this.selectedCrusade, id: newId });
-    this.resetForm();
-  }
-
-  modifyCrusade() {
-    if (this.selectedCrusade.id !== 0) {
-      const index = this.crusades.findIndex(c => c.id === this.selectedCrusade.id);
-      if (index !== -1) {
-        this.crusades[index] = { ...this.selectedCrusade };
+  // 1) Load all crusade records
+  loadAllCrusades(): void {
+    this.crusadeService.getAllCrusades().subscribe({
+      next: (data) => {
+        this.crusades = data;
+      },
+      error: (err) => {
+        console.error('Failed to load crusades:', err);
       }
-      this.resetForm();
-    }
+    });
   }
 
-  deleteCrusade() {
-    if (this.selectedCrusade.id !== 0) {
-      this.crusades = this.crusades.filter(c => c.id !== this.selectedCrusade.id);
-      this.resetForm();
-    }
+  // 2) Load Diocese list
+  loadAllDioceses(): void {
+    this.dioceseService.getAllDioceses().subscribe({
+      next: (data) => {
+        this.dioceseList = data;
+      },
+      error: (err) => {
+        console.error('Failed to load dioceses:', err);
+      }
+    });
   }
 
-  saveCrusade() {
-    // Example of a 'Save' operation if  have an API or want to finalize changes
-    console.log('Saved crusade data:', this.selectedCrusade);
+  // 3) Load Parish list
+  loadAllParishes(): void {
+    this.parishService.getAllParishes().subscribe({
+      next: (data) => {
+        this.parishList = data;
+      },
+      error: (err) => {
+        console.error('Failed to load parishes:', err);
+      }
+    });
+  }
+
+  // Row click => populate form
+  selectCrusade(c: Crusade): void {
+    this.selectedCrusade = { ...c };
+  }
+
+  // Add a new crusade
+  addCrusade(): void {
+    this.crusadeService.createCrusade(this.selectedCrusade).subscribe({
+      next: () => {
+        this.loadAllCrusades();
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Failed to create crusade:', err);
+      }
+    });
+  }
+
+  // Modify existing
+  modifyCrusade(): void {
+    if (!this.selectedCrusade.CrusadeID) {
+      console.error('No crusade selected to update!');
+      return;
+    }
+    const id = this.selectedCrusade.CrusadeID;
+    this.crusadeService.updateCrusade(id, this.selectedCrusade).subscribe({
+      next: () => {
+        this.loadAllCrusades();
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Failed to update crusade:', err);
+      }
+    });
+  }
+
+  // Delete existing
+  deleteCrusade(): void {
+    if (!this.selectedCrusade.CrusadeID) {
+      console.error('No crusade selected to delete!');
+      return;
+    }
+    const id = this.selectedCrusade.CrusadeID;
+    this.crusadeService.deleteCrusade(id).subscribe({
+      next: () => {
+        this.loadAllCrusades();
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Failed to delete crusade:', err);
+      }
+    });
+  }
+
+  // Cancel editing
+  cancel(): void {
     this.resetForm();
   }
 
-  cancel() {
-    this.resetForm();
+  // Track rows by CrusadeID for *ngFor
+  trackByCrusadeID(index: number, item: Crusade): number {
+    return item.CrusadeID;
   }
 
-  private resetForm() {
+  private resetForm(): void {
     this.selectedCrusade = {
-      id: 0,
-      confessionStart: '',
-      confessionEnd: '',
-      massStart: '',
-      massEnd: '',
-      crusadeStart: '',
-      crusadeEnd: '',
-      contactName: '',
-      contactPhone: '',
-      contactEmail: '',
-      observations: ''
+      DioceseID: 0,
+      ParishID: 0,
+      State: '',
+      ConfessionStartTime: '',
+      ConfessionEndTime: '',
+      MassStartTime: '',
+      MassEndTime: '',
+      CrusadeStartTime: '',
+      CrusadeEndTime: '',
+      ContactName: '',
+      ContactPhone: '',
+      ContactEmail: '',
+      Observations: ''
     };
   }
 }

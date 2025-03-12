@@ -62,13 +62,16 @@ body {
 
       /* Each field container */
       div {
-        display: flex; /* label above input => let label, input stack? */
+        display: flex;
+        /* label above input => let label, input stack? */
         flex-direction: column;
         align-items: flex-start;
         /* Remove flex:1 so they're not forced to stretch */
       }
 
-      input, select, textarea {
+      input,
+      select,
+      textarea {
         width: 100%;
         max-width: 180px;
         padding: 6px;
@@ -80,7 +83,8 @@ body {
       &.contact {
         .contact-row {
           display: flex;
-          flex-direction: row; /* Force horizontal fields */
+          flex-direction: row;
+          /* Force horizontal fields */
           gap: 15px;
           /* Let each sub-field take minimal space */
         }
@@ -92,14 +96,14 @@ body {
 
           textarea {
             max-width: none;
-            height: 80px; /* Adjust as desired */
+            height: 80px;
+            /* Adjust as desired */
           }
         }
       }
     }
   }
 
-  /* Buttons: 5 total (Add, Modify, Delete, Save, Cancel) */
   .buttons {
     display: flex;
     justify-content: flex-end;
@@ -114,43 +118,47 @@ body {
       color: white;
     }
 
-    /* 1) Add => $save-button-bg, hover => darken($neutral-color, 10%) */
+
     button:nth-child(1) {
+      // Add button
       background-color: palette.$save-button-bg;
+
     }
+
+    ;
+
     button:nth-child(1):hover {
+      // Add button
       background-color: darken(palette.$neutral-color, 10%);
     }
 
-    /* 2) Modify => $default-button-bg / $default-button-hover-bg */
     button:nth-child(2) {
+      // Modify button
       background-color: palette.$default-button-bg;
     }
+
     button:nth-child(2):hover {
+      // Modify button
       background-color: palette.$default-button-hover-bg;
     }
 
-    /* 3) Delete => $delete-button-bg / $delete-button-hover-bg */
     button:nth-child(3) {
+      // Delete button
       background-color: palette.$delete-button-bg;
     }
+
     button:nth-child(3):hover {
+      // Delete button
       background-color: palette.$delete-button-hover-bg;
     }
 
-    /* 4) Save => $secondary-color */
     button:nth-child(4) {
-      background-color: palette.$secondary-color;
-    }
-    button:nth-child(4):hover {
-      background-color: darken(palette.$secondary-color, 10%);
-    }
-
-    /* 5) Cancel => $neutral-color */
-    button:nth-child(5) {
+      // Cancel button
       background-color: palette.$neutral-color;
     }
-    button:nth-child(5):hover {
+
+    button:nth-child(4):hover {
+      // Cancel button
       background-color: darken(palette.$neutral-color, 10%);
     }
   }
@@ -165,7 +173,8 @@ body {
       width: 100%;
       border-collapse: collapse;
 
-      th, td {
+      th,
+      td {
         border: 1px solid palette.$secondary-color;
         padding: 10px;
         text-align: left;

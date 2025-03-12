@@ -1,24 +1,176 @@
--- Insert Data into Diocese Table
-INSERT INTO Diocese (DioceseID, DioceseName, DioceseStreetNo, DioceseStreetName, DioceseSuburb, DioceseState, DiocesePostcode, DiocesePhone, DioceseEmail, DioceseWebsite)
+-- ------------------------------------------------------
+--    INSERT INTO Diocese (5 REAL AUSTRALIAN DIOCESES)
+-- ------------------------------------------------------
+INSERT INTO Diocese
+    (DioceseID, DioceseName, 
+     DioceseStreetNo, DioceseStreetName, DioceseSuburb, 
+     DioceseState, DiocesePostcode, 
+     DiocesePhone, DioceseEmail, DioceseWebsite)
 VALUES
-(1, 'Metropolis Diocese', '12', 'Maple Ave', 'Springfield', 'NSW', '1001', '(02) 9000 1234', 'contact@metropolisdiocese.org', 'www.metropolisdiocese.org'),
-(2, 'Sample Diocese1', '22', 'Oak St', 'Sampletown', 'ACT', '2002', '(02) 9111 5678', 'info@samplediocese.org', 'www.samplediocese.org'),
-(3, 'Coastline Diocese', '45', 'Seaview Rd', 'Coastal City', 'NSW', '3003', '(02) 9222 8765', 'admin@coastlinediocese.org', 'www.coastlinediocese.org');
+    (1, 'Archdiocese of Sydney',
+        '133', 'Liverpool Street', 'Sydney',
+        'NSW', '2000',
+        '+61 2 9390 5100',
+        'info@sydneycatholic.org',
+        'https://www.sydneycatholic.org/'),
 
--- Insert Data into Parish Table (Make sure Parish exists before referencing it in Adoration or Crusade)
-INSERT INTO Parish (ParishID, DioceseID, ParishName, ParishStNumber, ParishStName, ParishSuburb, ParishState, ParishPostcode, ParishPhone, ParishEmail, ParishWebsite)
-VALUES
-(1, 1, 'St. Michael Parish', '10', 'Church St', 'Rivertown', 'NSW', '4004', '02 9555 1111', 'admin@stmichael.org.au', 'www.stmichael.org.au'),
-(2, 1, 'St. Peter Parish', '99', 'Main St', 'Lakeside', 'NSW', '5005', '02 9444 2222', 'info@stpeter.org.au', NULL),
-(6, 1, 'Holy Trinity', '77', 'Sunset Blvd', 'Hillside', 'NSW', '6006', '02 9333 3333', 'secretary@holytrinity.org.au', NULL);
+    (2, 'Archdiocese of Melbourne',
+        '383', 'Albert Street', 'East Melbourne',
+        'VIC', '3002',
+        '+61 3 9926 5677',
+        'communications@cam.org.au',
+        'https://melbournecatholic.org/'),
 
--- Insert Data into Adoration Table (Now ParishID = 6 exists, so no foreign key error)
-INSERT INTO Adoration (AdorationID, DioceseID, ParishID, State, AdorationType, AdorationLocation, AdorationLocationType, AdorationDay, AdorationStart, AdorationEnd)
-VALUES
-(4, 1, 6, 'NSW', 'Perpetual', 'Prayer Chapel', 'Other', NULL, NULL, NULL),
-(6, 1, 6, 'NSW', 'Regular', 'Holy Trinity 77 Sunset Blvd Hillside', 'Parish Church', 'Saturday', '17:00:00', '18:00:00');
+    (3, 'Archdiocese of Brisbane',
+        '194', 'Charlotte Street', 'Brisbane',
+        'QLD', '4000',
+        '+61 7 3324 3030',
+        'communications@bne.catholic.net.au',
+        'https://brisbanecatholic.org.au/'),
 
--- Insert Data into Crusade Table (Ensuring ParishID exists first)
-INSERT INTO Crusade (CrusadeID, DioceseID, ParishID, State, ConfessionStartTime, ConfessionEndTime, MassStartTime, MassEndTime, CrusadeStartTime, CrusadeEndTime, ContactName, ContactPhone, ContactEmail, Comments)
+    (4, 'Diocese of Parramatta',
+        '1', 'Marist Place', 'Parramatta',
+        'NSW', '2150',
+        '+61 2 8838 3400',
+        'communications@parracatholic.org',
+        'https://parracatholic.org/'),
+
+    (5, 'Diocese of Broken Bay',
+        '2', 'Alma Road', 'Pennant Hills',
+        'NSW', '2120',
+        '+61 2 8379 1600',
+        'communications@bbcatholic.org.au',
+        'https://www.bbcatholic.org.au/');
+
+-- ------------------------------------------------------
+--    INSERT INTO Parish (5 REAL PARISHES)
+--    Each references a valid DioceseID (1..5).
+-- ------------------------------------------------------
+INSERT INTO Parish
+    (ParishID, DioceseID, ParishName,
+     ParishStNumber, ParishStName, ParishSuburb,
+     ParishState, ParishPostcode,
+     ParishPhone, ParishEmail, ParishWebsite)
 VALUES
-(1, 1, 1, 'NSW', '16:30:00', '17:00:00', '17:30:00', '18:30:00', '19:00:00', '20:30:00', 'Jane Smith', '02 9000 9876', 'jane.smith@example.com', 'Monthly prayer crusade for the community.');
+    (1, 1, 'St Mary\'s Cathedral',
+       'St Mary\'s', 'Road', 'Sydney',
+       'NSW', '2000',
+       '+61 2 9220 0400',
+       'info@stmaryscathedral.org.au',
+       'https://www.stmaryscathedral.org.au/'),
+
+    (2, 2, 'St Patrick\'s Cathedral',
+       '1', 'Cathedral Place', 'East Melbourne',
+       'VIC', '3002',
+       '+61 3 9662 2233',
+       'info@cam.org.au',
+       'https://melbournecatholic.org/about/st-patricks-cathedral'),
+
+    (3, 3, 'Cathedral of St. Stephen',
+       '249', 'Elizabeth Street', 'Brisbane City',
+       'QLD', '4000',
+       '+61 7 3324 3030',
+       'cathedral@bne.catholic.net.au',
+       'https://www.cathedralofststephen.org.au/'),
+
+    (4, 4, 'St Patrick\'s Cathedral, Parramatta',
+       '1', 'Marist Place', 'Parramatta',
+       'NSW', '2150',
+       '+61 2 8839 8400',
+       'cathedral@parracatholic.org',
+       'https://stpatscathedral.com.au/'),
+
+    (5, 5, 'Our Lady of Dolours, Chatswood',
+       '94', 'Archer Street', 'Chatswood',
+       'NSW', '2067',
+       '+61 2 9410 9000',
+       'chatswood.parish@bbcatholic.org.au',
+       'https://www.bbcatholic.org.au/chatswood');
+
+-- ------------------------------------------------------
+--    INSERT INTO Adoration (3 REAL SCHEDULES)
+--    Example: known weekly Exposition times. 
+--    Use the same DioceseID and ParishID references as above.
+-- ------------------------------------------------------
+INSERT INTO Adoration
+    (AdorationID, DioceseID, ParishID,
+     State, AdorationType, AdorationLocation,
+     AdorationLocationType,
+     AdorationDay, AdorationStart, AdorationEnd)
+VALUES
+    -- St Mary’s Cathedral (Sydney) - weekly Friday Adoration
+    (1, 1, 1,
+       'NSW', 
+       'Regular',
+       'St Mary\'s Cathedral Chapel', 
+       'Cathedral', 
+       'Friday',
+       '12:30:00', 
+       '15:00:00'),
+
+    -- St Patrick’s Cathedral, Parramatta - typical Friday evening Adoration
+    (2, 4, 4,
+       'NSW',
+       'Regular',
+       'St Patrick\'s Cathedral Chapel',
+       'Cathedral',
+       'Friday',
+       '18:30:00',
+       '19:30:00'),
+
+    -- Our Lady of Dolours, Chatswood - typical Thursday morning
+    (3, 5, 5,
+       'NSW',
+       'Regular',
+       'Church Main Altar',
+       'Parish Church',
+       'Thursday',
+       '09:30:00',
+       '10:30:00');
+
+-- ------------------------------------------------------
+--    INSERT INTO Crusade (Rosary Crusade MOCK Data)
+--    Each record references a real Diocese and Parish from above.
+--    Names, phone numbers, and times are purely illustrative.
+-- ------------------------------------------------------
+INSERT INTO Crusade
+    (CrusadeID, DioceseID, ParishID, State,
+     ConfessionStartTime, ConfessionEndTime,
+     MassStartTime, MassEndTime,
+     CrusadeStartTime, CrusadeEndTime,
+     ContactName, ContactPhone, ContactEmail, Comments)
+VALUES
+    (1, 1, 1, 'NSW',
+       '16:30:00', '17:00:00',
+       '17:30:00', '18:30:00',
+       '18:45:00', '20:00:00',
+       'Mary Fisher', '0412 111 222', 'mary.fisher@mockserver.au',
+       'Evening Rosary Crusade for Families'),
+
+    (2, 2, 2, 'VIC',
+       '07:00:00', '07:30:00',
+       '08:00:00', '09:00:00',
+       '09:15:00', '10:30:00',
+       'John Hamilton', '0403 222 333', 'john.hamilton@mockserver.au',
+       'Saturday Morning Rosary and Mass'),
+
+    (3, 3, 3, 'QLD',
+       '15:30:00', '16:00:00',
+       '16:15:00', '17:00:00',
+       '17:15:00', '18:45:00',
+       'Anna Thompson', '0407 333 444', 'anna.thompson@mockserver.au',
+       'Rosary Crusade focusing on youth fellowship'),
+
+    (4, 4, 4, 'NSW',
+       '18:00:00', '18:30:00',
+       '18:45:00', '19:30:00',
+       '19:45:00', '21:00:00',
+       'Paul Stafford', '0411 444 555', 'paul.stafford@mockserver.au',
+       'Parramatta Cathedral Rosary Vigil'),
+
+    (5, 5, 5, 'NSW',
+       '08:00:00', '08:30:00',
+       '09:00:00', '09:45:00',
+       '10:00:00', '11:30:00',
+       'Sofia Caruso', '0405 555 666', 'sofia.caruso@mockserver.au',
+       'Thursday Morning Rosary Crusade');
