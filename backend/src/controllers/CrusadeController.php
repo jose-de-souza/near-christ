@@ -9,18 +9,40 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class CrusadeController
 {
     /**
-     * GET /crusades - Get all crusades (with related diocese and parish)
+     * GET /crusades
+     * Return all crusades (with related diocese and parish), optionally filtered.
      */
     public function getAll(Request $request, Response $response)
     {
         try {
-            $crusades = Crusade::with(['diocese', 'parish'])->get();
+            // Start with Eloquent query that eager loads diocese & parish
+            $query = Crusade::with(['diocese', 'parish']);
+
+            // Read potential filters from query params
+            $params    = $request->getQueryParams();
+            $state     = $params['state']       ?? null;
+            $dioceseID = $params['diocese_id']  ?? null;
+            $parishID  = $params['parish_id']   ?? null;
+
+            // Apply filters only if non-null and not the literal 'null' string
+            if ($state && $state !== 'null') {
+                $query->where('State', $state);
+            }
+            if ($dioceseID && $dioceseID !== 'null') {
+                $query->where('DioceseID', $dioceseID);
+            }
+            if ($parishID && $parishID !== 'null') {
+                $query->where('ParishID', $parishID);
+            }
+
+            $crusades = $query->get();
             $response->getBody()->write(json_encode($crusades));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
             return $this->errorResponse($response, "Error fetching crusades", $e);
         }
     }
+
 
     /**
      * GET /crusades/{id} - Get a single crusade by ID (with related diocese and parish)
