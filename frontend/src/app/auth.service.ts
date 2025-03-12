@@ -1,14 +1,15 @@
 import { Injectable, signal, computed, inject, effect, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private API_URL = 'https://greatapps4you.us/nearchrist/api/auth/login.php';  // Backend JWT authentication API
+  private API_URL = environment.apiUrl + '/auth/login';  // Backend JWT authentication API
   private _token = signal<string | null>(null);
   public _isAuthenticated = signal<boolean>(false); // 🔥 Converted to a reactive signal
   public isNavigating = false; // 🔥 Prevent multiple redirects
@@ -81,21 +82,32 @@ export class AuthService {
     }
   }
 
+  // We expect { accessToken: string } once we've extracted it from "res.data.accessToken"
   login(email: string, password: string): Observable<{ accessToken: string }> {
-    return this.http.post<{ accessToken: string }>(this.API_URL, { email, password }).pipe(
+    // 1) Request type says "res" has a "data" field with "accessToken"
+    return this.http.post<{ data: { accessToken: string } }>(
+      this.API_URL,
+      { email, password }
+    ).pipe(
+      // 2) Transform the actual response => shape { accessToken: string }
+      map((res) => {
+        // If res.data or res.data.accessToken is missing, we can handle it here
+        return { accessToken: res.data?.accessToken };
+      }),
+
       tap((response) => {
         if (!response.accessToken || response.accessToken === 'undefined') {
           console.error('Login failed: No valid token received!');
           return;
         }
 
-        // console.log('✅ Received valid token:', response.accessToken);
+        // Token handling
         this._token.set(response.accessToken);
         this._isAuthenticated.set(true);
         localStorage.setItem('jwt_token', response.accessToken);
 
+        // Optional small delay before navigation
         setTimeout(() => {
-          // console.log('Redirecting to /adoration-schedule');
           this.router.navigate(['/adoration-schedule']);
         }, 200);
       })
