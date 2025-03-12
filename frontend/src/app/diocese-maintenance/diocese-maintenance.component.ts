@@ -1,114 +1,129 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Diocese {
-  id: number;
-  name: string;
-  streetNo: string;
-  streetName: string;
-  suburb: string;
-  state: string;
-  postcode: string;
-  phone: string;
-  email: string;
-  website: string;
-}
+import { DioceseService, Diocese } from './diocese.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-diocese-maintenance',
   templateUrl: './diocese-maintenance.component.html',
   styleUrls: ['./diocese-maintenance.component.scss'],
   standalone: true,
-  imports: [FormsModule]
+  imports: [FormsModule, CommonModule ]
 })
 export class DioceseMaintenanceComponent {
-  // List of Dioceses
-  dioceses: Diocese[] = [
-    {
-      id: 1,
-      name: 'Sydney Archdiocese',
-      streetNo: '38',
-      streetName: 'Renwick St',
-      suburb: 'Leichardt',
-      state: 'NSW',
-      postcode: '2040',
-      phone: '(02) 9390 5100',
-      email: 'chancery@sydneycatholic.org',
-      website: 'www.sydneycatholic.org.au'
-    },
-    {
-      id: 2,
-      name: 'Test Diocese1',
-      streetNo: '11',
-      streetName: 'Test St1',
-      suburb: 'Testville1',
-      state: 'ACT',
-      postcode: '123451',
-      phone: '(02) 9999 88881',
-      email: 'test@test.com1',
-      website: 'www.test.com1'
-    },
-    {
-      id: 3,
-      name: 'Wollongong Diocese',
-      streetNo: '38',
-      streetName: 'Harbour St',
-      suburb: 'Wollongong',
-      state: 'NSW',
-      postcode: '2500',
-      phone: '(02) 4222 2400',
-      email: 'info@dow.org.au',
-      website: 'dow.org.au'
-    }
-  ];
+  // The array of dioceses loaded from the backend
+  dioceses: Diocese[] = [];
 
-  // Track the currently selected diocese in the form
-  selectedDiocese: Diocese = {
-    id: 0,
-    name: '',
-    streetNo: '',
-    streetName: '',
-    suburb: '',
-    state: '',
-    postcode: '',
-    phone: '',
-    email: '',
-    website: ''
+  // The diocese currently selected for editing in the form
+  selectedDiocese: Partial<Diocese> = {
+    DioceseName: '',
+    DioceseStreetNo: '',
+    DioceseStreetName: '',
+    DioceseSuburb: '',
+    DioceseState: '',
+    DiocesePostcode: '',
+    DiocesePhone: '',
+    DioceseEmail: '',
+    DioceseWebsite: ''
   };
 
-  selectDiocese(diocese: Diocese) {
+  constructor(
+    private dioceseService: DioceseService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadAllDioceses();
+  }
+
+  // Fetch all from backend
+  loadAllDioceses(): void {
+    this.dioceseService.getAllDioceses().subscribe({
+      next: (data) => {
+        this.dioceses = data.map((d) => {
+          // If the backend returns { DioceseID, DioceseName, ... }
+          // but we want a uniform interface, map as needed:
+          return {
+            DioceseID: d.DioceseID, // or d.DioceseID if your backend uses that
+            DioceseName: d.DioceseName,
+            DioceseStreetNo: d.DioceseStreetNo,
+            DioceseStreetName: d.DioceseStreetName,
+            DioceseSuburb: d.DioceseSuburb,
+            DioceseState: d.DioceseState,
+            DiocesePostcode: d.DiocesePostcode,
+            DiocesePhone: d.DiocesePhone,
+            DioceseEmail: d.DioceseEmail,
+            DioceseWebsite: d.DioceseWebsite
+          };
+        });
+      },
+      error: (err) => {
+        console.error('Failed to load dioceses:', err);
+      }
+    });
+  }
+
+  trackByDioceseID(index: number, item: any) {
+    return item.DioceseID; // Must be unique per item
+  }
+
+  // Called when user clicks on a row in the table
+  selectDiocese(diocese: Diocese): void {
+    // Make a copy so editing doesn't immediately affect the table
     this.selectedDiocese = { ...diocese };
   }
 
-  addDiocese() {
-    if (this.selectedDiocese.name) {
-      const newId = this.dioceses.length
-        ? Math.max(...this.dioceses.map(d => d.id)) + 1
-        : 1;
-
-      this.dioceses.push({
-        ...this.selectedDiocese,
-        id: newId
-      });
-      this.resetForm();
-    }
-  }
-
-  modifyDiocese() {
-    if (this.selectedDiocese.id !== 0) {
-      const index = this.dioceses.findIndex(d => d.id === this.selectedDiocese.id);
-      if (index !== -1) {
-        this.dioceses[index] = { ...this.selectedDiocese };
-        this.resetForm();
+  // Button: Add new diocese
+  addDiocese(): void {
+    // Create via backend
+    this.dioceseService.createDiocese(this.selectedDiocese).subscribe({
+      next: () => {
+        // Reload table
+        this.loadAllDioceses();
+        // Clear form
+        this.selectedDiocese = {};
+      },
+      error: (err) => {
+        console.error('Failed to create diocese:', err);
       }
-    }
+    });
   }
 
-  deleteDiocese() {
-    if (this.selectedDiocese.id !== 0) {
-      this.dioceses = this.dioceses.filter(d => d.id !== this.selectedDiocese.id);
-      this.resetForm();
+  // Button: Modify existing diocese
+  modifyDiocese(): void {
+    if (!this.selectedDiocese.DioceseID) {
+      console.error('No diocese selected to update!');
+      return;
     }
+    const id = this.selectedDiocese.DioceseID;
+    this.dioceseService.updateDiocese(id, this.selectedDiocese).subscribe({
+      next: () => {
+        this.loadAllDioceses();
+        this.selectedDiocese = {};
+      },
+      error: (err) => {
+        console.error('Failed to update diocese:', err);
+      }
+    });
+  }
+
+  // Button: Delete existing diocese
+  deleteDiocese(): void {
+    if (!this.selectedDiocese.DioceseID) {
+      console.error('No diocese selected to delete!');
+      return;
+    }
+    const id = this.selectedDiocese.DioceseID;
+    this.dioceseService.deleteDiocese(id).subscribe({
+      next: () => {
+        this.loadAllDioceses();
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Failed to delete diocese:', err);
+      }
+    });
   }
 
   saveDiocese() {
@@ -117,22 +132,12 @@ export class DioceseMaintenanceComponent {
     this.resetForm();
   }
 
-  cancel() {
-    this.resetForm();
+  // Button: Cancel editing
+  cancel(): void {
+    this.selectedDiocese = {};
   }
 
   private resetForm() {
-    this.selectedDiocese = {
-      id: 0,
-      name: '',
-      streetNo: '',
-      streetName: '',
-      suburb: '',
-      state: '',
-      postcode: '',
-      phone: '',
-      email: '',
-      website: ''
-    };
+    this.selectedDiocese = {};
   }
 }
