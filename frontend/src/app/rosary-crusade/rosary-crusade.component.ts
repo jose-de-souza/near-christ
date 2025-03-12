@@ -97,7 +97,7 @@ export class RosaryCrusadeComponent {
   }
 
   saveCrusade() {
-    // Example of a 'Save' operation if you have an API or want to finalize changes
+    // Example of a 'Save' operation if  have an API or want to finalize changes
     console.log('Saved crusade data:', this.selectedCrusade);
     this.resetForm();
   }

@@ -2,18 +2,19 @@
   <h2>Adoration Schedule</h2>
 
   <div class="form-container">
-    <!-- Adoration Section -->
+
+    <!-- Adoration Section (unchanged) -->
     <div class="section adoration" data-title="Adoration">
       <div>
         <label>Adoration Type</label>
-        <select [(ngModel)]="selectedAdoration.type">
+        <select [(ngModel)]="selectedAdoration.AdorationType">
           <option value="Perpetual">Perpetual</option>
           <option value="Regular">Regular</option>
         </select>
       </div>
       <div>
         <label>Day</label>
-        <select [(ngModel)]="selectedAdoration.day">
+        <select [(ngModel)]="selectedAdoration.AdorationDay">
           <option value="Sunday">Sunday</option>
           <option value="Monday">Monday</option>
           <option value="Tuesday">Tuesday</option>
@@ -25,33 +26,57 @@
       </div>
       <div>
         <label>Start Time</label>
-        <input type="time" [(ngModel)]="selectedAdoration.start" />
+        <input type="time" [(ngModel)]="selectedAdoration.AdorationStart" />
       </div>
       <div>
         <label>End Time</label>
-        <input type="time" [(ngModel)]="selectedAdoration.end" />
+        <input type="time" [(ngModel)]="selectedAdoration.AdorationEnd" />
       </div>
     </div>
 
-    <!-- Location Section -->
+    <!-- Location Section (unchanged) -->
     <div class="section location" data-title="Location">
       <div>
         <label>Location Type</label>
-        <select [(ngModel)]="selectedAdoration.locationType">
+        <select [(ngModel)]="selectedAdoration.AdorationLocationType">
           <option value="Parish Church">Parish Church</option>
           <option value="Other">Other</option>
         </select>
       </div>
       <div>
         <label>Location</label>
-        <input type="text" [(ngModel)]="selectedAdoration.location" />
+        <input type="text" [(ngModel)]="selectedAdoration.AdorationLocation" />
       </div>
       <div>
         <label>State</label>
-        <input type="text" [(ngModel)]="selectedAdoration.state" />
+        <input type="text" [(ngModel)]="selectedAdoration.State" />
       </div>
     </div>
-  </div>
+
+    <!-- (NEW) Diocese/Parish by Name -->
+    <div class="section diocese-parish-names" data-title="Diocese/Parish">
+      <div>
+        <label>Diocese Name</label>
+        <!-- Binds selectedAdoration.DioceseID based on user's dropdown choice -->
+        <select [(ngModel)]="selectedAdoration.DioceseID">
+          <option [value]="null">-- select diocese --</option>
+          <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
+            {{ d.DioceseName }}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label>Parish Name</label>
+        <select [(ngModel)]="selectedAdoration.ParishID">
+          <option [value]="null">-- select parish --</option>
+          <option *ngFor="let p of parishList" [value]="p.ParishID">
+            {{ p.ParishName }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+  </div> <!-- end form-container -->
 
   <div class="buttons">
     <button (click)="addSchedule()">Add</button>
@@ -60,9 +85,12 @@
     <button (click)="cancel()">Cancel</button>
   </div>
 
+  <!-- Table: We show diocese and parish objects by name here -->
   <table>
     <thead>
       <tr>
+        <th>Diocese Name</th>
+        <th>Parish Name</th>
         <th>Type</th>
         <th>Location Type</th>
         <th>Location</th>
@@ -73,17 +101,23 @@
       </tr>
     </thead>
     <tbody>
-      @for (schedule of schedules; track schedule.id) {
-      <tr (click)="selectSchedule(schedule)">
-        <td>{{ schedule.type }}</td>
-        <td>{{ schedule.locationType }}</td>
-        <td>{{ schedule.location }}</td>
-        <td>{{ schedule.state }}</td>
-        <td>{{ schedule.day }}</td>
-        <td>{{ schedule.start }}</td>
-        <td>{{ schedule.end }}</td>
+      <tr
+        *ngFor="let schedule of schedules; trackBy: trackByAdorationID"
+        (click)="selectSchedule(schedule)"
+      >
+        <!-- schedule.diocese?.DioceseName if the server returns 'diocese' object -->
+        <td>{{ schedule.diocese?.DioceseName }}</td>
+        <!-- schedule.parish?.ParishName if the server returns 'parish' object -->
+        <td>{{ schedule.parish?.ParishName }}</td>
+
+        <td>{{ schedule.AdorationType }}</td>
+        <td>{{ schedule.AdorationLocationType }}</td>
+        <td>{{ schedule.AdorationLocation }}</td>
+        <td>{{ schedule.State }}</td>
+        <td>{{ schedule.AdorationDay }}</td>
+        <td>{{ schedule.AdorationStart }}</td>
+        <td>{{ schedule.AdorationEnd }}</td>
       </tr>
-      }
     </tbody>
   </table>
 </div>

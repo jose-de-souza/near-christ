@@ -1,124 +1,136 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
-interface Parish {
-  id: number;
-  name: string;
-  streetNo: string;
-  streetName: string;
-  suburb: string;
-  state: string;
-  postcode: string;
-  phone: string;
-  email: string;
-  website: string;
-  dioceseId: string; // Link to your Diocese
-}
+import { ParishService, Parish } from './parish.service';
 
 @Component({
-  standalone: true,
   selector: 'app-parish-maintenance',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './parish-maintenance.component.html',
   styleUrls: ['./parish-maintenance.component.scss'],
-  imports: [FormsModule]
 })
-export class ParishMaintenanceComponent {
-  parishes: Parish[] = [
-    {
-      id: 1,
-      name: 'All Hallows',
-      streetNo: '2',
-      streetName: 'Hallow St',
-      suburb: 'Five Dock',
-      state: 'NSW',
-      postcode: '20461',
-      phone: '02 9713 5172',
-      email: 'admin@allhallows.org.au',
-      website: 'allhallows.org.au',
-      dioceseId: '1'
-    },
-    {
-      id: 2,
-      name: 'All Saints',
-      streetNo: '48',
-      streetName: 'George St',
-      suburb: 'Liverpool',
-      state: 'NSW',
-      postcode: '2170',
-      phone: '02 9573 6500',
-      email: 'info@cpasl.org.au',
-      website: 'cpasl.org.au',
-      dioceseId: '1'
-    },
-    // ... add more sample data as needed ...
-  ];
+export class ParishMaintenanceComponent implements OnInit {
+  // The array of parishes loaded from the backend
+  parishes: Parish[] = [];
 
-  selectedParish: Parish = {
-    id: 0,
-    name: '',
-    streetNo: '',
-    streetName: '',
-    suburb: '',
-    state: '',
-    postcode: '',
-    phone: '',
-    email: '',
-    website: '',
-    dioceseId: ''
+  // The parish currently selected for editing in the form
+  selectedParish: Partial<Parish> = {
+    ParishName: '',
+    ParishStNumber: '',
+    ParishStName: '',
+    ParishSuburb: '',
+    ParishState: '',
+    ParishPostcode: '',
+    ParishPhone: '',
+    ParishEmail: '',
+    ParishWebsite: ''
   };
 
-  selectParish(parish: Parish) {
+  constructor(
+    private parishService: ParishService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadAllParishes();
+  }
+
+  // Fetch all from backend
+  loadAllParishes(): void {
+    this.parishService.getAllParishes().subscribe({
+      next: (data) => {
+        // If the backend returns { ParishID, ParishName, ... }
+        //  can map them directly or transform if needed.
+        this.parishes = data.map((p) => ({
+          ParishID: p.ParishID,
+          ParishName: p.ParishName,
+          ParishStNumber: p.ParishStNumber,
+          ParishStName: p.ParishStName,
+          ParishSuburb: p.ParishSuburb,
+          ParishState: p.ParishState,
+          ParishPostcode: p.ParishPostcode,
+          ParishPhone: p.ParishPhone,
+          ParishEmail: p.ParishEmail,
+          ParishWebsite: p.ParishWebsite
+        }));
+      },
+      error: (err) => {
+        console.error('Failed to load parishes:', err);
+      }
+    });
+  }
+
+  // For *ngFor trackBy
+  trackByParishID(index: number, item: Parish) {
+    return item.ParishID;
+  }
+
+  // Called when user clicks on a row in the table
+  selectParish(parish: Parish): void {
+    // Make a copy so editing doesn't immediately affect the table
     this.selectedParish = { ...parish };
   }
 
-  addParish() {
-    if (this.selectedParish.name) {
-      const newId = this.parishes.length
-        ? Math.max(...this.parishes.map(p => p.id)) + 1
-        : 1;
-
-      this.parishes.push({
-        ...this.selectedParish,
-        id: newId
-      });
-      this.resetForm();
-    }
-  }
-
-  modifyParish() {
-    if (this.selectedParish.id !== 0) {
-      const index = this.parishes.findIndex(p => p.id === this.selectedParish.id);
-      if (index !== -1) {
-        this.parishes[index] = { ...this.selectedParish };
+  // Button: Add new parish
+  addParish(): void {
+    this.parishService.createParish(this.selectedParish).subscribe({
+      next: () => {
+        // Reload table
+        this.loadAllParishes();
+        // Clear form
         this.resetForm();
+      },
+      error: (err) => {
+        console.error('Failed to create parish:', err);
       }
-    }
+    });
   }
 
-  deleteParish() {
-    if (this.selectedParish.id !== 0) {
-      this.parishes = this.parishes.filter(p => p.id !== this.selectedParish.id);
-      this.resetForm();
+  // Button: Modify existing parish
+  modifyParish(): void {
+    if (!this.selectedParish.ParishID) {
+      console.error('No parish selected to update!');
+      return;
     }
+    const id = this.selectedParish.ParishID;
+    this.parishService.updateParish(id, this.selectedParish).subscribe({
+      next: () => {
+        this.loadAllParishes();
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Failed to update parish:', err);
+      }
+    });
   }
 
-  cancel() {
+  // Button: Delete existing parish
+  deleteParish(): void {
+    if (!this.selectedParish.ParishID) {
+      console.error('No parish selected to delete!');
+      return;
+    }
+    const id = this.selectedParish.ParishID;
+    this.parishService.deleteParish(id).subscribe({
+      next: () => {
+        this.loadAllParishes();
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Failed to delete parish:', err);
+      }
+    });
+  }
+
+  // Button: Cancel
+  cancel(): void {
     this.resetForm();
   }
 
-  private resetForm() {
-    this.selectedParish = {
-      id: 0,
-      name: '',
-      streetNo: '',
-      streetName: '',
-      suburb: '',
-      state: '',
-      postcode: '',
-      phone: '',
-      email: '',
-      website: '',
-      dioceseId: ''
-    };
+  private resetForm(): void {
+    this.selectedParish = {};
   }
 }
