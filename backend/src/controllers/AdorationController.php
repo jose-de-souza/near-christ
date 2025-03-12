@@ -14,7 +14,24 @@ class AdorationController
     public function getAll(Request $request, Response $response)
     {
         try {
-            $adorations = Adoration::with(['diocese', 'parish'])->get();
+            $query = Adoration::with(['diocese', 'parish']);
+
+            $params = $request->getQueryParams();
+            $state     = $params['state']       ?? null;
+            $dioceseID = $params['diocese_id']  ?? null;
+            $parishID  = $params['parish_id']   ?? null;
+
+            if ($state && $state !== 'null') {
+                $query->where('State', $state);
+            }
+            if ($dioceseID && $dioceseID !== 'null') {
+                $query->where('DioceseID', $dioceseID);
+            }
+            if ($parishID && $parishID !== 'null') {
+                $query->where('ParishID', $parishID);
+            }
+
+            $adorations = $query->get();
             $response->getBody()->write(json_encode($adorations));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
