@@ -7,19 +7,19 @@
         <div class="section parish" data-title="Parish Details">
             <div>
                 <label>Parish Name</label>
-                <input type="text" [(ngModel)]="selectedParish.name" />
-            </div>
-            <div>
-                <label>Street No</label>
-                <input type="text" [(ngModel)]="selectedParish.streetNo" />
+                <input type="text" [(ngModel)]="selectedParish.ParishName" />
             </div>
             <div>
                 <label>Street Name</label>
-                <input type="text" [(ngModel)]="selectedParish.streetName" />
+                <input type="text" [(ngModel)]="selectedParish.ParishStName" />
             </div>
             <div>
+                <label>Street No</label>
+                <input type="text" [(ngModel)]="selectedParish.ParishStNumber" />
+            </div>            
+            <div>
                 <label>Suburb</label>
-                <input type="text" [(ngModel)]="selectedParish.suburb" />
+                <input type="text" [(ngModel)]="selectedParish.ParishSuburb" />
             </div>
         </div>
 
@@ -27,23 +27,23 @@
         <div class="section location" data-title="Location / Contact">
             <div>
                 <label>State</label>
-                <input type="text" [(ngModel)]="selectedParish.state" />
+                <input type="text" [(ngModel)]="selectedParish.ParishState" />
             </div>
             <div>
                 <label>Postcode</label>
-                <input type="text" [(ngModel)]="selectedParish.postcode" />
+                <input type="text" [(ngModel)]="selectedParish.ParishPostcode" />
             </div>
             <div>
                 <label>Phone</label>
-                <input type="text" [(ngModel)]="selectedParish.phone" />
+                <input type="text" [(ngModel)]="selectedParish.ParishPhone" />
             </div>
             <div>
                 <label>Email</label>
-                <input type="text" [(ngModel)]="selectedParish.email" />
+                <input type="text" [(ngModel)]="selectedParish.ParishEmail" />
             </div>
             <div>
                 <label>Website</label>
-                <input type="text" [(ngModel)]="selectedParish.website" />
+                <input type="text" [(ngModel)]="selectedParish.ParishWebsite" />
             </div>            
         </div>
     </div>
@@ -61,9 +61,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>Parish Name</th>
-                    <th>St No</th>
+                    <th>Parish Name</th>                    
                     <th>Street Name</th>
+                    <th>St No</th>
                     <th>Suburb</th>
                     <th>State</th>
                     <th>PostCode</th>
@@ -73,17 +73,17 @@
                 </tr>
             </thead>
             <tbody>
-                @for (parish of parishes; track parish.id) {
+                @for (parish of parishes; track parish.ParishID) {
                 <tr (click)="selectParish(parish)">
-                    <td>{{ parish.name }}</td>
-                    <td>{{ parish.streetNo }}</td>
-                    <td>{{ parish.streetName }}</td>
-                    <td>{{ parish.suburb }}</td>
-                    <td>{{ parish.state }}</td>
-                    <td>{{ parish.postcode }}</td>
-                    <td>{{ parish.phone }}</td>
-                    <td>{{ parish.email }}</td>
-                    <td>{{ parish.website }}</td>
+                    <td>{{ parish.ParishName }}</td>
+                    <td>{{ parish.ParishStName }}</td>
+                    <td>{{ parish.ParishStNumber }}</td>                    
+                    <td>{{ parish.ParishSuburb }}</td>
+                    <td>{{ parish.ParishState }}</td>
+                    <td>{{ parish.ParishPostcode }}</td>
+                    <td>{{ parish.ParishPhone }}</td>
+                    <td>{{ parish.ParishEmail }}</td>
+                    <td>{{ parish.ParishWebsite }}</td>
                 </tr>
                 }
             </tbody>
