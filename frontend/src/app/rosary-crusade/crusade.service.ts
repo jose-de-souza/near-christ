@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment'; // Adjust path if needed
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../environments/environment'; // Adjust if needed
 
-/** 
- * The Crusade interface, with optional 'diocese' and 'parish' 
- * when the backend returns those relationships via Eloquent eager loading.
- */
 export interface Crusade {
   CrusadeID: number;
   DioceseID: number;
@@ -24,16 +20,14 @@ export interface Crusade {
   ContactEmail: string;
   Observations: string;
 
-  // Optional if the backend includes them:
+  // If backend includes them:
   diocese?: {
     DioceseID: number;
     DioceseName: string;
-    // ...
   };
   parish?: {
     ParishID: number;
     ParishName: string;
-    // ...
   };
 }
 
@@ -41,7 +35,7 @@ export interface Crusade {
 export class CrusadeService {
   private baseUrl = environment.apiUrl; // e.g. "http://localhost:8000"
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // GET all
   getAllCrusades() {
@@ -66,5 +60,22 @@ export class CrusadeService {
   // DELETE
   deleteCrusade(id: number) {
     return this.http.delete(`${this.baseUrl}/crusades/${id}`);
+  }
+
+  // SEARCH with optional filters (similar to Adoration)
+  searchCrusades(state?: string, dioceseID?: number, parishID?: number) {
+    let params = new HttpParams();
+
+    if (state && state.trim()) {
+      params = params.set('state', state.trim());
+    }
+    if (dioceseID && dioceseID > 0) {
+      params = params.set('diocese_id', dioceseID.toString());
+    }
+    if (parishID && parishID > 0) {
+      params = params.set('parish_id', parishID.toString());
+    }
+
+    return this.http.get<Crusade[]>(`${this.baseUrl}/crusades`, { params });
   }
 }

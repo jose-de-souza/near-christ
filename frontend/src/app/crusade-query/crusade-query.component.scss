@@ -61,21 +61,15 @@
       border: none;
       cursor: pointer;
       font-size: 24px;
-      /* Make the icon bigger if  like */
       line-height: 1;
       margin: 0;
-      /* Remove default button margins/padding if desired */
       padding: 0;
       color: #555;
-      /* Icon color */
-      /* Adjust color to suit the palette theme */
 
       &:hover {
         color: #000;
-        /* Darker on hover, for instance */
       }
     }
-
   }
 
   .results-area {
@@ -84,9 +78,20 @@
     border-radius: 8px;
     padding: 10px;
 
-    table {
+    /* 
+      Wrap the table in .table-wrapper
+      and allow horizontal scroll if content is wide.
+    */
+    .table-wrapper {
       width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      min-width: 900px;
+      /* Force horizontal scrolling on narrow screens */
       border-collapse: collapse;
+      width: 100%;
 
       th,
       td {
