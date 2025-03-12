@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-// Environment config (adjust if you have a different path)
+// Environment config (adjust if  have a different path)
 import { environment } from '../../environments/environment';
 
 export interface Parish {

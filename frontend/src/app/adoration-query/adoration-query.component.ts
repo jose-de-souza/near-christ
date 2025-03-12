@@ -31,7 +31,7 @@ export class AdorationQueryComponent {
 
   // Example method to do the query
   searchAdoration() {
-    // TODO: call your backend with the selected filters
+    // TODO: call the backend with the selected filters
     console.log('Searching Adoration with:', {
       stateSelection: this.stateSelection,
       selectedState: this.selectedState,

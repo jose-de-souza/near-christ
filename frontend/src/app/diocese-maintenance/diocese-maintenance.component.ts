@@ -45,7 +45,7 @@ export class DioceseMaintenanceComponent {
           // If the backend returns { DioceseID, DioceseName, ... }
           // but we want a uniform interface, map as needed:
           return {
-            DioceseID: d.DioceseID, // or d.DioceseID if your backend uses that
+            DioceseID: d.DioceseID, // or d.DioceseID if the backend uses that
             DioceseName: d.DioceseName,
             DioceseStreetNo: d.DioceseStreetNo,
             DioceseStreetName: d.DioceseStreetName,

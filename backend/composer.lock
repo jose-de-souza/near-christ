@@ -1,6 +1,6 @@
 {
     "_readme": [
-        "This file locks the dependencies of your project to a known state",
+        "This file locks the dependencies of the project to a known state",
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
@@ -1538,7 +1538,7 @@
                     "homepage": "http://gabrielmanricks.com"
                 }
             ],
-            "description": "Slim is a PHP micro framework that helps you quickly write simple yet powerful web applications and APIs",
+            "description": "Slim is a PHP micro framework that helps  quickly write simple yet powerful web applications and APIs",
             "homepage": "https://www.slimframework.com",
             "keywords": [
                 "api",
@@ -2451,7 +2451,7 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-            "description": "Provides tools to internationalize your application",
+            "description": "Provides tools to internationalize the application",
             "homepage": "https://symfony.com",
             "support": {
                 "source": "https://github.com/symfony/translation/tree/v6.4.19"
@@ -2750,7 +2750,7 @@
             "license": [
                 "MIT"
             ],
-            "description": "Create deep copies (clones) of your objects",
+            "description": "Create deep copies (clones) of the objects",
             "keywords": [
                 "clone",
                 "copy",

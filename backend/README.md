@@ -28,7 +28,7 @@ The order of DROP TABLE should follow the reverse order of creation, starting wi
 - Adoration third (dependent on Diocese and Parish)
 - Crusade last (dependent on Diocese and Parish)
 
-This ensures that you can safely run the DROP TABLE commands without foreign key errors and then recreate them in the correct dependency order.
+This ensures that  can safely run the DROP TABLE commands without foreign key errors and then recreate them in the correct dependency order.
 
 ## Composer
 ### Run compose require commands on the project root before commiting

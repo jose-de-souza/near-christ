@@ -43,7 +43,7 @@ export class ParishMaintenanceComponent implements OnInit {
     this.parishService.getAllParishes().subscribe({
       next: (data) => {
         // If the backend returns { ParishID, ParishName, ... }
-        // you can map them directly or transform if needed.
+        //  can map them directly or transform if needed.
         this.parishes = data.map((p) => ({
           ParishID: p.ParishID,
           ParishName: p.ParishName,
