@@ -81,6 +81,16 @@ composer install --no-dev --optimize-autoloader
 curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
 ```
 
+In a remote server:
+```sh
+curl -X POST https://api.greatapps4you.us/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
+```
+
+For debugging purposes:
+```sh
+curl -X POST https://api.greatapps4you.us/public/index.php/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
+```
+
 ### Sample return
 ```json
 {"accessToken":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE2MzU3NTcsImV4cCI6MTc0MTYzOTM1Nywic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.6Bj71kZ8fQ6SzYBNm56tdHR9heih4-Tf6GgOuV1fCrw","user":{"id":7,"name":"John Wayne","email":"johnwayne@company.com"}}
