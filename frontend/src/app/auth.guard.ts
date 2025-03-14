@@ -13,12 +13,12 @@ export class AuthGuard implements CanActivate {
     // console.log('Checking authentication in AuthGuard...');
 
     if (this.authService._isAuthenticated()) {
-    //   console.log('✅ Access granted! Token is valid.');
+    //   console.log(' Access granted! Token is valid.');
       return true;
     } else {
     //   console.log('❌ Token expired or removed! Redirecting to /login');
 
-      if (!this.authService.isNavigating) { // ✅ Avoid duplicate redirects
+      if (!this.authService.isNavigating) { //  Avoid duplicate redirects
         this.authService.logout();
       }
 

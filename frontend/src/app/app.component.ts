@@ -23,7 +23,7 @@ export class AppComponent {
 
 
   // ngOnInit() {
-  //   // ✅ Subscribe to login status
+  //   //  Subscribe to login status
   //   this.auth.isLoggedIn$.subscribe((status) => {
   //     this.isLoggedIn$ = status;
   //   });
