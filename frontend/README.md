@@ -12,6 +12,12 @@ ng serve --open
 
 Once the server is running, open the browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever  modify any of the source files.
 
+## Build for production
+
+```sh
+ng build --configuration=production
+```
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

@@ -7,14 +7,15 @@ use App\Middlewares\CorsMiddleware;
 require __DIR__ . '/../vendor/autoload.php';
 
 // Load environment variables safely
-try {
+try { 
     $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
     $dotenv->load();
+    //var_dump($dotenv->safeLoad());
 } catch (\Exception $e) {
     die("Error loading .env file: " . $e->getMessage());
 }
 
-// ✅ Load database configuration (before models are used!)
+//  Load database configuration (before models are used!)
 require __DIR__ . '/../src/config/database.php'; 
 
 // Create Slim app instance

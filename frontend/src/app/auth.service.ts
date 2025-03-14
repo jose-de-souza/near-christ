@@ -127,10 +127,10 @@ export class AuthService {
     this.ngZone.run(() => {
       // console.log('🔄 Redirecting to /login after logout');
 
-      // ✅ Reset Angular router state before navigating to /login
+      //  Reset Angular router state before navigating to /login
       this.router.navigateByUrl('/').then(() => {
         this.router.navigate(['/login']).finally(() => {
-          this.isNavigating = false; // ✅ Allow future navigation
+          this.isNavigating = false; //  Allow future navigation
         });
       });
     });
