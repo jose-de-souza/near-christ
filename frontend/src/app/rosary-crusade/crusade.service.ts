@@ -18,7 +18,7 @@ export interface Crusade {
   ContactName: string;
   ContactPhone: string;
   ContactEmail: string;
-  Observations: string;
+  Comments: string;
 
   // If backend includes them:
   diocese?: {
