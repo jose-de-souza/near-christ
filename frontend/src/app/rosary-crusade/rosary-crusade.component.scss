@@ -28,7 +28,7 @@ body {
     background: palette.$background-color;
     border-radius: 8px;
 
-    /* 3 rows: row-1 for Confession/Mass/Crusade, row-2 for Contact, row-3 for Observations */
+    /* 3 rows: row-1 for Confession/Mass/Crusade, row-2 for Contact, row-3 for Comments */
     .row-1,
     .row-2,
     .row-3 {
@@ -90,8 +90,8 @@ body {
         }
       }
 
-      &.observations {
-        .observations-row {
+      &.comments {
+        .comments-row {
           width: 100%;
 
           textarea {

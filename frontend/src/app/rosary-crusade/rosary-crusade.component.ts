@@ -37,7 +37,7 @@ export class RosaryCrusadeComponent implements OnInit {
     ContactName: '',
     ContactPhone: '',
     ContactEmail: '',
-    Observations: ''
+    Comments: ''
   };
 
   constructor(
@@ -166,7 +166,7 @@ export class RosaryCrusadeComponent implements OnInit {
       ContactName: '',
       ContactPhone: '',
       ContactEmail: '',
-      Observations: ''
+      Comments: ''
     };
   }
 }
