@@ -49,7 +49,10 @@
       </div>
       <div>
         <label>State</label>
-        <input type="text" [(ngModel)]="selectedAdoration.State" />
+        <select [(ngModel)]="selectedAdoration.State">
+          <option value="">Select State</option>
+          <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+        </select>
       </div>
     </div>
 
@@ -101,10 +104,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr
-        *ngFor="let schedule of schedules; trackBy: trackByAdorationID"
-        (click)="selectSchedule(schedule)"
-      >
+      <tr *ngFor="let schedule of schedules; trackBy: trackByAdorationID" (click)="selectSchedule(schedule)">
         <!-- schedule.diocese?.DioceseName if the server returns 'diocese' object -->
         <td>{{ schedule.diocese?.DioceseName }}</td>
         <!-- schedule.parish?.ParishName if the server returns 'parish' object -->

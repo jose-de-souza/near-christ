@@ -12,11 +12,11 @@
             <div>
                 <label>Street No</label>
                 <input type="text" [(ngModel)]="selectedParish.ParishStNumber" />
-            </div> 
+            </div>
             <div>
                 <label>Street Name</label>
                 <input type="text" [(ngModel)]="selectedParish.ParishStName" />
-            </div>                     
+            </div>
             <div>
                 <label>Suburb</label>
                 <input type="text" [(ngModel)]="selectedParish.ParishSuburb" />
@@ -27,7 +27,11 @@
         <div class="section location" data-title="Location / Contact">
             <div>
                 <label>State</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishState" />
+                <!-- Changed from an input to a dropdown -->
+                <select [(ngModel)]="selectedParish.ParishState">
+                    <option value="">Select State</option>
+                    <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+                </select>
             </div>
             <div>
                 <label>Postcode</label>
@@ -44,7 +48,7 @@
             <div>
                 <label>Website</label>
                 <input type="text" [(ngModel)]="selectedParish.ParishWebsite" />
-            </div>            
+            </div>
         </div>
     </div>
 
@@ -61,9 +65,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>Parish Name</th>  
-                    <th>St No</th>                  
-                    <th>Street Name</th>                    
+                    <th>Parish Name</th>
+                    <th>St No</th>
+                    <th>Street Name</th>
                     <th>Suburb</th>
                     <th>State</th>
                     <th>PostCode</th>
@@ -76,8 +80,8 @@
                 @for (parish of parishes; track parish.ParishID) {
                 <tr (click)="selectParish(parish)">
                     <td>{{ parish.ParishName }}</td>
-                    <td>{{ parish.ParishStNumber }}</td> 
-                    <td>{{ parish.ParishStName }}</td>                                       
+                    <td>{{ parish.ParishStNumber }}</td>
+                    <td>{{ parish.ParishStName }}</td>
                     <td>{{ parish.ParishSuburb }}</td>
                     <td>{{ parish.ParishState }}</td>
                     <td>{{ parish.ParishPostcode }}</td>
