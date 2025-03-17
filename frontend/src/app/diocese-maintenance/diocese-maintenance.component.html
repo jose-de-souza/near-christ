@@ -27,7 +27,10 @@
     <div class="section location" data-title="Location / Contact">
       <div>
         <label>State</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseState" />
+        <select [(ngModel)]="selectedDiocese.DioceseState">
+          <option value="">Select State</option>
+          <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+        </select>
       </div>
       <div>
         <label>Postcode</label>

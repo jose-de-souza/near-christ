@@ -23,6 +23,9 @@ export class AdorationScheduleComponent implements OnInit {
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
 
+  // States array for the dropdown options
+  states: string[] = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
+
   // The record currently selected for editing
   selectedAdoration: Partial<Adoration> = {
     AdorationID: undefined,

@@ -28,6 +28,9 @@ export class DioceseMaintenanceComponent {
     DioceseWebsite: ''
   };
 
+   // States dropdown options
+   states: string[] = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
+
   constructor(
     private dioceseService: DioceseService,
     private router: Router

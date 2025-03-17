@@ -16,6 +16,9 @@ export class ParishMaintenanceComponent implements OnInit {
   // The array of parishes loaded from the backend
   parishes: Parish[] = [];
 
+  // Predefined states for the dropdown
+  states: string[] = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
+
   // The parish currently selected for editing in the form
   selectedParish: Partial<Parish> = {
     ParishName: '',
