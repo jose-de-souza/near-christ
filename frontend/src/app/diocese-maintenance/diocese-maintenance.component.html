@@ -10,12 +10,12 @@
         <input type="text" [(ngModel)]="selectedDiocese.DioceseName" />
       </div>
       <div>
-        <label>Street Name</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetName" />
-      </div>
-      <div>
         <label>Street No</label>
         <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetNo" />
+      </div>
+      <div>
+        <label>Street Name</label>
+        <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetName" />
       </div>
       <div>
         <label>Suburb</label>
@@ -62,8 +62,8 @@
       <thead>
         <tr>
           <th>Diocese Name</th>
-          <th>Street Name</th>
           <th>Street No</th>
+          <th>Street Name</th>
           <th>Suburb</th>
           <th>State</th>
           <th>Post Code</th>
@@ -75,8 +75,8 @@
       <tbody>
         <tr (click)="selectDiocese(diocese)" *ngFor="let diocese of dioceses; trackBy: trackByDioceseID">
           <td>{{ diocese.DioceseName }}</td>
-          <td>{{ diocese.DioceseStreetName }}</td>
           <td>{{ diocese.DioceseStreetNo }}</td>
+          <td>{{ diocese.DioceseStreetName }}</td>
           <td>{{ diocese.DioceseSuburb }}</td>
           <td>{{ diocese.DioceseState }}</td>
           <td>{{ diocese.DiocesePostcode }}</td>

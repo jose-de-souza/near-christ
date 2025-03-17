@@ -53,7 +53,7 @@ INSERT INTO Parish
      ParishPhone, ParishEmail, ParishWebsite)
 VALUES
     (1, 1, 'St Mary\'s Cathedral',
-       'St Mary\'s', 'Road', 'Sydney',
+       '', 'St Mary\'s Road', 'Sydney',
        'NSW', '2000',
        '+61 2 9220 0400',
        'info@stmaryscathedral.org.au',
