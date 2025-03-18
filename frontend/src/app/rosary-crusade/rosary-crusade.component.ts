@@ -15,7 +15,8 @@ import { ParishService, Parish } from '../parish-maintenance/parish.service';
   imports: [CommonModule, FormsModule, DragDropModule]
 })
 export class RosaryCrusadeComponent implements OnInit {
-  // Define grid columns for the results view.
+
+  // 1) Column definitions for the grid-based results.
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
@@ -32,12 +33,15 @@ export class RosaryCrusadeComponent implements OnInit {
     { header: 'Comments', field: 'Comments' },
   ];
 
-  // Arrays for displaying results and dropdown options.
-  crusades: Crusade[] = [];
+  // 2) Arrays for dropdowns
+  states = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
 
-  // The crusade record currently being edited.
+  // 3) Crusade array for displaying results
+  crusades: Crusade[] = [];
+
+  // 4) The crusade record currently being edited
   selectedCrusade: Partial<Crusade> = {
     DioceseID: 0,
     ParishID: 0,
@@ -54,45 +58,22 @@ export class RosaryCrusadeComponent implements OnInit {
     Comments: ''
   };
 
+  // ***** THIS GETTER FIXES THE ERROR *****
+  // Tells the template how many 'auto' columns to create for the grid.
+  get gridTemplateColumns(): string {
+    return this.columns.map(() => 'auto').join(' ');
+  }
+
   constructor(
     private crusadeService: CrusadeService,
     private dioceseService: DioceseService,
     private parishService: ParishService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadAllCrusades();
     this.loadAllDioceses();
     this.loadAllParishes();
-  }
-
-  // Compute grid template columns based on the number of defined columns.
-  get gridTemplateColumns(): string {
-    return this.columns.map(() => 'auto').join(' ');
-  }
-
-  // Allow column reordering using drag-and-drop.
-  onDrop(event: CdkDragDrop<any[]>): void {
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
-  }
-
-  onDragEntered(event: any) {
-    event.container.element.nativeElement.classList.add('cdk-drag-over');
-  }
-
-  onDragExited(event: any) {
-    event.container.element.nativeElement.classList.remove('cdk-drag-over');
-  }
-
-  // Helper to display the correct cell value (handles nested diocese/parish objects).
-  getCellValue(crusade: Crusade, column: { header: string; field: string }): any {
-    if (column.field === 'dioceseName') {
-      return crusade.diocese?.DioceseName || '';
-    } else if (column.field === 'parishName') {
-      return crusade.parish?.ParishName || '';
-    } else {
-      return (crusade as any)[column.field] || '';
-    }
   }
 
   loadAllCrusades(): void {
@@ -116,11 +97,12 @@ export class RosaryCrusadeComponent implements OnInit {
     });
   }
 
-  // Populate the form when a row is clicked.
+  // Clicking any cell => load that row's data into the form
   selectCrusade(c: Crusade): void {
     this.selectedCrusade = { ...c };
   }
 
+  // Create new record
   addCrusade(): void {
     this.crusadeService.createCrusade(this.selectedCrusade).subscribe({
       next: () => {
@@ -131,6 +113,7 @@ export class RosaryCrusadeComponent implements OnInit {
     });
   }
 
+  // Update existing record
   modifyCrusade(): void {
     if (!this.selectedCrusade.CrusadeID) {
       console.error('No crusade selected for update!');
@@ -145,6 +128,7 @@ export class RosaryCrusadeComponent implements OnInit {
     });
   }
 
+  // Delete existing record
   deleteCrusade(): void {
     if (!this.selectedCrusade.CrusadeID) {
       console.error('No crusade selected for deletion!');
@@ -163,8 +147,26 @@ export class RosaryCrusadeComponent implements OnInit {
     this.resetForm();
   }
 
-  trackByCrusadeID(index: number, item: Crusade): number {
-    return item.CrusadeID;
+  // Drag-and-drop reordering for columns
+  onDrop(event: CdkDragDrop<any[]>): void {
+    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
+  }
+  onDragEntered(event: any) {
+    event.container.element.nativeElement.classList.add('cdk-drag-over');
+  }
+  onDragExited(event: any) {
+    event.container.element.nativeElement.classList.remove('cdk-drag-over');
+  }
+
+  // Return the correct value for each cell
+  getCellValue(crusade: Crusade, column: { header: string; field: string }): any {
+    if (column.field === 'dioceseName') {
+      return crusade.diocese?.DioceseName || '';
+    } else if (column.field === 'parishName') {
+      return crusade.parish?.ParishName || '';
+    } else {
+      return (crusade as any)[column.field] || '';
+    }
   }
 
   private resetForm(): void {

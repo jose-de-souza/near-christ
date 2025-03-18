@@ -40,28 +40,24 @@
 
       .section.crusade {
         flex: 1 1 40%;
+
+        .location-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 15px;
+          margin-top: 10px;
+        }
       }
 
       .section.contact {
         flex: 1 1 60%;
 
-        // "Contact Name" => full width
-        .contact-name {
+        .contact-name,
+        .contact-phone,
+        .contact-email {
           width: 97%;
         }
-
-        // "Contact Phone" & "Contact Email" => side-by-side, each 50%
-        .contact-row {
-          display: flex;
-          gap: 15px;
-          margin-top: 10px;
-          width: 97%;
-
-          .contact-phone,
-          .contact-email {
-            flex: 1 1 44%;
-          }
-        }
+     
       }
     }
 
@@ -75,7 +71,6 @@
 
         .comments-row {
           width: 100%;
-
           textarea {
             width: 100%;
             padding: 6px;
@@ -115,7 +110,6 @@
         font-size: 0.85em;
       }
 
-      // Removed max-width from inputs
       input,
       select {
         width: 100%;
@@ -145,35 +139,27 @@
       cursor: pointer;
       color: white;
     }
-
     button:nth-child(1) {
       background-color: palette.$save-button-bg;
     }
-
     button:nth-child(1):hover {
       background-color: darken(palette.$neutral-color, 10%);
     }
-
     button:nth-child(2) {
       background-color: palette.$default-button-bg;
     }
-
     button:nth-child(2):hover {
       background-color: palette.$default-button-hover-bg;
     }
-
     button:nth-child(3) {
       background-color: palette.$delete-button-bg;
     }
-
     button:nth-child(3):hover {
       background-color: palette.$delete-button-hover-bg;
     }
-
     button:nth-child(4) {
       background-color: palette.$neutral-color;
     }
-
     button:nth-child(4):hover {
       background-color: darken(palette.$neutral-color, 10%);
     }
