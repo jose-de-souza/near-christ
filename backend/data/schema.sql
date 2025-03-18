@@ -2,10 +2,23 @@
 -- USE NEAR_CHRIST;
 
 -- Drop tables in the correct order to avoid foreign key constraint issues
+DROP TABLE IF EXISTS User;
 DROP TABLE IF EXISTS Crusade;
 DROP TABLE IF EXISTS Adoration;
 DROP TABLE IF EXISTS Parish;
 DROP TABLE IF EXISTS Diocese;
+
+-- Table: User
+-- 'ADMIN': can do anything.
+-- 'SUPERVISOR': can do anything but manage Users.
+-- 'STANDARD': can do anything but delete records.
+CREATE TABLE User (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    UserName VARCHAR(255) NOT NULL,
+    UserEmail VARCHAR(255) NOT NULL,
+    UserRole ENUM('ADMIN', 'SUPERVISOR', 'STANDARD') NOT NULL,
+    UserPassword VARCHAR(255) NOT NULL
+);
 
 -- Table: Diocese
 CREATE TABLE Diocese (

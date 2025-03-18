@@ -3,11 +3,13 @@
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use App\Controllers\AuthController;
+use App\Controllers\UserController;
 use App\Controllers\AdorationController;
 use App\Controllers\CrusadeController;
 use App\Controllers\DioceseController;
 use App\Controllers\ParishController;
 use App\Middlewares\AuthMiddleware;
+use App\Middlewares\RoleMiddleware;
 
 return function (App $app) {
 
@@ -19,7 +21,7 @@ return function (App $app) {
     });
 
     /**
-     * AUTH CONTROLLER
+     * AUTH CONTROLLER (Public)
      */
     $app->post('/auth/login', [AuthController::class, 'login']);
 
@@ -43,7 +45,7 @@ return function (App $app) {
     $app->get('/crusades/{id}', [CrusadeController::class, 'getById']);
 
     /**
-     * PROTECTED ROUTES (Require JWT Authentication)
+     * PROTECTED ROUTES (Require JWT Authentication, Then Role Check)
      */
     $app->group('', function (RouteCollectorProxy $group) {
         // Diocese routes
@@ -65,5 +67,14 @@ return function (App $app) {
         $group->post('/crusades', [CrusadeController::class, 'create']);
         $group->put('/crusades/{id}', [CrusadeController::class, 'update']);
         $group->delete('/crusades/{id}', [CrusadeController::class, 'delete']);
-    })->add(new AuthMiddleware());
+
+        // (Optionally) if you add user-management routes,
+        // you could place them here or in a separate group:
+        $group->post('/users', [UserController::class, 'create']);
+        $group->put('/users/{id}', [UserController::class, 'update']);
+        $group->delete('/users/{id}', [UserController::class, 'delete']);
+    })
+        // The order here matters: the LAST "add" is run FIRST
+        ->add(new RoleMiddleware())  // after the token is decoded, check user role
+        ->add(new AuthMiddleware()); // decode JWT first
 };

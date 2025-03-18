@@ -75,25 +75,23 @@ composer install --no-dev --optimize-autoloader
 
 ## Test API
 ### Authentication
-
-### Windows curl
+### Generate the password Hash
 ```sh
-curl -X POST https://api.greatapps4you.us/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
+php -r "echo password_hash('admin123', PASSWORD_BCRYPT).PHP_EOL;"
+```
+# 1) ADMIN user
+```sh
+curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d "{\"email\":\"admin@nearchrist.com\",\"password\":\"admin123\"}"
 ```
 
-In a remote server:
+# 2) SUPERVISOR user
 ```sh
-curl -X POST https://api.greatapps4you.us/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
+curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d "{\"email\":\"supervisor@nearchrist.com\",\"password\":\"super456\"}"
 ```
 
-For debugging purposes:
+# 3) STANDARD user
 ```sh
-curl -X POST https://api.greatapps4you.us/public/index.php/auth/login -H "Content-Type: application/json" -d "{\"email\":\"johnwayne@company.com\",\"password\":\"1234\"}"
-```
-
-### Sample return
-```json
-{"accessToken":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3QiLCJpYXQiOjE3NDE4Njk4NDYsImV4cCI6MTc0MTg3MzQ0Niwic3ViIjoiam9obndheW5lQGNvbXBhbnkuY29tIiwidXNlcl9pZCI6Nywicm9sZSI6InVzZXIifQ.lzMsihVPYXUjrn4IwZ6aQjN_cxCWUaU0gT9l1FZrTaE","user":{"id":7,"name":"John Wayne","email":"johnwayne@company.com"}}
+curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d "{\"email\":\"standard@nearchrist.com\",\"password\":\"std789\"}"
 ```
 
 ## Security
