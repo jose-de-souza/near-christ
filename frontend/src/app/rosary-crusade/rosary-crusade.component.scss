@@ -1,10 +1,5 @@
 @use '../palette';
 
-body {
-  background-color: palette.$background-color;
-  font-family: Arial, sans-serif;
-}
-
 .rosary-crusade {
   max-width: 900px;
   margin: 0 auto;
@@ -23,30 +18,85 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-top: 20px;
-    padding: 15px;
     background: palette.$background-color;
     border-radius: 8px;
+    padding: 15px;
 
-    /* 3 rows: row-1 for Confession/Mass/Crusade, row-2 for Contact, row-3 for Comments */
-    .row-1,
-    .row-2,
+    // Row 1: Confession and Mass (each 50% width)
+    .row-1 {
+      display: flex;
+      gap: 15px;
+
+      .section.confession,
+      .section.mass {
+        flex: 1 1 50%;
+      }
+    }
+
+    // Row 2: Rosary Crusade (40%) and Contact (60%)
+    .row-2 {
+      display: flex;
+      gap: 15px;
+
+      .section.crusade {
+        flex: 1 1 40%;
+      }
+
+      .section.contact {
+        flex: 1 1 60%;
+
+        // "Contact Name" => full width
+        .contact-name {
+          width: 97%;
+        }
+
+        // "Contact Phone" & "Contact Email" => side-by-side, each 50%
+        .contact-row {
+          display: flex;
+          gap: 15px;
+          margin-top: 10px;
+          width: 97%;
+
+          .contact-phone,
+          .contact-email {
+            flex: 1 1 44%;
+          }
+        }
+      }
+    }
+
+    // Row 3: Comments (full width)
     .row-3 {
       display: flex;
       gap: 15px;
+
+      .section.comments {
+        width: 100%;
+
+        .comments-row {
+          width: 100%;
+
+          textarea {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid palette.$secondary-color;
+            border-radius: 4px;
+            height: 80px;
+            box-sizing: border-box;
+          }
+        }
+      }
     }
 
     .section {
       position: relative;
       border: 1px solid palette.$secondary-color;
       border-radius: 8px;
-      padding: 25px 15px 15px;
+      padding: 10px;
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
-      justify-content: flex-start;
-      width: 100%;
-      box-sizing: border-box;
+      gap: 10px;
+      min-width: 250px;
 
       &::before {
         content: attr(data-title);
@@ -54,52 +104,30 @@ body {
         top: -10px;
         left: 10px;
         background: palette.$background-color;
-        padding: 0 8px;
-        font-size: 0.9em;
-        font-weight: normal;
+        padding: 0 5px;
         color: palette.$primary-color;
+        font-weight: bold;
+        font-size: 0.9em;
       }
 
-      /* Each field container */
-      div {
-        display: flex;
-        /* label above input => let label, input stack? */
-        flex-direction: column;
-        align-items: flex-start;
-        /* Remove flex:1 so they're not forced to stretch */
+      label {
+        margin-bottom: 4px;
+        font-size: 0.85em;
       }
 
+      // Removed max-width from inputs
       input,
-      select,
-      textarea {
+      select {
         width: 100%;
-        max-width: 180px;
         padding: 6px;
         border: 1px solid palette.$secondary-color;
         border-radius: 4px;
-        box-sizing: border-box;
       }
 
-      &.contact {
-        .contact-row {
-          display: flex;
-          flex-direction: row;
-          /* Force horizontal fields */
-          gap: 15px;
-          /* Let each sub-field take minimal space */
-        }
-      }
-
-      &.comments {
-        .comments-row {
-          width: 100%;
-
-          textarea {
-            max-width: none;
-            height: 80px;
-            /* Adjust as desired */
-          }
-        }
+      // Extra horizontal spacing for "Start" & "End" fields
+      .start-end-row {
+        display: flex;
+        gap: 20px;
       }
     }
   }
@@ -118,77 +146,110 @@ body {
       color: white;
     }
 
-
     button:nth-child(1) {
-      // Add button
       background-color: palette.$save-button-bg;
-
     }
 
-    ;
-
     button:nth-child(1):hover {
-      // Add button
       background-color: darken(palette.$neutral-color, 10%);
     }
 
     button:nth-child(2) {
-      // Modify button
       background-color: palette.$default-button-bg;
     }
 
     button:nth-child(2):hover {
-      // Modify button
       background-color: palette.$default-button-hover-bg;
     }
 
     button:nth-child(3) {
-      // Delete button
       background-color: palette.$delete-button-bg;
     }
 
     button:nth-child(3):hover {
-      // Delete button
       background-color: palette.$delete-button-hover-bg;
     }
 
     button:nth-child(4) {
-      // Cancel button
       background-color: palette.$neutral-color;
     }
 
     button:nth-child(4):hover {
-      // Cancel button
       background-color: darken(palette.$neutral-color, 10%);
     }
   }
 
-  /* Scrollable table */
-  .table-wrapper {
-    max-width: 100%;
-    overflow-x: auto;
+  .results-area {
     margin-top: 20px;
+    border: 1px solid palette.$secondary-color;
+    border-radius: 8px;
+    padding: 10px;
+    overflow-x: auto;
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .grid-table {
+      display: grid;
+      grid-auto-rows: 1fr;
+      align-items: stretch;
+      grid-auto-flow: column;
+      grid-auto-columns: auto;
+      min-width: max-content;
+      gap: 0;
+    }
 
-      th,
-      td {
+    .grid-column {
+      display: flex;
+      flex-direction: column;
+      margin-right: 0;
+
+      &.cdk-drag-over {
+        outline: 2px dashed #666;
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      .grid-column-header {
+        border: 1px solid palette.$secondary-color;
+        background-color: palette.$secondary-color;
+        color: white;
+        padding: 10px;
+        font-weight: bold;
+        text-align: left;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .grid-column-cell {
         border: 1px solid palette.$secondary-color;
         padding: 10px;
         text-align: left;
-      }
-
-      th {
-        background-color: palette.$secondary-color;
-        color: white;
-      }
-
-      tr:hover {
-        background-color: darken(palette.$background-color, 5%);
+        flex: 0 0 auto;
+        white-space: nowrap;
         cursor: pointer;
       }
     }
+  }
+
+  .drag-handle {
+    cursor: move;
+  }
+
+  .custom-drag-preview {
+    background: white;
+    border: 2px solid palette.$secondary-color;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .custom-drag-placeholder {
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 2px dashed #999;
+    padding: 10px;
+    font-style: italic;
+    color: #555;
   }
 }
