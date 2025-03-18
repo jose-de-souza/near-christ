@@ -207,6 +207,7 @@
       }
 
       .grid-column-cell {
+        min-height: 20px;
         border: 1px solid palette.$secondary-color;
         padding: 10px;
         text-align: left;
