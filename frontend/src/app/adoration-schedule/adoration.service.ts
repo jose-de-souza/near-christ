@@ -26,6 +26,7 @@ export interface Adoration {
     ParishName: string;
     // etc...
   };
+  [key: string]: any;
 }
 
 @Injectable({ providedIn: 'root' })

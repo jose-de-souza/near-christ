@@ -2,30 +2,24 @@
   <h2>Adoration Query</h2>
 
   <div class="form-container">
-
     <!-- Row 1: State + Diocese -->
     <div class="row-1">
-
       <!-- State -->
       <div class="section" data-title="State">
         <select [(ngModel)]="selectedState">
-          <!-- empty string => “All states” -->
           <option value="">All States</option>
           <option *ngFor="let s of states" [value]="s">{{ s }}</option>
         </select>
       </div>
-
       <!-- Diocese -->
       <div class="section" data-title="Diocese">
         <select [(ngModel)]="selectedDioceseID">
-          <!-- null => “All dioceses” -->
           <option [value]="null">All Dioceses</option>
           <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
             {{ d.DioceseName }}
           </option>
         </select>
       </div>
-
     </div><!-- end row-1 -->
 
     <!-- Row 2: Parish + Search button -->
@@ -33,47 +27,65 @@
       <!-- Parish -->
       <div class="section" data-title="Parish">
         <select [(ngModel)]="selectedParishID">
-          <!-- null => “All parishes” -->
           <option [value]="null">All Parishes</option>
           <option *ngFor="let p of parishList" [value]="p.ParishID">
             {{ p.ParishName }}
           </option>
         </select>
       </div>
-
       <!-- Search Button -->
       <div class="search-container">
-        <button (click)="searchAdoration()" class="search-button">
-          🔍
-        </button>
+        <button (click)="searchAdoration()" class="search-button">🔍</button>
       </div>
     </div><!-- end row-2 -->
-
-    <!-- Results area -->
-    <div class="results-area">
-      <table>
-        <thead>
-          <tr>
-            <th>Diocese</th>
-            <th>Parish</th>
-            <th>Location</th>
-            <th>Times</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Display each adoration in a row -->
-          <tr *ngFor="let r of results">
-            <!-- If the backend returns diocese, show DioceseName -->
-            <td>{{ r.diocese?.DioceseName || '(No Diocese)' }}</td>
-            <!-- If the backend returns parish, show ParishName -->
-            <td>{{ r.parish?.ParishName || '(No Parish)' }}</td>
-            <!-- Show location -->
-            <td>{{ r.AdorationLocation }}</td>
-            <!-- Combine day + start/end for “Times” -->
-            <td>{{ r.AdorationDay }}: {{ r.AdorationStart }} - {{ r.AdorationEnd }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div><!-- end results-area -->
   </div><!-- end form-container -->
+
+  <!-- Results area as a grid-based "table" -->
+  <div class="results-area">
+    <div
+      class="grid-table"
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      [cdkDropListData]="columns"
+      (cdkDropListDropped)="onDrop($event)"
+      [style.gridTemplateColumns]="gridTemplateColumns"
+    >
+      <!-- Each column is a draggable item -->
+      <div
+        class="grid-column"
+        *ngFor="let column of columns; let i = index"
+        cdkDrag
+        [cdkDragData]="column"
+        (cdkDragEntered)="onDragEntered($event)"
+        (cdkDragExited)="onDragExited($event)"
+      >
+        <!-- Column Header -->
+        <div class="grid-column-header">
+          <!-- Drag Handle -->
+          <span class="drag-handle" cdkDragHandle>☰</span>
+
+          <!-- Custom Drag Preview -->
+          <ng-template cdkDragPreview>
+            <div class="custom-drag-preview">
+              {{ column.header }}
+            </div>
+          </ng-template>
+
+          <!-- Custom Drag Placeholder -->
+          <ng-template cdkDragPlaceholder>
+            <div class="custom-drag-placeholder">
+              Dropping {{ column.header }} here
+            </div>
+          </ng-template>
+
+          {{ column.header }}
+        </div>
+
+        <!-- Column cells -->
+        <div class="grid-column-cell" *ngFor="let row of results">
+          {{ getCellValue(row, column) }}
+        </div>
+      </div>
+    </div>
+  </div><!-- end results-area -->
 </div>
