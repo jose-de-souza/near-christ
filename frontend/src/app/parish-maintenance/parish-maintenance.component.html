@@ -3,54 +3,57 @@
 
     <!-- Form container -->
     <div class="form-container">
-        <!-- Parish Details Section -->
-        <div class="section parish" data-title="Parish Details">
-            <div>
-                <label>Parish Name</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishName" />
+        <!-- Row 1: Parish Details -->
+        <div class="row-1">
+            <div class="section parish" data-title="Parish Details">
+                <div>
+                    <label>Parish Name</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishName" />
+                </div>
+                <div>
+                    <label>Street No</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishStNumber" />
+                </div>
+                <div>
+                    <label>Street Name</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishStName" />
+                </div>
+                <div>
+                    <label>Suburb</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishSuburb" />
+                </div>
             </div>
-            <div>
-                <label>Street No</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishStNumber" />
-            </div>
-            <div>
-                <label>Street Name</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishStName" />
-            </div>
-            <div>
-                <label>Suburb</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishSuburb" />
-            </div>
-        </div>
+        </div><!-- end row-1 -->
 
-        <!-- Location/Contact Section -->
-        <div class="section location" data-title="Location / Contact">
-            <div>
-                <label>State</label>
-                <!-- Changed from an input to a dropdown -->
-                <select [(ngModel)]="selectedParish.ParishState">
-                    <option value="">Select State</option>
-                    <option *ngFor="let s of states" [value]="s">{{ s }}</option>
-                </select>
+        <!-- Row 2: Location/Contact -->
+        <div class="row-2">
+            <div class="section location" data-title="Location / Contact">
+                <div>
+                    <label>State</label>
+                    <select [(ngModel)]="selectedParish.ParishState">
+                        <option value="">Select State</option>
+                        <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Postcode</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishPostcode" />
+                </div>
+                <div>
+                    <label>Phone</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishPhone" />
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishEmail" />
+                </div>
+                <div>
+                    <label>Website</label>
+                    <input type="text" [(ngModel)]="selectedParish.ParishWebsite" />
+                </div>
             </div>
-            <div>
-                <label>Postcode</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishPostcode" />
-            </div>
-            <div>
-                <label>Phone</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishPhone" />
-            </div>
-            <div>
-                <label>Email</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishEmail" />
-            </div>
-            <div>
-                <label>Website</label>
-                <input type="text" [(ngModel)]="selectedParish.ParishWebsite" />
-            </div>
-        </div>
-    </div>
+        </div><!-- end row-2 -->
+    </div><!-- end form-container -->
 
     <!-- Buttons -->
     <div class="buttons">
@@ -60,37 +63,32 @@
         <button (click)="cancel()">Cancel</button>
     </div>
 
-    <!-- Scrollable table wrapper -->
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Parish Name</th>
-                    <th>St No</th>
-                    <th>Street Name</th>
-                    <th>Suburb</th>
-                    <th>State</th>
-                    <th>PostCode</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Website</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (parish of parishes; track parish.ParishID) {
-                <tr (click)="selectParish(parish)">
-                    <td>{{ parish.ParishName }}</td>
-                    <td>{{ parish.ParishStNumber }}</td>
-                    <td>{{ parish.ParishStName }}</td>
-                    <td>{{ parish.ParishSuburb }}</td>
-                    <td>{{ parish.ParishState }}</td>
-                    <td>{{ parish.ParishPostcode }}</td>
-                    <td>{{ parish.ParishPhone }}</td>
-                    <td>{{ parish.ParishEmail }}</td>
-                    <td>{{ parish.ParishWebsite }}</td>
-                </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <!-- Results Area: Grid-based, drag-and-drop columns -->
+    <div class="results-area">
+        <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
+            (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+            <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
+                (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+                <!-- Column Header -->
+                <div class="grid-column-header">
+                    <span class="drag-handle" cdkDragHandle>☰</span>
+                    <ng-template cdkDragPreview>
+                        <div class="custom-drag-preview">{{ column.header }}</div>
+                    </ng-template>
+                    <ng-template cdkDragPlaceholder>
+                        <div class="custom-drag-placeholder">
+                            Dropping {{ column.header }} here
+                        </div>
+                    </ng-template>
+                    {{ column.header }}
+                </div>
+
+                <!-- Column cells -->
+                <div class="grid-column-cell" *ngFor="let row of parishes; trackBy: trackByParishID"
+                    (click)="selectParish(row)">
+                    {{ getCellValue(row, column) }}
+                </div>
+            </div>
+        </div>
+    </div><!-- end results-area -->
 </div>

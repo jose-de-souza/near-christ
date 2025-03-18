@@ -77,33 +77,71 @@
     border: 1px solid palette.$secondary-color;
     border-radius: 8px;
     padding: 10px;
+    overflow-x: auto; // horizontal scrolling if columns are wide
 
-    /* 
-      Wrap the table in .table-wrapper
-      and allow horizontal scroll if content is wide.
-    */
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
+    .grid-table {
+      display: grid;
+      gap: 0;
+      grid-auto-rows: 1fr;
+      align-items: stretch;
+      grid-auto-flow: column;
+      grid-auto-columns: auto;
+      min-width: max-content;
     }
 
-    table {
-      min-width: 900px;
-      /* Force horizontal scrolling on narrow screens */
-      border-collapse: collapse;
-      width: 100%;
+    .grid-column {
+      display: flex;
+      flex-direction: column;
 
-      th,
-      td {
-        border: 1px solid palette.$secondary-color;
-        padding: 8px;
-        text-align: left;
+      &.cdk-drag-over {
+        outline: 2px dashed #666;
+        background-color: rgba(0, 0, 0, 0.05);
       }
 
-      th {
+      .grid-column-header {
+        border: 1px solid palette.$secondary-color;
         background-color: palette.$secondary-color;
         color: white;
+        padding: 10px;
+        font-weight: bold;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .grid-column-cell {
+        min-height: 20px;
+        border: 1px solid palette.$secondary-color;
+        padding: 10px;
+        text-align: left;
+        flex: 0 0 auto;
+        white-space: nowrap;
       }
     }
   }
+}
+
+/* DRAG HANDLE, PREVIEW, & PLACEHOLDER STYLES */
+.drag-handle {
+  cursor: move;
+}
+
+.custom-drag-preview {
+  background: white;
+  border: 2px solid palette.$secondary-color;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #333;
+}
+
+.custom-drag-placeholder {
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 2px dashed #999;
+  padding: 10px;
+  font-style: italic;
+  color: #555;
 }

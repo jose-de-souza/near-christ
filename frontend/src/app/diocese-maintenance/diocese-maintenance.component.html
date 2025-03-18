@@ -3,55 +3,59 @@
 
   <!-- Form container -->
   <div class="form-container">
-    <!-- Diocese Details -->
-    <div class="section diocese" data-title="Diocese Details">
-      <div>
-        <label>Diocese Name</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseName" />
+    <!-- Row 1: Diocese Details -->
+    <div class="row-1">
+      <div class="section diocese" data-title="Diocese Details">
+        <div>
+          <label>Diocese Name</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DioceseName" />
+        </div>
+        <div>
+          <label>Street No</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetNo" />
+        </div>
+        <div>
+          <label>Street Name</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetName" />
+        </div>
+        <div>
+          <label>Suburb</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DioceseSuburb" />
+        </div>
       </div>
-      <div>
-        <label>Street No</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetNo" />
-      </div>
-      <div>
-        <label>Street Name</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetName" />
-      </div>
-      <div>
-        <label>Suburb</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseSuburb" />
-      </div>
-    </div>
+    </div><!-- end row-1 -->
 
-    <!-- Location / Contact Section -->
-    <div class="section location" data-title="Location / Contact">
-      <div>
-        <label>State</label>
-        <select [(ngModel)]="selectedDiocese.DioceseState">
-          <option value="">Select State</option>
-          <option *ngFor="let s of states" [value]="s">{{ s }}</option>
-        </select>
+    <!-- Row 2: Location / Contact -->
+    <div class="row-2">
+      <div class="section location" data-title="Location / Contact">
+        <div>
+          <label>State</label>
+          <select [(ngModel)]="selectedDiocese.DioceseState">
+            <option value="">Select State</option>
+            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div>
+          <label>Postcode</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DiocesePostcode" />
+        </div>
+        <div>
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DiocesePhone" />
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DioceseEmail" />
+        </div>
+        <div>
+          <label>Website</label>
+          <input type="text" [(ngModel)]="selectedDiocese.DioceseWebsite" />
+        </div>
       </div>
-      <div>
-        <label>Postcode</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DiocesePostcode" />
-      </div>
-      <div>
-        <label>Phone</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DiocesePhone" />
-      </div>
-      <div>
-        <label>Email</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseEmail" />
-      </div>
-      <div>
-        <label>Website</label>
-        <input type="text" [(ngModel)]="selectedDiocese.DioceseWebsite" />
-      </div>
-    </div>
-  </div>
+    </div><!-- end row-2 -->
+  </div><!-- end form-container -->
 
-  <!-- Buttons (same order/names as Adoration Schedule) -->
+  <!-- Buttons (same order/names as Adoration) -->
   <div class="buttons">
     <button (click)="addDiocese()">Add</button>
     <button (click)="modifyDiocese()">Modify</button>
@@ -59,35 +63,32 @@
     <button (click)="cancel()">Cancel</button>
   </div>
 
-  <!-- Table to display existing dioceses -->
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Diocese Name</th>
-          <th>Street No</th>
-          <th>Street Name</th>
-          <th>Suburb</th>
-          <th>State</th>
-          <th>Post Code</th>
-          <th>Phone</th>
-          <th>Email</th>
-          <th>Website</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr (click)="selectDiocese(diocese)" *ngFor="let diocese of dioceses; trackBy: trackByDioceseID">
-          <td>{{ diocese.DioceseName }}</td>
-          <td>{{ diocese.DioceseStreetNo }}</td>
-          <td>{{ diocese.DioceseStreetName }}</td>
-          <td>{{ diocese.DioceseSuburb }}</td>
-          <td>{{ diocese.DioceseState }}</td>
-          <td>{{ diocese.DiocesePostcode }}</td>
-          <td>{{ diocese.DiocesePhone }}</td>
-          <td>{{ diocese.DioceseEmail }}</td>
-          <td>{{ diocese.DioceseWebsite }}</td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Results area: grid-based, drag-and-drop columns -->
+  <div class="results-area">
+    <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
+      (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+      <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
+        (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+        <!-- Column Header -->
+        <div class="grid-column-header">
+          <span class="drag-handle" cdkDragHandle>☰</span>
+          <ng-template cdkDragPreview>
+            <div class="custom-drag-preview">{{ column.header }}</div>
+          </ng-template>
+          <ng-template cdkDragPlaceholder>
+            <div class="custom-drag-placeholder">
+              Dropping {{ column.header }} here
+            </div>
+          </ng-template>
+          {{ column.header }}
+        </div>
+
+        <!-- Column cells -->
+        <div class="grid-column-cell" *ngFor="let row of dioceses; trackBy: trackByDioceseID"
+          (click)="selectDiocese(row)">
+          {{ getCellValue(row, column) }}
+        </div>
+      </div>
+    </div>
   </div>
 </div>

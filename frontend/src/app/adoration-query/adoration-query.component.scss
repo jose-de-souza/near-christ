@@ -54,7 +54,6 @@
     .search-container {
       display: flex;
       align-items: center;
-      /* Give some spacing if needed */
     }
 
     .search-button {
@@ -62,21 +61,15 @@
       border: none;
       cursor: pointer;
       font-size: 24px;
-      /* Make the icon bigger if  like */
       line-height: 1;
       margin: 0;
-      /* Remove default button margins/padding if desired */
       padding: 0;
       color: #555;
-      /* Icon color */
-      /* Adjust color to suit the palette theme */
 
       &:hover {
         color: #000;
-        /* Darker on hover, for instance */
       }
     }
-
   }
 
   .results-area {
@@ -85,21 +78,90 @@
     border-radius: 8px;
     padding: 10px;
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    /* 
+      1) Enable horizontal scrolling if the grid columns exceed container width.
+    */
+    overflow-x: auto;
 
-      th,
-      td {
-        border: 1px solid palette.$secondary-color;
-        padding: 8px;
-        text-align: left;
+    .grid-table {
+      display: grid;
+      gap: 0;
+
+      /* 
+        2) Each row is auto-height to match the tallest cell.
+        3) align-items: stretch => each cell in that row stretches to fill row height.
+        4) grid-auto-flow: column => columns are created left-to-right.
+        5) grid-auto-columns: auto => each column grows to fit its widest cell.
+      */
+      grid-auto-rows: 1fr;
+      align-items: stretch;
+      grid-auto-flow: column;
+      grid-auto-columns: auto;
+
+      /* 
+        6) This ensures the grid won't shrink below the content width,
+           so the overflow-x: auto; can actually scroll if columns are wide.
+      */
+      min-width: max-content;
+    }
+
+    .grid-column {
+      border: none;
+      margin-right: 0;
+      display: flex;
+      flex-direction: column;
+
+      &.cdk-drag-over {
+        outline: 2px dashed #666;
+        background-color: rgba(0, 0, 0, 0.05);
       }
 
-      th {
+      .grid-column-header {
+        border: 1px solid palette.$secondary-color;
         background-color: palette.$secondary-color;
         color: white;
+        padding: 10px;
+        font-weight: bold;
+        text-align: left;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap; /* Keep header text in one line */
+      }
+
+      .grid-column-cell {
+        min-height: 20px;
+        border: 1px solid palette.$secondary-color;
+        padding: 10px;
+        text-align: left;
+
+        flex: 0 0 auto;
+        white-space: nowrap; /* Keep cell text in one line, expanding horizontally */
       }
     }
   }
+}
+
+/* DRAG HANDLE, PREVIEW, & PLACEHOLDER STYLES */
+.drag-handle {
+  cursor: move;
+}
+
+.custom-drag-preview {
+  background: white;
+  border: 2px solid palette.$secondary-color;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #333;
+}
+
+.custom-drag-placeholder {
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 2px dashed #999;
+  padding: 10px;
+  font-style: italic;
+  color: #555;
 }

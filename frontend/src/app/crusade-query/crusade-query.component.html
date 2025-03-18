@@ -6,7 +6,6 @@
     <div class="row-1">
       <!-- State -->
       <div class="section" data-title="State">
-        <!-- Empty string => "All states" -->
         <select [(ngModel)]="selectedState">
           <option value="">All States</option>
           <option *ngFor="let s of states" [value]="s">{{ s }}</option>
@@ -15,7 +14,6 @@
 
       <!-- Diocese -->
       <div class="section" data-title="Diocese">
-        <!-- null => "All dioceses" -->
         <select [(ngModel)]="selectedDioceseID">
           <option [value]="null">All Dioceses</option>
           <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
@@ -23,14 +21,12 @@
           </option>
         </select>
       </div>
-    </div>
-    <!-- end row-1 -->
+    </div><!-- end row-1 -->
 
     <!-- Row 2: Parish + Search button -->
     <div class="row-2">
       <!-- Parish -->
       <div class="section" data-title="Parish">
-        <!-- null => "All parishes" -->
         <select [(ngModel)]="selectedParishID">
           <option [value]="null">All Parishes</option>
           <option *ngFor="let p of parishList" [value]="p.ParishID">
@@ -41,57 +37,45 @@
 
       <!-- Search Button -->
       <div class="search-container">
-        <button (click)="searchCrusade()" class="search-button">
-          🔍
-        </button>
+        <button (click)="searchCrusade()" class="search-button">🔍</button>
+      </div>
+    </div><!-- end row-2 -->
+  </div><!-- end form-container -->
+
+  <!-- Results area as a grid-based "table" -->
+  <div class="results-area">
+    <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
+      (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+      <!-- Each column is a draggable item -->
+      <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
+        (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+        <!-- Column Header -->
+        <div class="grid-column-header">
+          <!-- Drag Handle -->
+          <span class="drag-handle" cdkDragHandle>☰</span>
+
+          <!-- Custom Drag Preview -->
+          <ng-template cdkDragPreview>
+            <div class="custom-drag-preview">
+              {{ column.header }}
+            </div>
+          </ng-template>
+
+          <!-- Custom Drag Placeholder -->
+          <ng-template cdkDragPlaceholder>
+            <div class="custom-drag-placeholder">
+              Dropping {{ column.header }} here
+            </div>
+          </ng-template>
+
+          {{ column.header }}
+        </div>
+
+        <!-- Column cells -->
+        <div class="grid-column-cell" *ngFor="let row of results">
+          {{ getCellValue(row, column) }}
+        </div>
       </div>
     </div>
-    <!-- end row-2 -->
-  </div>
-  <!-- end form-container -->
-
-  <!-- Results area -->
-  <div class="results-area">
-    <!-- Wrap table in .table-wrapper to allow horizontal scroll -->
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Diocese</th>
-            <th>Parish</th>
-            <th>State</th>
-            <th>Confession Start</th>
-            <th>End</th>
-            <th>Mass Start</th>
-            <th>End</th>
-            <th>Crusade Start</th>
-            <th>End</th>
-            <th>Contact Name</th>
-            <th>Contact Phone</th>
-            <th>Contact Email</th>
-            <th>Comments</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let c of results">
-            <td>{{ c.diocese?.DioceseName || '(No Diocese)' }}</td>
-            <td>{{ c.parish?.ParishName || '(No Parish)' }}</td>
-            <td>{{ c.State }}</td>
-            <td>{{ c.ConfessionStartTime }}</td>
-            <td>{{ c.ConfessionEndTime }}</td>
-            <td>{{ c.MassStartTime }}</td>
-            <td>{{ c.MassEndTime }}</td>
-            <td>{{ c.CrusadeStartTime }}</td>
-            <td>{{ c.CrusadeEndTime }}</td>
-            <td>{{ c.ContactName }}</td>
-            <td>{{ c.ContactPhone }}</td>
-            <td>{{ c.ContactEmail }}</td>
-            <td>{{ c.Comments }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <!-- end .table-wrapper -->
-  </div>
-  <!-- end results-area -->
+  </div><!-- end results-area -->
 </div>
