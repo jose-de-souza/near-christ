@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 
 @Component({
   standalone: true,
+  // Only import what you actually need here (CommonModule, RouterModule, etc.)
   imports: [CommonModule, RouterModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -17,20 +18,11 @@ export class AppComponent {
   constructor(public auth: AuthService, private router: Router) { }
 
   login() {
-    // Redirect to Adoration Schedule after logging in
+    // e.g., navigate to /login
     this.router.navigate(['/login']);
   }
-
-
-  // ngOnInit() {
-  //   //  Subscribe to login status
-  //   this.auth.isLoggedIn$.subscribe((status) => {
-  //     this.isLoggedIn$ = status;
-  //   });
-  // }
 
   logout() {
     this.auth.logout();
   }
 }
-

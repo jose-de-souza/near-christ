@@ -68,8 +68,7 @@ return function (App $app) {
         $group->put('/crusades/{id}', [CrusadeController::class, 'update']);
         $group->delete('/crusades/{id}', [CrusadeController::class, 'delete']);
 
-        // (Optionally) if you add user-management routes,
-        // you could place them here or in a separate group:
+        // User
         $group->post('/users', [UserController::class, 'create']);
         $group->put('/users/{id}', [UserController::class, 'update']);
         $group->delete('/users/{id}', [UserController::class, 'delete']);
