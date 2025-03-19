@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 import { CrusadeService, Crusade } from '../rosary-crusade/crusade.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
@@ -12,7 +13,7 @@ import { ParishService, Parish } from '../parish-maintenance/parish.service';
   selector: 'app-crusade-query',
   templateUrl: './crusade-query.component.html',
   styleUrls: ['./crusade-query.component.scss'],
-  imports: [CommonModule, FormsModule, DragDropModule]
+  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
 })
 export class CrusadeQueryComponent implements OnInit {
   // 1) Columns for the grid-based results
@@ -48,8 +49,9 @@ export class CrusadeQueryComponent implements OnInit {
   constructor(
     private crusadeService: CrusadeService,
     private dioceseService: DioceseService,
-    private parishService: ParishService
-  ) { }
+    private parishService: ParishService,
+    private snackBar: MatSnackBar   // <-- Proper injection of MatSnackBar
+  ) {}
 
   ngOnInit(): void {
     this.loadAllDioceses();
@@ -65,7 +67,6 @@ export class CrusadeQueryComponent implements OnInit {
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
-
   onDragEntered(event: any) {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
@@ -73,21 +74,38 @@ export class CrusadeQueryComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
+  // -------------- LOADING DATA --------------
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
-      next: (data) => (this.dioceseList = data),
-      error: (err) => console.error('Failed to load dioceses:', err)
+      next: (data) => {
+        this.dioceseList = data;
+      },
+      error: (err) => {
+        // 403 handled by the interceptor => show a role-based message
+        if (err.status !== 403) {
+          console.error('Failed to load dioceses:', err);
+          this.showError('Fatal error loading dioceses! Please contact support.');
+        }
+      }
     });
   }
 
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
-      next: (data) => (this.parishList = data),
-      error: (err) => console.error('Failed to load parishes:', err)
+      next: (data) => {
+        this.parishList = data;
+      },
+      error: (err) => {
+        // 403 handled by the interceptor => show a role-based message
+        if (err.status !== 403) {
+          console.error('Failed to load parishes:', err);
+          this.showError('Fatal error loading parishes! Please contact support.');
+        }
+      }
     });
   }
 
-  // Search method, triggered by the search button
+  // -------------- SEARCH METHOD --------------
   searchCrusade(): void {
     console.log('Searching Crusade with:', {
       state: this.selectedState || '(All)',
@@ -105,7 +123,11 @@ export class CrusadeQueryComponent implements OnInit {
         console.log('Crusade query results:', data);
       },
       error: (err) => {
-        console.error('Failed to search crusades:', err);
+        // 403 are handled by the Auth/Role interceptor => show role-based denial
+        if (err.status !== 403) {
+          console.error('Failed to search crusades:', err);
+          this.showError('Fatal error searching Crusades! Please contact support.');
+        }
       }
     });
   }
@@ -121,5 +143,25 @@ export class CrusadeQueryComponent implements OnInit {
       // Fallback to a direct property on the row
       return (row as any)[column.field] || '';
     }
+  }
+
+  // -------------- HELPER METHODS --------------
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-error']
+    });
+  }
+
+  // (Optional) If you need a warning method:
+  private showWarning(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-warning']
+    });
   }
 }

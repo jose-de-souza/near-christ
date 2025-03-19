@@ -9,6 +9,11 @@
         <div>
           <label>Diocese Name</label>
           <input type="text" [(ngModel)]="selectedDiocese.DioceseName" />
+
+          <!-- Inline error only if user submitted and it's still blank -->
+          <div *ngIf="hasSubmitted && !selectedDiocese.DioceseName?.trim()" class="inline-error">
+            Diocese Name is required.
+          </div>
         </div>
         <div>
           <label>Street No</label>

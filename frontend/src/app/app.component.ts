@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
 @Component({
@@ -12,25 +12,17 @@ import { AuthService } from './auth.service';
 })
 export class AppComponent {
   title = 'NEAR CHRIST';
-  isLoggedIn$ = false;
 
-  constructor(public auth: AuthService, private router: Router) { }
+  // Using functional injection for the Router, with a small hack to avoid TS error
+  private router = inject<Router>(Router as never);
+
+  constructor(public auth: AuthService) { }
 
   login() {
-    // Redirect to Adoration Schedule after logging in
     this.router.navigate(['/login']);
   }
-
-
-  // ngOnInit() {
-  //   //  Subscribe to login status
-  //   this.auth.isLoggedIn$.subscribe((status) => {
-  //     this.isLoggedIn$ = status;
-  //   });
-  // }
 
   logout() {
     this.auth.logout();
   }
 }
-

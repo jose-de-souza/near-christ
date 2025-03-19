@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
+// IMPORTANT: import the MODULE, not the class
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+
 import { Adoration, AdorationService } from './adoration.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
@@ -12,9 +15,11 @@ import { ParishService, Parish } from '../parish-maintenance/parish.service';
   templateUrl: './adoration-schedule.component.html',
   styleUrls: ['./adoration-schedule.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule]
+  // Use MatSnackBarModule in the imports array (not MatSnackBar)
+  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
 })
 export class AdorationScheduleComponent implements OnInit {
+
   // Columns for our grid-based results
   columns = [
     { header: 'Diocese Name', field: 'dioceseName' },
@@ -55,7 +60,8 @@ export class AdorationScheduleComponent implements OnInit {
   constructor(
     private adorationService: AdorationService,
     private dioceseService: DioceseService,
-    private parishService: ParishService
+    private parishService: ParishService,
+    private snackBar: MatSnackBar // <-- Proper injection of MatSnackBar
   ) { }
 
   ngOnInit(): void {
@@ -82,21 +88,39 @@ export class AdorationScheduleComponent implements OnInit {
   loadAllAdorations(): void {
     this.adorationService.getAllAdorations().subscribe({
       next: (data) => (this.schedules = data),
-      error: (err) => console.error('Failed to load adorations:', err)
+      error: (err) => {
+        // 403 are intercepted as business logic
+        if (err.status !== 403) {
+          console.error('Failed to load all adorations:', err);
+          this.showError('Fatal Error! Please contact support!');
+        }
+      }
     });
   }
 
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (data) => (this.dioceseList = data),
-      error: (err) => console.error('Failed to load dioceses:', err)
+      error: (err) => {
+        // 403 are intercepted as business logic
+        if (err.status !== 403) {
+          console.error('Failed to load all dioceses:', err);
+          this.showError('Fatal Error! Please contact support!');
+        }
+      }
     });
   }
 
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
       next: (data) => (this.parishList = data),
-      error: (err) => console.error('Failed to load parishes:', err)
+      error: (err) => {
+        // 403 are intercepted as business logic
+        if (err.status !== 403) {
+          console.error('Failed to load all parishes:', err);
+          this.showError('Fatal Error! Please contact support!');
+        }
+      }
     });
   }
 
@@ -121,13 +145,23 @@ export class AdorationScheduleComponent implements OnInit {
         this.loadAllAdorations();
         this.resetForm();
       },
-      error: (err) => console.error('Failed to create adoration:', err)
+      error: (err) => {
+        // 403 are intercepted as business logic
+        if (err.status !== 403) {
+          if (err.error.error === "Error creating adoration") {
+            this.showWarning("Verify all mandatory fields!");
+          } else {
+            console.error('Failed to create adoration schedule:', err);
+            this.showError('Fatal Error! Please contact support!');
+          }
+        }
+      }
     });
   }
 
   modifySchedule(): void {
     if (!this.selectedAdoration.AdorationID) {
-      console.error('No adoration selected to update!');
+      this.showWarning('No adoration selected to update!');
       return;
     }
     const id = this.selectedAdoration.AdorationID;
@@ -136,13 +170,19 @@ export class AdorationScheduleComponent implements OnInit {
         this.loadAllAdorations();
         this.resetForm();
       },
-      error: (err) => console.error('Failed to update adoration:', err)
+      error: (err) => {
+        // 403 are intercepted as business logic
+        if (err.status !== 403) {
+          console.error('Failed to update adoration:', err);
+          this.showError('Fatal Error! Please contact support!');
+        }
+      }
     });
   }
 
   deleteSchedule(): void {
     if (!this.selectedAdoration.AdorationID) {
-      console.error('No adoration selected to delete!');
+      this.showWarning('No adoration selected to delete!');
       return;
     }
     const id = this.selectedAdoration.AdorationID;
@@ -151,7 +191,13 @@ export class AdorationScheduleComponent implements OnInit {
         this.loadAllAdorations();
         this.resetForm();
       },
-      error: (err) => console.error('Failed to delete adoration:', err)
+      error: (err) => {
+        // 403 are intercepted as business logic
+        if (err.status !== 403) {
+          console.error('Failed to delete adoration schedule:', err);
+          this.showError('Fatal Error! Please contact support!');
+        }
+      }
     });
   }
 
@@ -161,6 +207,24 @@ export class AdorationScheduleComponent implements OnInit {
 
   trackByAdorationID(index: number, item: Adoration): number {
     return item.AdorationID;
+  }
+
+  private showWarning(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-warning']
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 7000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-error']
+    });
   }
 
   private resetForm(): void {

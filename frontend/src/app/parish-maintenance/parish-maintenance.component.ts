@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 import { ParishService, Parish } from './parish.service';
 
 @Component({
   selector: 'app-parish-maintenance',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule],
+  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule],
   templateUrl: './parish-maintenance.component.html',
   styleUrls: ['./parish-maintenance.component.scss'],
 })
@@ -17,11 +18,15 @@ export class ParishMaintenanceComponent implements OnInit {
   // The array of parishes loaded from the backend
   parishes: Parish[] = [];
 
+  // For the "required field" logic on ParishName
+  hasSubmitted = false;
+
   // Predefined states for the dropdown
   states: string[] = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
 
-  // The parish currently selected for editing in the form
+  // The parish record currently selected for editing
   selectedParish: Partial<Parish> = {
+    ParishID: undefined,
     ParishName: '',
     ParishStNumber: '',
     ParishStName: '',
@@ -48,7 +53,8 @@ export class ParishMaintenanceComponent implements OnInit {
 
   constructor(
     private parishService: ParishService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar  // <-- inject MatSnackBar
   ) { }
 
   ngOnInit(): void {
@@ -57,10 +63,8 @@ export class ParishMaintenanceComponent implements OnInit {
 
   // For the drag-and-drop grid
   get gridTemplateColumns(): string {
-    // e.g., 9 columns => 'auto auto auto ...'
     return this.columns.map(() => 'auto').join(' ');
   }
-
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
@@ -76,20 +80,6 @@ export class ParishMaintenanceComponent implements OnInit {
     return (row as any)[column.field] || '';
   }
 
-  // Fetch all from backend
-  loadAllParishes(): void {
-    this.parishService.getAllParishes().subscribe({
-      next: (data) => {
-        // If the backend returns { ParishID, ParishName, ... }
-        // we can store them directly or transform if needed.
-        this.parishes = data;
-      },
-      error: (err) => {
-        console.error('Failed to load parishes:', err);
-      }
-    });
-  }
-
   // For *ngFor trackBy
   trackByParishID(index: number, item: Parish) {
     return item.ParishID;
@@ -100,15 +90,45 @@ export class ParishMaintenanceComponent implements OnInit {
     this.selectedParish = { ...parish };
   }
 
+  // ----------------------
+  //   CRUD OPERATIONS
+  // ----------------------
+  loadAllParishes(): void {
+    this.parishService.getAllParishes().subscribe({
+      next: (data) => {
+        this.parishes = data;
+      },
+      error: (err) => {
+        // 403 handled by the Auth/Role interceptor => show role-based message
+        if (err.status !== 403) {
+          console.error('Failed to load parishes:', err);
+          this.showError('Fatal error loading parishes! Please contact support.');
+        }
+      }
+    });
+  }
+
   // Button: Add new parish
   addParish(): void {
+    // Mark that we attempted to submit
+    this.hasSubmitted = true;
+
+    // If user left ParishName blank, show warning & skip the API call
+    if (!this.selectedParish.ParishName?.trim()) {
+      this.showWarning('Parish Name is a required field!');
+      return;
+    }
+
     this.parishService.createParish(this.selectedParish).subscribe({
       next: () => {
         this.loadAllParishes();
         this.resetForm();
       },
       error: (err) => {
-        console.error('Failed to create parish:', err);
+        if (err.status !== 403) {
+          console.error('Failed to create parish:', err);
+          this.showError('Fatal error creating parish! Please contact support.');
+        }
       }
     });
   }
@@ -116,7 +136,7 @@ export class ParishMaintenanceComponent implements OnInit {
   // Button: Modify existing parish
   modifyParish(): void {
     if (!this.selectedParish.ParishID) {
-      console.error('No parish selected to update!');
+      this.showWarning('No parish selected to update!');
       return;
     }
     const id = this.selectedParish.ParishID;
@@ -126,7 +146,10 @@ export class ParishMaintenanceComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Failed to update parish:', err);
+        if (err.status !== 403) {
+          console.error('Failed to update parish:', err);
+          this.showError('Fatal error updating parish! Please contact support.');
+        }
       }
     });
   }
@@ -134,7 +157,7 @@ export class ParishMaintenanceComponent implements OnInit {
   // Button: Delete existing parish
   deleteParish(): void {
     if (!this.selectedParish.ParishID) {
-      console.error('No parish selected to delete!');
+      this.showWarning('No parish selected to delete!');
       return;
     }
     const id = this.selectedParish.ParishID;
@@ -144,7 +167,10 @@ export class ParishMaintenanceComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Failed to delete parish:', err);
+        if (err.status !== 403) {
+          console.error('Failed to delete parish:', err);
+          this.showError('Fatal error deleting parish! Please contact support.');
+        }
       }
     });
   }
@@ -155,6 +181,39 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   private resetForm(): void {
-    this.selectedParish = {};
+    this.selectedParish = {
+      ParishID: undefined,
+      ParishName: '',
+      ParishStNumber: '',
+      ParishStName: '',
+      ParishSuburb: '',
+      ParishState: '',
+      ParishPostcode: '',
+      ParishPhone: '',
+      ParishEmail: '',
+      ParishWebsite: ''
+    };
+    this.hasSubmitted = false;  // reset the inline error
+  }
+
+  // ----------------------
+  //   SNACK BAR HELPERS
+  // ----------------------
+  private showWarning(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-warning']
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 7000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-error']
+    });
   }
 }

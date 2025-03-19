@@ -1,6 +1,22 @@
+INSERT INTO User (UserID, UserName, UserEmail, UserRole, UserPassword)
+VALUES
+  -- Password "admin123"
+  (1, 'admin', 'admin@nearchrist.com', 'ADMIN', 
+   '$2y$10$Te7fo5Gm35yPQwlVT/smR.DVGkEMBmliii5PMTbjWz5dNuJYEczkS'),
+
+  -- Password "super456"
+  (2, 'supervisor', 'supervisor@nearchrist.com', 'SUPERVISOR', 
+   '$2y$10$k286twPl.S9pmB8uckDzY.UaoWzMnQadPvhpc.LFWjnGrskqpn3r.'),
+
+  -- Password "std789"
+  (3, 'standard', 'standard@nearchrist.com', 'STANDARD', 
+   '$2y$10$PjrQAFJXlKavICz.z.jnFekS2qBVQG8Q7qssqJDuo3qboG0CanhMm');
+
+
 -- ------------------------------------------------------
 --    INSERT INTO Diocese (5 REAL AUSTRALIAN DIOCESES)
 -- ------------------------------------------------------
+
 INSERT INTO Diocese
     (DioceseID, DioceseName, 
      DioceseStreetNo, DioceseStreetName, DioceseSuburb, 
