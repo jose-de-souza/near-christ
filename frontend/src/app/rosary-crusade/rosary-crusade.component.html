@@ -39,10 +39,16 @@
           <div>
             <label>Start</label>
             <input type="time" [(ngModel)]="selectedCrusade.CrusadeStartTime" />
+            <div *ngIf="hasSubmitted && !selectedCrusade.CrusadeStartTime?.trim()" class="inline-error">
+              Crusade Start is required.
+            </div>
           </div>
           <div>
             <label>End</label>
             <input type="time" [(ngModel)]="selectedCrusade.CrusadeEndTime" />
+            <div *ngIf="hasSubmitted && !selectedCrusade.CrusadeEndTime?.trim()" class="inline-error">
+              Crusade End is required.
+            </div>
           </div>
         </div>
 
@@ -56,6 +62,10 @@
                 {{ d.DioceseName }}
               </option>
             </select>
+            <div *ngIf="hasSubmitted && (!selectedCrusade.DioceseID || selectedCrusade.DioceseID === 0)"
+              class="inline-error">
+              Diocese is required.
+            </div>
           </div>
           <div>
             <label>Parish</label>
@@ -65,6 +75,10 @@
                 {{ p.ParishName }}
               </option>
             </select>
+            <div *ngIf="hasSubmitted && (!selectedCrusade.ParishID || selectedCrusade.ParishID === 0)"
+              class="inline-error">
+              Parish is required.
+            </div>
           </div>
           <div>
             <label>State</label>
@@ -72,6 +86,9 @@
               <option value="">-- select state --</option>
               <option *ngFor="let s of states" [value]="s">{{ s }}</option>
             </select>
+            <div *ngIf="hasSubmitted && !selectedCrusade.State?.trim()" class="inline-error">
+              State is required.
+            </div>
           </div>
         </div>
       </div>
