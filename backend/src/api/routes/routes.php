@@ -69,6 +69,8 @@ return function (App $app) {
         $group->delete('/crusades/{id}', [CrusadeController::class, 'delete']);
 
         // User
+        $group->get('/users', [UserController::class, 'getAll']);
+        $group->get('/users/{id}', [UserController::class, 'getById']);
         $group->post('/users', [UserController::class, 'create']);
         $group->put('/users/{id}', [UserController::class, 'update']);
         $group->delete('/users/{id}', [UserController::class, 'delete']);

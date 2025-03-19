@@ -16,6 +16,9 @@
     <li><a routerLink="/diocese-maintenance">Diocese Maintenance</a></li>
     <li><a routerLink="/parish-maintenance">Parish Maintenance</a></li>
     <li><a routerLink="/rosary-crusade">Rosary Crusade</a></li>
+    <li *ngIf="auth.userRole === 'ADMIN'">
+      <a routerLink="/user-maintenance">User Maintenance</a>
+    </li>
     }
   </ul>
 

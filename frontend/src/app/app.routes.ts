@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './auth.guard';
 
-// Feature components
-//import { AdorationScheduleComponent } from './adoration-schedule/adoration-schedule.component';
 import { DioceseMaintenanceComponent } from './diocese-maintenance/diocese-maintenance.component';
 import { ParishMaintenanceComponent } from './parish-maintenance/parish-maintenance.component';
 import { RosaryCrusadeComponent } from './rosary-crusade/rosary-crusade.component';
@@ -10,33 +8,47 @@ import { AdorationQueryComponent } from './adoration-query/adoration-query.compo
 import { CrusadeQueryComponent } from './crusade-query/crusade-query.component';
 
 export const appRoutes: Routes = [
-
-  //{ path: '', component: HomeComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'adoration-query', component: AdorationQueryComponent },
   { path: 'crusade-query', component: CrusadeQueryComponent },
-  { 
-    path: 'login', 
-    loadComponent: () => import('./login/login.component').then(m => m.LoginComponent) 
-  },    
-  { 
-    path: 'adoration-schedule', 
-    loadComponent: () => import('./adoration-schedule/adoration-schedule.component').then(m => m.AdorationScheduleComponent), 
-    canActivate: [AuthGuard] },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./login/login.component').then(m => m.LoginComponent),
+  },
+  {
+    path: 'adoration-schedule',
+    loadComponent: () =>
+      import('./adoration-schedule/adoration-schedule.component').then(
+        m => m.AdorationScheduleComponent
+      ),
+    canActivate: [AuthGuard],
+  },
   {
     path: 'diocese-maintenance',
     component: DioceseMaintenanceComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
   },
   {
     path: 'parish-maintenance',
     component: ParishMaintenanceComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
   },
   {
     path: 'rosary-crusade',
     component: RosaryCrusadeComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
   },
-  { path: '**', redirectTo: 'login' }
+
+  // NEW => lazy-load the UserMaintenanceComponent
+  {
+    path: 'user-maintenance',
+    loadComponent: () =>
+      import('./user-maintenance/user-maintenance.component').then(
+        m => m.UserMaintenanceComponent
+      ),
+    canActivate: [AuthGuard], // must be logged in
+  },
+
+  { path: '**', redirectTo: 'login' },
 ];
