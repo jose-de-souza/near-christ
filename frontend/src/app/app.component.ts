@@ -1,11 +1,10 @@
-import { Component } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
 @Component({
   standalone: true,
-  // Only import what you actually need here (CommonModule, RouterModule, etc.)
   imports: [CommonModule, RouterModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -13,12 +12,13 @@ import { AuthService } from './auth.service';
 })
 export class AppComponent {
   title = 'NEAR CHRIST';
-  isLoggedIn$ = false;
 
-  constructor(public auth: AuthService, private router: Router) { }
+  // Using functional injection for the Router, with a small hack to avoid TS error
+  private router = inject<Router>(Router as never);
+
+  constructor(public auth: AuthService) { }
 
   login() {
-    // e.g., navigate to /login
     this.router.navigate(['/login']);
   }
 
