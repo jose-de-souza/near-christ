@@ -100,7 +100,9 @@ curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json
 
 ```ini
 APP_ENV=development
-DB_HOST=127.0.0.1
+APP_URL=http://localhost
+DB_HOST=localhost
+DB_PORT=3306
 DB_NAME=NEAR_CHRIST
 DB_USER=root
 DB_PASS=
