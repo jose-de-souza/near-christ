@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 import { DioceseService, Diocese } from './diocese.service';
 
@@ -10,11 +11,13 @@ import { DioceseService, Diocese } from './diocese.service';
   templateUrl: './diocese-maintenance.component.html',
   styleUrls: ['./diocese-maintenance.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule]
+  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
 })
 export class DioceseMaintenanceComponent implements OnInit {
   // The array of dioceses loaded from the backend
   dioceses: Diocese[] = [];
+
+  hasSubmitted = false; // track whether the user tried to submit
 
   // The diocese currently selected for editing in the form
   selectedDiocese: Partial<Diocese> = {
@@ -46,7 +49,10 @@ export class DioceseMaintenanceComponent implements OnInit {
     { header: 'Website', field: 'DioceseWebsite' },
   ];
 
-  constructor(private dioceseService: DioceseService) { }
+  constructor(
+    private dioceseService: DioceseService,
+    private snackBar: MatSnackBar  // <-- inject MatSnackBar
+  ) { }
 
   ngOnInit(): void {
     this.loadAllDioceses();
@@ -70,7 +76,6 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   // Return the correct cell value for each row & column
   getCellValue(row: Diocese, column: { header: string; field: string }): any {
-    // Simply read the field from the row, e.g. row['DioceseName']
     return (row as any)[column.field] || '';
   }
 
@@ -86,7 +91,11 @@ export class DioceseMaintenanceComponent implements OnInit {
         this.dioceses = data;
       },
       error: (err) => {
-        console.error('Failed to load dioceses:', err);
+        // 403 handled by the interceptor => show role-based message
+        if (err.status !== 403) {
+          console.error('Failed to load dioceses:', err);
+          this.showError('Fatal error loading dioceses! Please contact support.');
+        }
       }
     });
   }
@@ -96,20 +105,32 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   addDiocese(): void {
+    // Mark that we attempted to submit
+    this.hasSubmitted = true;
+
+    // 1) If user left DioceseName blank, show warning & skip the API call
+    if (!this.selectedDiocese.DioceseName?.trim()) {
+      this.showWarning('Diocese Name is a required field!');
+      return;
+    }
+
     this.dioceseService.createDiocese(this.selectedDiocese).subscribe({
       next: () => {
         this.loadAllDioceses();
         this.resetForm();
       },
       error: (err) => {
-        console.error('Failed to create diocese:', err);
+        if (err.status !== 403) {
+          console.error('Failed to create diocese:', err);
+          this.showError('Fatal error creating diocese! Please contact support.');
+        }
       }
     });
   }
 
   modifyDiocese(): void {
     if (!this.selectedDiocese.DioceseID) {
-      console.error('No diocese selected to update!');
+      this.showWarning('No diocese selected to update!');
       return;
     }
     const id = this.selectedDiocese.DioceseID;
@@ -119,14 +140,17 @@ export class DioceseMaintenanceComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Failed to update diocese:', err);
+        if (err.status !== 403) {
+          console.error('Failed to update diocese:', err);
+          this.showError('Fatal error updating diocese! Please contact support.');
+        }
       }
     });
   }
 
   deleteDiocese(): void {
     if (!this.selectedDiocese.DioceseID) {
-      console.error('No diocese selected to delete!');
+      this.showWarning('No diocese selected to delete!');
       return;
     }
     const id = this.selectedDiocese.DioceseID;
@@ -136,7 +160,10 @@ export class DioceseMaintenanceComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Failed to delete diocese:', err);
+        if (err.status !== 403) {
+          console.error('Failed to delete diocese:', err);
+          this.showError('Fatal error deleting diocese! Please contact support.');
+        }
       }
     });
   }
@@ -158,5 +185,26 @@ export class DioceseMaintenanceComponent implements OnInit {
       DioceseEmail: '',
       DioceseWebsite: ''
     };
+
+    this.hasSubmitted = false;
+  }
+
+  // ---- SNACK BAR HELPERS ----
+  private showWarning(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-warning']
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 7000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-error']
+    });
   }
 }

@@ -5,6 +5,11 @@
 
 .snackbar-warning {
     background-color: #ffeb3b !important; // A bright Material yellow
-    color: #333 !important;               // Dark text for contrast
-  }
-  
+    color: #333 !important; // Dark text for contrast
+}
+
+.inline-error {
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
