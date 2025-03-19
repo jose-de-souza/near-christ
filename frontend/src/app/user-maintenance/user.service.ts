@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 // Define the shape of a User as returned by your API
 export interface User {
@@ -23,7 +24,7 @@ export interface GetUsersResponse {
 @Injectable({ providedIn: 'root' })
 export class UserService {
     // Typically you’d pull this from environment.ts. For now, local dev:
-    private baseUrl = 'http://localhost:8000';
+    private baseUrl = environment.apiUrl;
 
     constructor(private http: HttpClient) { }
 

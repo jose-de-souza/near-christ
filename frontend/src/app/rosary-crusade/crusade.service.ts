@@ -30,7 +30,7 @@ export interface Crusade {
 
 @Injectable({ providedIn: 'root' })
 export class CrusadeService {
-  private baseUrl = environment.apiUrl; // e.g. "http://localhost:8000"
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

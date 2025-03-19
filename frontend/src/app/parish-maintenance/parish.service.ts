@@ -21,7 +21,7 @@ export interface Parish {
     providedIn: 'root'
 })
 export class ParishService {
-    private baseUrl = environment.apiUrl; // e.g., "http://localhost:8000"
+    private baseUrl = environment.apiUrl;
 
     constructor(private http: HttpClient) { }
 

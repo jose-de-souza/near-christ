@@ -19,7 +19,7 @@ export interface Diocese {
   providedIn: 'root'
 })
 export class DioceseService {
-  private baseUrl = environment.apiUrl; // e.g., "http://localhost:8000"
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
