@@ -8,7 +8,7 @@
             <div class="section user" data-title="User Details">
                 <div>
                     <label>User Name</label>
-                    <input type="text" [(ngModel)]="selectedUser.UserName" />
+                    <input type="text" [(ngModel)]="selectedUser.UserName" autocomplete="off" />
                     <!-- Inline error if hasSubmitted && empty -->
                     <div *ngIf="hasSubmitted && !selectedUser.UserName?.trim()" class="inline-error">
                         User Name is required.
@@ -17,7 +17,7 @@
 
                 <div>
                     <label>Email</label>
-                    <input type="text" [(ngModel)]="selectedUser.UserEmail" />
+                    <input type="text" [(ngModel)]="selectedUser.UserEmail" autocomplete="off" />
                     <div *ngIf="hasSubmitted && !selectedUser.UserEmail?.trim()" class="inline-error">
                         Email is required.
                     </div>
@@ -36,8 +36,10 @@
 
                 <div>
                     <label>Password</label>
-                    <input type="password" [(ngModel)]="selectedUser.UserPassword" />
-                    <!-- Only required if adding new user (i.e. no UserID) -->
+                    <!-- The autocomplete="new-password" helps disable browser autocomplete.
+                 When editing an existing user, your component should clear out UserPassword -->
+                    <input type="password" [(ngModel)]="selectedUser.UserPassword" autocomplete="new-password" />
+                    <!-- Only required if adding a new user (i.e., no UserID) -->
                     <div *ngIf="hasSubmitted && !selectedUser.UserID && !selectedUser.UserPassword?.trim()"
                         class="inline-error">
                         Password is required for new users.

@@ -2,36 +2,43 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// Define the shape of a User as returned by your API
 export interface User {
     UserID: number;
     UserName: string;
     UserEmail: string;
     UserRole: 'ADMIN' | 'SUPERVISOR' | 'STANDARD';
-    UserPassword?: string; // hashed or plaintext if new
+    UserPassword?: string; // Only needed for creation/updates
 }
 
+// Define the shape of the entire server response:
+// { success, status, message, data: ... }
 export interface GetUsersResponse {
     success: boolean;
     status: number;
     message: string;
-    data: User[];  // The actual array of users
+    data: User[];
 }
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-    private baseUrl = 'http://localhost:8000'; // or from environment
+    // Typically you’d pull this from environment.ts. For now, local dev:
+    private baseUrl = 'http://localhost:8000';
 
     constructor(private http: HttpClient) { }
 
     // GET /users
-    // Return the entire JSON object (with .data array)
     getAllUsers(): Observable<GetUsersResponse> {
         return this.http.get<GetUsersResponse>(`${this.baseUrl}/users`);
     }
 
     // POST /users
     createUser(user: Partial<User>): Observable<GetUsersResponse> {
-        return this.http.post<GetUsersResponse>(`${this.baseUrl}/users`, user);
+        // Create a shallow copy of user
+        const payload = { ...user };
+        // Remove UserID if it exists, so it's not sent on creation.
+        delete payload.UserID;
+        return this.http.post<GetUsersResponse>(`${this.baseUrl}/users`, payload);
     }
 
     // PUT /users/{id}

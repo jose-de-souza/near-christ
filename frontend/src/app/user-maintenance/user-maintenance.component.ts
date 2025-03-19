@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-
-import { UserService, User } from './user.service';  // <-- You'll create a user.service
-// If you have a role-check in the frontend, you can also import AuthService, etc.
+import { UserService, User } from './user.service';
 
 @Component({
   selector: 'app-user-maintenance',
@@ -15,41 +13,33 @@ import { UserService, User } from './user.service';  // <-- You'll create a user
   styleUrls: ['./user-maintenance.component.scss']
 })
 export class UserMaintenanceComponent implements OnInit {
-
-  // 1) Columns for our drag-and-drop grid
+  // Columns for our grid
   columns = [
     { header: 'Name', field: 'UserName' },
     { header: 'Email', field: 'UserEmail' },
     { header: 'Role', field: 'UserRole' },
   ];
 
-  // 2) The array of users from the backend
+  // The array of users from the backend
   users: User[] = [];
 
-  // 3) Track if the user has tried to create/update (for inline errors)
+  // Track whether the user has tried to create/update (for inline validation)
   hasSubmitted = false;
 
-  // 4) The user record being edited
+  // The currently selected (or new) user.
+  // Note: When editing an existing user, we clear out the UserPassword field.
   selectedUser: Partial<User> = {
     UserID: undefined,
     UserName: '',
     UserEmail: '',
     UserRole: 'STANDARD',
-    UserPassword: ''  // Only required when creating a new user
+    UserPassword: '' // This will be cleared when an existing user is selected.
   };
 
-  // Provide some user roles for the dropdown
+  // Possible user roles for the dropdown
   userRoles = ['ADMIN', 'SUPERVISOR', 'STANDARD'];
 
-  // For dynamic columns in the grid
-  get gridTemplateColumns(): string {
-    return this.columns.map(() => 'auto').join(' ');
-  }
-
-  constructor(
-    private userService: UserService,
-    private snackBar: MatSnackBar
-  ) { }
+  constructor(private userService: UserService, private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
     this.loadAllUsers();
@@ -59,44 +49,47 @@ export class UserMaintenanceComponent implements OnInit {
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
-  onDragEntered(event: any) {
+
+  onDragEntered(event: any): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
-  onDragExited(event: any) {
+
+  onDragExited(event: any): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
+  }
+
+  // Dynamically build grid CSS columns for each column in `this.columns`
+  get gridTemplateColumns(): string {
+    return this.columns.map(() => 'auto').join(' ');
   }
 
   // -------------- LOAD --------------
   loadAllUsers(): void {
     this.userService.getAllUsers().subscribe({
       next: (response) => {
-        // response is the entire JSON { success, status, message, data: [...] }
-        this.users = response.data; // pick out the actual array
+        this.users = response.data;
       },
       error: (err) => {
         console.error('Failed to load users:', err);
       }
-    });    
-  }  
+    });
+  }
 
   // -------------- SELECT --------------
   selectUser(u: User): void {
-    // Copy so that table is not updated immediately
-    this.selectedUser = { ...u };
+    // Create a shallow copy of the selected user and clear the password
+    this.selectedUser = { ...u, UserPassword: '' };
   }
 
   // -------------- CREATE --------------
   addUser(): void {
     this.hasSubmitted = true;
-
-    // If required fields missing => warn, skip
     if (!this.isValidForCreate()) {
-      this.showWarning('User Name, Email, Role, and Password are required for new user!');
+      this.showWarning('User Name, Email, Role, and Password are required to create a new user.');
       return;
     }
-
     this.userService.createUser(this.selectedUser).subscribe({
-      next: (created) => {
+      next: () => {
         this.loadAllUsers();
         this.resetForm();
       },
@@ -116,13 +109,10 @@ export class UserMaintenanceComponent implements OnInit {
       return;
     }
     this.hasSubmitted = true;
-
-    // If required fields missing => warn, skip
     if (!this.isValidForUpdate()) {
       this.showWarning('User Name, Email, and Role are required to update!');
       return;
     }
-
     const id = this.selectedUser.UserID;
     this.userService.updateUser(id, this.selectedUser).subscribe({
       next: () => {
@@ -164,16 +154,21 @@ export class UserMaintenanceComponent implements OnInit {
     this.resetForm();
   }
 
-  // -------------- UTILITY --------------
-  // Return the correct cell value for each row/column
+  // -------------- UTILITIES --------------
+  // Return the correct cell value for the given user/column
   getCellValue(row: User, column: { header: string; field: string }): any {
     return (row as any)[column.field] || '';
   }
 
-  trackByUserID(index: number, item: User) {
+  trackByUserID(index: number, item: User): number {
     return item.UserID;
   }
 
+  trackByColumn(index: number, column: { header: string; field: string }): string {
+    return column.field;
+  }
+
+  // Reset the form state
   private resetForm(): void {
     this.selectedUser = {
       UserID: undefined,
@@ -187,27 +182,19 @@ export class UserMaintenanceComponent implements OnInit {
 
   // Validate required fields for CREATE
   private isValidForCreate(): boolean {
-    // Must have name, email, role, password
-    if (!this.selectedUser.UserName?.trim()) return false;
-    if (!this.selectedUser.UserEmail?.trim()) return false;
-    if (!this.selectedUser.UserRole?.trim()) return false;
-    if (!this.selectedUser.UserPassword?.trim()) return false;
+    if (!this.selectedUser.UserName?.trim()) { return false; }
+    if (!this.selectedUser.UserEmail?.trim()) { return false; }
+    if (!this.selectedUser.UserRole?.trim()) { return false; }
+    if (!this.selectedUser.UserPassword?.trim()) { return false; }
     return true;
   }
 
-  // Validate required fields for UPDATE
+  // Validate required fields for UPDATE (password is optional)
   private isValidForUpdate(): boolean {
-    // Must have name, email, role
-    if (!this.selectedUser.UserName?.trim()) return false;
-    if (!this.selectedUser.UserEmail?.trim()) return false;
-    if (!this.selectedUser.UserRole?.trim()) return false;
-    // Password is optional for update => skip check
+    if (!this.selectedUser.UserName?.trim()) { return false; }
+    if (!this.selectedUser.UserEmail?.trim()) { return false; }
+    if (!this.selectedUser.UserRole?.trim()) { return false; }
     return true;
-  }
-
-  trackByColumn(index: number, column: { header: string; field: string }): string {
-    // Use the field name as a unique ID
-    return column.field;
   }
 
   // -------------- SNACK BAR HELPERS --------------

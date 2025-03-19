@@ -29,13 +29,16 @@ class User extends Model
      */
     public function setUserPasswordAttribute($value)
     {
-        // Check if the provided value is already hashed
-        if (password_get_info($value)['algo'] === 0) {
-            // If not hashed, use password_hash with BCRYPT
-            $this->attributes['UserPassword'] = password_hash($value, PASSWORD_BCRYPT);
-        } else {
+        if (
+            is_string($value)
+            && strlen($value) === 60
+            && ((substr($value, 0, 4) === '$2y$') || (substr($value, 0, 4) === '$2a$'))
+        ) {
             // If it's already hashed, store as-is
             $this->attributes['UserPassword'] = $value;
+        } else {
+            // If not hashed, use password_hash with BCRYPT
+            $this->attributes['UserPassword'] = password_hash($value, PASSWORD_BCRYPT);
         }
     }
 }

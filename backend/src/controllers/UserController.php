@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Models\User;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\Psr7\Response as SlimResponse;
 
 class UserController
 {
@@ -15,8 +14,14 @@ class UserController
      */
     public function getAll(Request $request, Response $response): Response
     {
-        $users = User::all();
-        return $this->jsonResponse($response, 200, true, "All users retrieved successfully", $users);
+        try {
+            $users = User::all();
+            return $this->jsonResponse($response, 200, true, "All users retrieved successfully", $users);
+        } catch (\Exception $e) {
+            return $this->jsonResponse($response, 500, false, "Failed to fetch users", [
+                "error" => $e->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -26,13 +31,17 @@ class UserController
     public function getById(Request $request, Response $response, array $args): Response
     {
         $id = (int) $args['id'];
-        $user = User::find($id);
-
-        if (!$user) {
-            return $this->jsonResponse($response, 404, false, "User not found");
+        try {
+            $user = User::find($id);
+            if (!$user) {
+                return $this->jsonResponse($response, 404, false, "User not found");
+            }
+            return $this->jsonResponse($response, 200, true, "User retrieved successfully", $user);
+        } catch (\Exception $e) {
+            return $this->jsonResponse($response, 500, false, "Failed to fetch user", [
+                "error" => $e->getMessage()
+            ]);
         }
-
-        return $this->jsonResponse($response, 200, true, "User retrieved successfully", $user);
     }
 
     /**
@@ -41,13 +50,12 @@ class UserController
      */
     public function create(Request $request, Response $response): Response
     {
-        $data = $request->getParsedBody();
-
         try {
+            // Manually decode JSON from the request body
+            $data = json_decode($request->getBody(), true);
             $user = new User();
-            $user->fill($data); // This triggers the password mutator if 'UserPassword' is set
+            $user->fill($data);
             $user->save();
-
             return $this->jsonResponse($response, 201, true, "User created successfully", $user);
         } catch (\Exception $e) {
             return $this->jsonResponse($response, 500, false, "Failed to create user", [
@@ -63,17 +71,15 @@ class UserController
     public function update(Request $request, Response $response, array $args): Response
     {
         $id = (int) $args['id'];
-        $data = $request->getParsedBody();
-
-        $user = User::find($id);
-        if (!$user) {
-            return $this->jsonResponse($response, 404, false, "User not found");
-        }
-
         try {
-            $user->fill($data); // Will also hash password if 'UserPassword' is provided
+            $user = User::find($id);
+            if (!$user) {
+                return $this->jsonResponse($response, 404, false, "User not found");
+            }
+            // Decode JSON instead of using getParsedBody
+            $data = json_decode($request->getBody(), true);
+            $user->fill($data);
             $user->save();
-
             return $this->jsonResponse($response, 200, true, "User updated successfully", $user);
         } catch (\Exception $e) {
             return $this->jsonResponse($response, 500, false, "Failed to update user", [
@@ -89,13 +95,11 @@ class UserController
     public function delete(Request $request, Response $response, array $args): Response
     {
         $id = (int) $args['id'];
-        $user = User::find($id);
-
-        if (!$user) {
-            return $this->jsonResponse($response, 404, false, "User not found");
-        }
-
         try {
+            $user = User::find($id);
+            if (!$user) {
+                return $this->jsonResponse($response, 404, false, "User not found");
+            }
             $user->delete();
             return $this->jsonResponse($response, 200, true, "User deleted successfully");
         } catch (\Exception $e) {
@@ -106,10 +110,26 @@ class UserController
     }
 
     /**
-     * Helper method to return JSON responses
+     * Helper method to return wrapped JSON responses:
+     * {
+     *   "success": true/false,
+     *   "status": 200/404/500, etc.,
+     *   "message": "some text",
+     *   "data": (could be an array, a single record, or null)
+     * }
      */
     private function jsonResponse(Response $response, int $status, bool $success, string $message, $data = null): Response
     {
+        // Remove the UserPassword attribute before sending data back to the client
+        if ($data instanceof \Illuminate\Database\Eloquent\Model) {
+            unset($data->UserPassword);
+        } elseif ($data instanceof \Illuminate\Support\Collection) {
+            $data = $data->map(function ($item) {
+                unset($item->UserPassword);
+                return $item;
+            });
+        }
+
         $payload = [
             "success" => $success,
             "status"  => $status,
@@ -118,6 +138,7 @@ class UserController
         ];
 
         $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
+        return $response->withHeader('Content-Type', 'application/json')
+                        ->withStatus($status);
     }
 }
