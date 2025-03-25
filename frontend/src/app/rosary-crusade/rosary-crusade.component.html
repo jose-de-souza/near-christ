@@ -3,27 +3,30 @@
 
   <!-- Form Container -->
   <div class="form-container">
-    <!-- Row 1: Confession and Mass Sections -->
+    <!-- Row 1: Confession and Mass -->
     <div class="row-1">
+      <!-- Confession Section -->
       <div class="section confession" data-title="Confession">
-        <div class="start-end-row">
-          <div>
+        <div class="two-fields-row">
+          <div class="field-group confession-start">
             <label>Start</label>
             <input type="time" [(ngModel)]="selectedCrusade.ConfessionStartTime" />
           </div>
-          <div>
+          <div class="field-group confession-end">
             <label>End</label>
             <input type="time" [(ngModel)]="selectedCrusade.ConfessionEndTime" />
           </div>
         </div>
       </div>
+
+      <!-- Mass Section -->
       <div class="section mass" data-title="Mass">
-        <div class="start-end-row">
-          <div>
+        <div class="two-fields-row">
+          <div class="field-group mass-start">
             <label>Start</label>
             <input type="time" [(ngModel)]="selectedCrusade.MassStartTime" />
           </div>
-          <div>
+          <div class="field-group mass-end">
             <label>End</label>
             <input type="time" [(ngModel)]="selectedCrusade.MassEndTime" />
           </div>
@@ -31,94 +34,100 @@
       </div>
     </div><!-- end row-1 -->
 
-    <!-- Row 2: Rosary Crusade (40%) and Contact (60%) Sections -->
-    <div class="row-2">
-      <div class="section crusade" data-title="Rosary Crusade">
-        <!-- Times -->
-        <div class="start-end-row">
-          <div>
-            <label>Start</label>
-            <input type="time" [(ngModel)]="selectedCrusade.CrusadeStartTime" />
-            <div *ngIf="hasSubmitted && !selectedCrusade.CrusadeStartTime?.trim()" class="inline-error">
-              Crusade Start is required.
-            </div>
-          </div>
-          <div>
-            <label>End</label>
-            <input type="time" [(ngModel)]="selectedCrusade.CrusadeEndTime" />
-            <div *ngIf="hasSubmitted && !selectedCrusade.CrusadeEndTime?.trim()" class="inline-error">
-              Crusade End is required.
-            </div>
+    <!-- Row 2: Rosary Crusade fields in one line -->
+    <div class="section crusade" data-title="Rosary Crusade">
+      <div class="row-2">
+        <!-- Start (10%) -->
+        <div class="field-group crusade-start">
+          <label>Start</label>
+          <input type="time" [(ngModel)]="selectedCrusade.CrusadeStartTime" />
+          <div *ngIf="hasSubmitted && !selectedCrusade.CrusadeStartTime?.trim()" class="inline-error">
+            Crusade Start is required.
           </div>
         </div>
 
-        <!-- Diocese, Parish, State dropdowns -->
-        <div class="location-row">
-          <div>
-            <label>Diocese</label>
-            <select [(ngModel)]="selectedCrusade.DioceseID">
-              <option [value]="0">-- select diocese --</option>
-              <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
-                {{ d.DioceseName }}
-              </option>
-            </select>
-            <div *ngIf="hasSubmitted && (!selectedCrusade.DioceseID || selectedCrusade.DioceseID === 0)"
-              class="inline-error">
-              Diocese is required.
-            </div>
+        <!-- End (10%) -->
+        <div class="field-group crusade-end">
+          <label>End</label>
+          <input type="time" [(ngModel)]="selectedCrusade.CrusadeEndTime" />
+          <div *ngIf="hasSubmitted && !selectedCrusade.CrusadeEndTime?.trim()" class="inline-error">
+            Crusade End is required.
           </div>
-          <div>
-            <label>Parish</label>
-            <select [(ngModel)]="selectedCrusade.ParishID">
-              <option [value]="0">-- select parish --</option>
-              <option *ngFor="let p of parishList" [value]="p.ParishID">
-                {{ p.ParishName }}
-              </option>
-            </select>
-            <div *ngIf="hasSubmitted && (!selectedCrusade.ParishID || selectedCrusade.ParishID === 0)"
-              class="inline-error">
-              Parish is required.
-            </div>
+        </div>
+
+        <!-- State (10%) -->
+        <div class="field-group crusade-state">
+          <label>State</label>
+          <select [(ngModel)]="selectedCrusade.State">
+            <option value="">-- select state --</option>
+            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          </select>
+          <div *ngIf="hasSubmitted && !selectedCrusade.State?.trim()" class="inline-error">
+            State is required.
           </div>
-          <div>
-            <label>State</label>
-            <select [(ngModel)]="selectedCrusade.State">
-              <option value="">-- select state --</option>
-              <option *ngFor="let s of states" [value]="s">{{ s }}</option>
-            </select>
-            <div *ngIf="hasSubmitted && !selectedCrusade.State?.trim()" class="inline-error">
-              State is required.
-            </div>
+        </div>
+
+        <!-- Diocese (32%) -->
+        <div class="field-group crusade-diocese">
+          <label>Diocese</label>
+          <select [(ngModel)]="selectedCrusade.DioceseID">
+            <option [value]="0">-- select diocese --</option>
+            <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
+              {{ d.DioceseName }}
+            </option>
+          </select>
+          <div *ngIf="hasSubmitted && (!selectedCrusade.DioceseID || selectedCrusade.DioceseID === 0)"
+            class="inline-error">
+            Diocese is required.
+          </div>
+        </div>
+
+        <!-- Parish (32%) -->
+        <div class="field-group crusade-parish">
+          <label>Parish</label>
+          <select [(ngModel)]="selectedCrusade.ParishID">
+            <option [value]="0">-- select parish --</option>
+            <option *ngFor="let p of parishList" [value]="p.ParishID">
+              {{ p.ParishName }}
+            </option>
+          </select>
+          <div *ngIf="hasSubmitted && (!selectedCrusade.ParishID || selectedCrusade.ParishID === 0)"
+            class="inline-error">
+            Parish is required.
           </div>
         </div>
       </div>
+    </div><!-- end row-2 -->
 
-      <div class="section contact" data-title="Contact">
-        <div class="contact-name">
+    <!-- Row 3: Contact => 3 fields => 33%, 31%, 30% -->
+    <div class="section contact" data-title="Contact">
+      <div class="row-3">
+        <!-- Contact Name (33%) -->
+        <div class="field-group contact-name">
           <label>Contact Name</label>
           <input type="text" [(ngModel)]="selectedCrusade.ContactName" />
         </div>
 
-        <div class="contact-phone">
+        <!-- Contact Phone (31%) -->
+        <div class="field-group contact-phone">
           <label>Contact Phone</label>
           <input type="text" [(ngModel)]="selectedCrusade.ContactPhone" />
         </div>
 
-        <div class="contact-email">
+        <!-- Contact Email (30%) -->
+        <div class="field-group contact-email">
           <label>Contact Email</label>
           <input type="text" [(ngModel)]="selectedCrusade.ContactEmail" />
         </div>
       </div>
-    </div>
-
-    <!-- Row 3: Comments Section (full width) -->
-    <div class="row-3">
-      <div class="section comments" data-title="Comments">
-        <div class="comments-row">
-          <textarea [(ngModel)]="selectedCrusade.Comments"></textarea>
-        </div>
-      </div>
     </div><!-- end row-3 -->
+
+    <!-- Row 4: Comments spanning full width -->
+    <div class="section comments" data-title="Comments">
+      <div class="row-4">
+        <textarea [(ngModel)]="selectedCrusade.Comments"></textarea>
+      </div>
+    </div><!-- end row-4 -->
   </div><!-- end form-container -->
 
   <!-- Buttons -->

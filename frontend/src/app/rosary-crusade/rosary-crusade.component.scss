@@ -1,7 +1,8 @@
 @use '../palette';
 
 .rosary-crusade {
-  max-width: 900px;
+  /* 90% container width, centered */
+  width: 90%;
   margin: 0 auto;
   padding: 20px;
   background: white;
@@ -22,7 +23,7 @@
     border-radius: 8px;
     padding: 15px;
 
-    // Row 1: Confession and Mass (each 50% width)
+    /* Row #1: Confession & Mass side by side (each 50%) */
     .row-1 {
       display: flex;
       gap: 15px;
@@ -30,56 +31,102 @@
       .section.confession,
       .section.mass {
         flex: 1 1 50%;
-      }
-    }
 
-    // Row 2: Rosary Crusade (40%) and Contact (60%)
-    .row-2 {
-      display: flex;
-      gap: 15px;
-
-      .section.crusade {
-        flex: 1 1 40%;
-
-        .location-row {
+        .two-fields-row {
           display: flex;
-          flex-wrap: wrap;
           gap: 15px;
-          margin-top: 10px;
-        }
-      }
+          align-items: flex-end;
 
-      .section.contact {
-        flex: 1 1 60%;
-
-        .contact-name,
-        .contact-phone,
-        .contact-email {
-          width: 97%;
-        }
-     
-      }
-    }
-
-    // Row 3: Comments (full width)
-    .row-3 {
-      display: flex;
-      gap: 15px;
-
-      .section.comments {
-        width: 100%;
-
-        .comments-row {
-          width: 100%;
-          textarea {
+          .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
             width: 100%;
-            padding: 6px;
-            border: 1px solid palette.$secondary-color;
-            border-radius: 4px;
-            height: 80px;
-            box-sizing: border-box;
           }
         }
+      }
+    }
+
+    /* Row #2: Start(10%), End(10%), State(10%), Diocese(32%), Parish(32%) */
+    .row-2 {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 15px;
+      align-items: flex-end;
+
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .crusade-start {
+        flex: 0 0 10%;
+        max-width: 10%;
+      }
+
+      .crusade-end {
+        flex: 0 0 10%;
+        max-width: 10%;
+      }
+
+      .crusade-state {
+        flex: 0 0 10%;
+        max-width: 10%;
+      }
+
+      .crusade-diocese {
+        flex: 0 0 32%;
+        max-width: 32%;
+      }
+
+      .crusade-parish {
+        flex: 0 0 32%;
+        max-width: 32%;
+      }
+    }
+
+    /* Row #3: Contact => 3 fields => 33%, 32%, 32% */
+    .row-3 {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 15px;
+      align-items: flex-end;
+
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .contact-name {
+        flex: 0 0 33%;
+        max-width: 33%;
+      }
+
+      .contact-phone {
+        flex: 0 0 32%;
+        max-width: 32%;
+      }
+
+      .contact-email {
+        flex: 0 0 32%;
+        max-width: 32%;
+      }
+    }
+
+    /* Row #4: Comments => full width */
+    .row-4 {
+      display: flex;
+      gap: 15px;
+
+      textarea {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid palette.$secondary-color;
+        border-radius: 4px;
+        height: 80px;
+        box-sizing: border-box;
       }
     }
 
@@ -89,9 +136,8 @@
       border-radius: 8px;
       padding: 10px;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 10px;
-      min-width: 250px;
 
       &::before {
         content: attr(data-title);
@@ -106,22 +152,24 @@
       }
 
       label {
-        margin-bottom: 4px;
         font-size: 0.85em;
+        font-weight: bold;
+        color: palette.$primary-color;
       }
 
       input,
-      select {
+      select,
+      textarea {
         width: 100%;
         padding: 6px;
         border: 1px solid palette.$secondary-color;
         border-radius: 4px;
+        box-sizing: border-box;
       }
 
-      // Extra horizontal spacing for "Start" & "End" fields
-      .start-end-row {
-        display: flex;
-        gap: 20px;
+      .inline-error {
+        color: red;
+        font-size: 0.85em;
       }
     }
   }
@@ -139,29 +187,41 @@
       cursor: pointer;
       color: white;
     }
+
+    /* 1) Add => $save-button-bg; hover => darken($neutral-color, 10%) */
     button:nth-child(1) {
       background-color: palette.$save-button-bg;
+
+      &:hover {
+        background-color: darken(palette.$neutral-color, 10%);
+      }
     }
-    button:nth-child(1):hover {
-      background-color: darken(palette.$neutral-color, 10%);
-    }
+
+    /* 2) Modify => $default-button-bg; hover => $default-button-hover-bg */
     button:nth-child(2) {
       background-color: palette.$default-button-bg;
+
+      &:hover {
+        background-color: palette.$default-button-hover-bg;
+      }
     }
-    button:nth-child(2):hover {
-      background-color: palette.$default-button-hover-bg;
-    }
+
+    /* 3) Delete => $delete-button-bg; hover => $delete-button-hover-bg */
     button:nth-child(3) {
       background-color: palette.$delete-button-bg;
+
+      &:hover {
+        background-color: palette.$delete-button-hover-bg;
+      }
     }
-    button:nth-child(3):hover {
-      background-color: palette.$delete-button-hover-bg;
-    }
+
+    /* 4) Cancel => $neutral-color; hover => darken($neutral-color, 10%) */
     button:nth-child(4) {
       background-color: palette.$neutral-color;
-    }
-    button:nth-child(4):hover {
-      background-color: darken(palette.$neutral-color, 10%);
+
+      &:hover {
+        background-color: darken(palette.$neutral-color, 10%);
+      }
     }
   }
 
@@ -170,22 +230,21 @@
     border: 1px solid palette.$secondary-color;
     border-radius: 8px;
     padding: 10px;
-    overflow-x: auto;
+    overflow-x: auto; // horizontal scroll if columns exceed container width
 
     .grid-table {
       display: grid;
+      gap: 0;
       grid-auto-rows: 1fr;
       align-items: stretch;
       grid-auto-flow: column;
       grid-auto-columns: auto;
       min-width: max-content;
-      gap: 0;
     }
 
     .grid-column {
       display: flex;
       flex-direction: column;
-      margin-right: 0;
 
       &.cdk-drag-over {
         outline: 2px dashed #666;
@@ -199,7 +258,6 @@
         padding: 10px;
         font-weight: bold;
         text-align: left;
-        position: relative;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -218,6 +276,7 @@
     }
   }
 
+  /* Drag & Drop Styles */
   .drag-handle {
     cursor: move;
   }
