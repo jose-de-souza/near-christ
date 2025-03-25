@@ -3,19 +3,20 @@
 
     <!-- Form container -->
     <div class="form-container">
-        <!-- Row 1: Basic user details -->
-        <div class="row-1">
-            <div class="section user" data-title="User Details">
-                <div>
+        <!-- Single Row: User Details -->
+        <div class="section user" data-title="User Details">
+            <div class="row-user">
+                <!-- User Name -->
+                <div class="field-group user-name">
                     <label>User Name</label>
                     <input type="text" [(ngModel)]="selectedUser.UserName" autocomplete="off" />
-                    <!-- Inline error if hasSubmitted && empty -->
                     <div *ngIf="hasSubmitted && !selectedUser.UserName?.trim()" class="inline-error">
                         User Name is required.
                     </div>
                 </div>
 
-                <div>
+                <!-- Email -->
+                <div class="field-group user-email">
                     <label>Email</label>
                     <input type="text" [(ngModel)]="selectedUser.UserEmail" autocomplete="off" />
                     <div *ngIf="hasSubmitted && !selectedUser.UserEmail?.trim()" class="inline-error">
@@ -23,7 +24,8 @@
                     </div>
                 </div>
 
-                <div>
+                <!-- Role -->
+                <div class="field-group user-role">
                     <label>Role</label>
                     <select [(ngModel)]="selectedUser.UserRole">
                         <option value="">-- Select Role --</option>
@@ -34,12 +36,11 @@
                     </div>
                 </div>
 
-                <div>
+                <!-- Password -->
+                <div class="field-group user-password">
                     <label>Password</label>
-                    <!-- The autocomplete="new-password" helps disable browser autocomplete.
-                 When editing an existing user, your component should clear out UserPassword -->
                     <input type="password" [(ngModel)]="selectedUser.UserPassword" autocomplete="new-password" />
-                    <!-- Only required if adding a new user (i.e., no UserID) -->
+                    <!-- Required if adding a new user (no UserID) -->
                     <div *ngIf="hasSubmitted && !selectedUser.UserID && !selectedUser.UserPassword?.trim()"
                         class="inline-error">
                         Password is required for new users.
@@ -47,7 +48,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div><!-- end form-container -->
 
     <!-- Buttons -->
     <div class="buttons">
@@ -57,7 +58,7 @@
         <button (click)="cancel()">Cancel</button>
     </div>
 
-    <!-- Results Area: Grid-based drag-and-drop columns -->
+    <!-- Results Area: Grid-based, drag-and-drop columns -->
     <div class="results-area">
         <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
             (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
@@ -66,10 +67,25 @@
                 <!-- Column Header -->
                 <div class="grid-column-header">
                     <span class="drag-handle" cdkDragHandle>☰</span>
+
+                    <!-- Custom Drag Preview -->
+                    <ng-template cdkDragPreview>
+                        <div class="custom-drag-preview">
+                            {{ column.header }}
+                        </div>
+                    </ng-template>
+
+                    <!-- Custom Drag Placeholder -->
+                    <ng-template cdkDragPlaceholder>
+                        <div class="custom-drag-placeholder">
+                            Dropping {{ column.header }} here
+                        </div>
+                    </ng-template>
+
                     {{ column.header }}
                 </div>
 
-                <!-- Column cells -->
+                <!-- Column Cells -->
                 <div class="grid-column-cell" *ngFor="let row of users; trackBy: trackByUserID"
                     (click)="selectUser(row)">
                     {{ getCellValue(row, column) }}

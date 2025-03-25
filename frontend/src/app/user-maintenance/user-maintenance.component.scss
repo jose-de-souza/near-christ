@@ -1,13 +1,8 @@
 @use '../palette';
 
-body {
-    background-color: palette.$background-color;
-    font-family: Arial, sans-serif;
-}
-
-/* Main container styling */
 .user-maintenance {
-    max-width: 900px;
+    /* Container at 90% width for a consistent, responsive layout */
+    width: 90%;
     margin: 0 auto;
     padding: 20px;
     background: white;
@@ -20,71 +15,84 @@ body {
         margin-bottom: 20px;
     }
 
-    /* Form container (similar to diocese/parish style) */
     .form-container {
         display: flex;
         flex-direction: column;
         gap: 15px;
-        margin-top: 20px;
-        padding: 15px;
         background: palette.$background-color;
         border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
 
-        .row-1 {
+        .section.user {
+            position: relative;
+            border: 1px solid palette.$secondary-color;
+            border-radius: 8px;
+            padding: 10px;
             display: flex;
-            gap: 15px;
+            flex-direction: column;
+            gap: 10px;
 
-            .section.user {
-                position: relative;
-                border: 1px solid palette.$secondary-color;
-                border-radius: 8px;
-                padding: 25px 15px 15px;
+            &::before {
+                content: attr(data-title);
+                /* "User Details" */
+                position: absolute;
+                top: -10px;
+                left: 10px;
+                background: palette.$background-color;
+                padding: 0 5px;
+                font-size: 0.9em;
+                font-weight: bold;
+                color: palette.$primary-color;
+            }
+
+            /* Single row with 4 fields => 24% each => 96% total, 4% leftover */
+            .row-user {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
                 gap: 15px;
-                justify-content: flex-start;
-                width: 100%;
-                box-sizing: border-box;
+                align-items: flex-end;
 
-                &::before {
-                    content: attr(data-title);
-                    position: absolute;
-                    top: -10px;
-                    left: 10px;
-                    background: palette.$background-color;
-                    padding: 0 8px;
-                    font-size: 0.9em;
-                    font-weight: normal;
-                    color: palette.$primary-color;
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3px;
+                }
+
+                .user-name,
+                .user-email,
+                .user-role,
+                .user-password {
+                    flex: 0 0 24%;
+                    max-width: 24%;
                 }
 
                 label {
                     color: palette.$primary-color;
                     font-weight: bold;
-                    margin-bottom: 5px;
+                    margin-bottom: 3px;
                 }
 
                 input,
                 select {
                     width: 100%;
-                    max-width: 180px;
+                    /* Removed max-width: 180px to allow full expansion */
+                    max-width: none;
                     padding: 6px;
                     border: 1px solid palette.$secondary-color;
                     border-radius: 4px;
                     box-sizing: border-box;
                 }
 
-                /* Inline error styling */
                 .inline-error {
                     color: red;
                     font-size: 0.8em;
-                    margin-top: 4px;
+                    margin-top: 2px;
                 }
             }
         }
     }
 
-    /* Buttons (same color logic as the other maintenance pages) */
     .buttons {
         display: flex;
         justify-content: flex-end;
@@ -102,47 +110,46 @@ body {
         /* 1) Add => $save-button-bg; hover => darken($neutral-color, 10%) */
         button:nth-child(1) {
             background-color: palette.$save-button-bg;
-        }
 
-        button:nth-child(1):hover {
-            background-color: darken(palette.$neutral-color, 10%);
+            &:hover {
+                background-color: darken(palette.$neutral-color, 10%);
+            }
         }
 
         /* 2) Modify => $default-button-bg; hover => $default-button-hover-bg */
         button:nth-child(2) {
             background-color: palette.$default-button-bg;
-        }
 
-        button:nth-child(2):hover {
-            background-color: palette.$default-button-hover-bg;
+            &:hover {
+                background-color: palette.$default-button-hover-bg;
+            }
         }
 
         /* 3) Delete => $delete-button-bg; hover => $delete-button-hover-bg */
         button:nth-child(3) {
             background-color: palette.$delete-button-bg;
-        }
 
-        button:nth-child(3):hover {
-            background-color: palette.$delete-button-hover-bg;
+            &:hover {
+                background-color: palette.$delete-button-hover-bg;
+            }
         }
 
         /* 4) Cancel => $neutral-color; hover => darken($neutral-color, 10%) */
         button:nth-child(4) {
             background-color: palette.$neutral-color;
-        }
 
-        button:nth-child(4):hover {
-            background-color: darken(palette.$neutral-color, 10%);
+            &:hover {
+                background-color: darken(palette.$neutral-color, 10%);
+            }
         }
     }
 
-    /* Results area => drag-and-drop grid columns */
     .results-area {
         margin-top: 20px;
         border: 1px solid palette.$secondary-color;
         border-radius: 8px;
         padding: 10px;
-        overflow-x: auto;
+        overflow-x: auto; // horizontal scroll if columns exceed container width
 
         .grid-table {
             display: grid;
@@ -156,7 +163,6 @@ body {
             .grid-column {
                 display: flex;
                 flex-direction: column;
-                margin-right: 0;
 
                 &.cdk-drag-over {
                     outline: 2px dashed #666;
@@ -170,7 +176,6 @@ body {
                     padding: 10px;
                     font-weight: bold;
                     text-align: left;
-                    position: relative;
                     display: flex;
                     align-items: center;
                     gap: 8px;
@@ -189,10 +194,12 @@ body {
         }
     }
 
+    /* Drag & Drop Styles */
     .drag-handle {
         cursor: move;
     }
 
+    /* The custom drag preview & placeholder, matching other screens */
     .custom-drag-preview {
         background: white;
         border: 2px solid palette.$secondary-color;
