@@ -1,7 +1,7 @@
 @use '../palette';
 
 .adoration-schedule {
-    max-width: 900px;
+    max-width: 90%;
     margin: 0 auto;
     padding: 20px;
     background: white;
@@ -70,7 +70,7 @@
                 select,
                 input {
                     width: 100%;
-                    max-width: 180px;
+                    max-width: 180px; // default for most fields
                     padding: 6px;
                     border: 1px solid palette.$secondary-color;
                     border-radius: 4px;
@@ -175,6 +175,70 @@
                 white-space: nowrap;
                 cursor: pointer;
             }
+        }
+    }
+
+    /* ---------------------------------------
+       OVERRIDES FOR Adoration SECTION
+       --------------------------------------- */
+    .section.adoration {
+        // Four fields (Type, Day, Start Time, End Time) side-by-side
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 15px;
+
+        >div {
+            flex: 0 0 25%;
+            max-width: 25%;
+        }
+
+        // Remove the 180px max-width for these inputs/selects
+        >div select,
+        >div input {
+            max-width: none !important;
+            width: 100% !important;
+        }
+    }
+
+    /* ---------------------------------------
+       OVERRIDES FOR Location SECTION
+       --------------------------------------- */
+    .section.location {
+        // Three fields (Location Type, Location, State) side-by-side
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 15px;
+
+        >div {
+            flex: 0 0 33.3333%;
+            max-width: 33.3333%;
+        }
+
+        >div select,
+        >div input {
+            max-width: none !important;
+            width: 100% !important;
+        }
+    }
+
+    /* ---------------------------------------
+       OVERRIDES FOR Diocese/Parish SECTION
+       --------------------------------------- */
+    .section.diocese-parish-names {
+        // Two fields (Diocese Name, Parish Name) side-by-side
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 15px;
+
+        >div {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        >div select,
+        >div input {
+            max-width: none !important;
+            width: 100% !important;
         }
     }
 }
