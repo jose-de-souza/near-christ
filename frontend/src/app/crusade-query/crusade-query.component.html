@@ -2,44 +2,46 @@
   <h2>Rosary Crusade Query</h2>
 
   <div class="form-container">
-    <!-- Row 1: State + Diocese -->
-    <div class="row-1">
-      <!-- State -->
-      <div class="section" data-title="State">
-        <select [(ngModel)]="selectedState">
-          <option value="">All States</option>
-          <option *ngFor="let s of states" [value]="s">{{ s }}</option>
-        </select>
-      </div>
+    <!-- Single 'Filter' Section -->
+    <div class="section filter" data-title="Filter">
+      <div class="row-1">
+        <!-- State -->
+        <div class="field-group state">
+          <label>State</label>
+          <select [(ngModel)]="selectedState">
+            <option value="">All States</option>
+            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          </select>
+        </div>
 
-      <!-- Diocese -->
-      <div class="section" data-title="Diocese">
-        <select [(ngModel)]="selectedDioceseID">
-          <option [value]="null">All Dioceses</option>
-          <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
-            {{ d.DioceseName }}
-          </option>
-        </select>
-      </div>
-    </div><!-- end row-1 -->
+        <!-- Diocese -->
+        <div class="field-group diocese">
+          <label>Diocese</label>
+          <select [(ngModel)]="selectedDioceseID">
+            <option [value]="null">All Dioceses</option>
+            <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
+              {{ d.DioceseName }}
+            </option>
+          </select>
+        </div>
 
-    <!-- Row 2: Parish + Search button -->
-    <div class="row-2">
-      <!-- Parish -->
-      <div class="section" data-title="Parish">
-        <select [(ngModel)]="selectedParishID">
-          <option [value]="null">All Parishes</option>
-          <option *ngFor="let p of parishList" [value]="p.ParishID">
-            {{ p.ParishName }}
-          </option>
-        </select>
-      </div>
+        <!-- Parish -->
+        <div class="field-group parish">
+          <label>Parish</label>
+          <select [(ngModel)]="selectedParishID">
+            <option [value]="null">All Parishes</option>
+            <option *ngFor="let p of parishList" [value]="p.ParishID">
+              {{ p.ParishName }}
+            </option>
+          </select>
+        </div>
 
-      <!-- Search Button -->
-      <div class="search-container">
-        <button (click)="searchCrusade()" class="search-button">🔍</button>
-      </div>
-    </div><!-- end row-2 -->
+        <!-- Search Button (naked) -->
+        <div class="field-group search">
+          <button (click)="searchCrusade()" class="search-button">🔍</button>
+        </div>
+      </div><!-- end row-1 -->
+    </div><!-- end section.filter -->
   </div><!-- end form-container -->
 
   <!-- Results area as a grid-based "table" -->
