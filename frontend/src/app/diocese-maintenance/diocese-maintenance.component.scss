@@ -1,7 +1,7 @@
 @use '../palette';
 
 .diocese-maintenance {
-    /* Use 90% for a fluid container width */
+    /* Main container is white */
     width: 90%;
     margin: 0 auto;
     padding: 20px;
@@ -15,6 +15,7 @@
         margin-bottom: 20px;
     }
 
+    /* The top-level form-container => has a light-blue background (or whichever) */
     .form-container {
         display: flex;
         flex-direction: column;
@@ -22,9 +23,14 @@
         margin-top: 20px;
         padding: 15px;
         background: palette.$background-color;
+        /* e.g. a light-blue shade */
         border-radius: 8px;
 
-        /* Each .section is a bounding box with a data-title in the top-left corner */
+        /* 
+      Each .section => bounding box with a label in the top-left corner.
+      The background is the same as .form-container => so it looks 
+      like a “light-blue box” with a visible border & label. 
+    */
         .section {
             position: relative;
             border: 1px solid palette.$secondary-color;
@@ -33,6 +39,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            background: palette.$background-color;
 
             &::before {
                 content: attr(data-title);
@@ -51,16 +58,11 @@
                 display: flex;
                 flex-wrap: nowrap;
                 gap: 5px;
-                /* Align by bottom edges so inputs line up horizontally */
                 align-items: flex-end;
             }
 
             /*
-        ROW 1 => 4 fields => 98% total
-          1) DioceseName = 30%
-          2) StreetNo    = 10%
-          3) StreetName  = 29%
-          4) Suburb      = 29%
+        Row 1 => 4 fields => total ~98%
       */
             .row-1 .dioceseName {
                 flex: 0 0 30%;
@@ -83,12 +85,7 @@
             }
 
             /*
-        ROW 2 => 5 fields => 98% total
-          1) State    = 10%
-          2) Postcode = 10%
-          3) Phone    = 22%
-          4) Email    = 28%
-          5) Website  = 28%
+        Row 2 => 5 fields => total ~98%
       */
             .row-2 .state {
                 flex: 0 0 10%;
@@ -115,17 +112,12 @@
                 max-width: 28%;
             }
 
-            /* 
-        .field-group: label + input or select 
-        (one per "column" in each row)
-      */
             .field-group {
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
                 box-sizing: border-box;
                 gap: 3px;
-                /* minimal space between label and control */
             }
 
             label {
@@ -138,14 +130,12 @@
             input {
                 width: 100%;
                 max-width: none;
-                /* remove the 180px constraint */
                 padding: 6px;
                 border: 1px solid palette.$secondary-color;
                 border-radius: 4px;
                 box-sizing: border-box;
             }
 
-            /* Inline error for blank Diocese Name if user submitted */
             .inline-error {
                 color: red;
                 font-size: 0.85em;
@@ -168,7 +158,6 @@
             color: white;
         }
 
-        /* 1) Add => $save-button-bg; hover => darken($neutral-color, 10%) */
         button:nth-child(1) {
             background-color: palette.$save-button-bg;
 
@@ -177,7 +166,6 @@
             }
         }
 
-        /* 2) Modify => $default-button-bg; hover => $default-button-hover-bg */
         button:nth-child(2) {
             background-color: palette.$default-button-bg;
 
@@ -186,7 +174,6 @@
             }
         }
 
-        /* 3) Delete => $delete-button-bg; hover => $delete-button-hover-bg */
         button:nth-child(3) {
             background-color: palette.$delete-button-bg;
 
@@ -195,7 +182,6 @@
             }
         }
 
-        /* 4) Cancel => $neutral-color; hover => darken($neutral-color, 10%) */
         button:nth-child(4) {
             background-color: palette.$neutral-color;
 
@@ -205,12 +191,71 @@
         }
     }
 
+    /* The Filter => same .section styling => same border, label, light-blue background, etc. */
+    .section.filter {
+        margin-top: 20px;
+        position: relative;
+        border: 1px solid palette.$secondary-color;
+        border-radius: 8px;
+        padding: 10px;
+        background: palette.$background-color;
+        /* same as the other sections */
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        &::before {
+            content: attr(data-title);
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: palette.$background-color;
+            padding: 0 5px;
+            color: palette.$primary-color;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .row-filter {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 5px;
+            align-items: flex-end;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+
+            label {
+                color: palette.$primary-color;
+                font-weight: bold;
+                margin-bottom: 0;
+            }
+
+            select {
+                width: 100%;
+                padding: 6px;
+                border: 1px solid palette.$secondary-color;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+        }
+
+        /* The state filter => 12% width */
+        .field-group.state {
+            flex: 0 0 12%;
+            max-width: 12%;
+        }
+    }
+
     .results-area {
         margin-top: 20px;
         border: 1px solid palette.$secondary-color;
         border-radius: 8px;
         padding: 10px;
-        overflow-x: auto; // horizontal scrolling if columns are wide
+        overflow-x: auto; // horizontal scroll if columns are wide
 
         .grid-table {
             display: grid;

@@ -16,6 +16,8 @@ import { DioceseService, Diocese } from './diocese.service';
 export class DioceseMaintenanceComponent implements OnInit {
   // The array of dioceses loaded from the backend
   dioceses: Diocese[] = [];
+  // We'll also keep the complete list for filtering purposes.
+  allDioceses: Diocese[] = [];
 
   hasSubmitted = false; // track whether the user tried to submit
 
@@ -51,7 +53,7 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   constructor(
     private dioceseService: DioceseService,
-    private snackBar: MatSnackBar  // <-- inject MatSnackBar
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
@@ -63,7 +65,7 @@ export class DioceseMaintenanceComponent implements OnInit {
     return this.columns.map(() => 'auto').join(' ');
   }
 
-  // Drag-and-drop event handlers
+  // Drag-and-drop handlers
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
@@ -88,10 +90,11 @@ export class DioceseMaintenanceComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (data) => {
+        this.allDioceses = data;
+        // Initially, no filter => show all dioceses
         this.dioceses = data;
       },
       error: (err) => {
-        // 403 handled by the interceptor => show role-based message
         if (err.status !== 403) {
           console.error('Failed to load dioceses:', err);
           this.showError('Fatal error loading dioceses! Please contact support.');
@@ -100,20 +103,30 @@ export class DioceseMaintenanceComponent implements OnInit {
     });
   }
 
-  trackByDioceseID(index: number, item: Diocese) {
-    return item.DioceseID; // Must be unique
+  // ---- Filtering by State for the table ----
+  // This property holds the current filter. An empty string means "all states".
+  filterState: string = '';
+
+  onFilterStateChange(): void {
+    if (!this.filterState) {
+      // No filter => display all dioceses
+      this.dioceses = this.allDioceses;
+    } else {
+      // Filter the complete list by state
+      this.dioceses = this.allDioceses.filter(d => d.DioceseState === this.filterState);
+    }
+  }
+
+  trackByDioceseID(index: number, item: Diocese): number {
+    return item.DioceseID;
   }
 
   addDiocese(): void {
-    // Mark that we attempted to submit
     this.hasSubmitted = true;
-
-    // 1) If user left DioceseName blank, show warning & skip the API call
     if (!this.selectedDiocese.DioceseName?.trim()) {
       this.showWarning('Diocese Name is a required field!');
       return;
     }
-
     this.dioceseService.createDiocese(this.selectedDiocese).subscribe({
       next: () => {
         this.loadAllDioceses();
@@ -185,7 +198,6 @@ export class DioceseMaintenanceComponent implements OnInit {
       DioceseEmail: '',
       DioceseWebsite: ''
     };
-
     this.hasSubmitted = false;
   }
 

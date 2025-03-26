@@ -1,7 +1,7 @@
 <div class="diocese-maintenance">
   <h2>Diocese Maintenance</h2>
 
-  <!-- Form container -->
+  <!-- form-container => houses the top sections, the buttons, AND the Filter section -->
   <div class="form-container">
     <!-- Row 1: Diocese Details -->
     <div class="section diocese" data-title="Diocese Details">
@@ -10,7 +10,6 @@
         <div class="field-group dioceseName">
           <label>Diocese Name</label>
           <input type="text" [(ngModel)]="selectedDiocese.DioceseName" />
-          <!-- Inline error if user submitted and it's still blank -->
           <div *ngIf="hasSubmitted && !selectedDiocese.DioceseName?.trim()" class="inline-error">
             Diocese Name is required.
           </div>
@@ -73,15 +72,29 @@
         </div>
       </div><!-- end row-2 -->
     </div><!-- end .section.location -->
-  </div><!-- end form-container -->
 
-  <!-- Buttons (same order/names as Adoration) -->
-  <div class="buttons">
-    <button (click)="addDiocese()">Add</button>
-    <button (click)="modifyDiocese()">Modify</button>
-    <button (click)="deleteDiocese()">Delete</button>
-    <button (click)="cancel()">Cancel</button>
-  </div>
+    <!-- CRUD Buttons -->
+    <div class="buttons">
+      <button (click)="addDiocese()">Add</button>
+      <button (click)="modifyDiocese()">Modify</button>
+      <button (click)="deleteDiocese()">Delete</button>
+      <button (click)="cancel()">Cancel</button>
+    </div>
+
+    <!-- Filter Section => EXACT same .section styling => same bounding box as above -->
+    <div class="section filter" data-title="Filter">
+      <div class="row-filter">
+        <!-- State Filter => 12% width -->
+        <div class="field-group state">
+          <label>State</label>
+          <select [(ngModel)]="filterState" (change)="onFilterStateChange()">
+            <option value="">All States</option>
+            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+    </div><!-- end .section.filter -->
+  </div><!-- end form-container -->
 
   <!-- Results area: grid-based, drag-and-drop columns -->
   <div class="results-area">
