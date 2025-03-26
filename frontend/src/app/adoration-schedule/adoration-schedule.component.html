@@ -5,17 +5,21 @@
   <div class="form-container">
     <!-- Row 1: Adoration -->
     <div class="row-1">
+      <!-- Single-row Adoration section -->
       <div class="section adoration" data-title="Adoration">
+        <!-- 4 fields => each 24% => total 96% -->
         <div>
           <label>Adoration Type</label>
-          <select [(ngModel)]="selectedAdoration.AdorationType">
+          <!-- (change)="onAdorationTypeChange()" triggers clearing fields if Perpetual -->
+          <select [(ngModel)]="selectedAdoration.AdorationType" (change)="onAdorationTypeChange()">
             <option value="Perpetual">Perpetual</option>
             <option value="Regular">Regular</option>
           </select>
         </div>
         <div>
           <label>Day</label>
-          <select [(ngModel)]="selectedAdoration.AdorationDay">
+          <!-- Disabled if AdorationType is Perpetual -->
+          <select [(ngModel)]="selectedAdoration.AdorationDay" [disabled]="isPerpetual()">
             <option value="Sunday">Sunday</option>
             <option value="Monday">Monday</option>
             <option value="Tuesday">Tuesday</option>
@@ -27,29 +31,20 @@
         </div>
         <div>
           <label>Start Time</label>
-          <input type="time" [(ngModel)]="selectedAdoration.AdorationStart" />
+          <input type="time" [(ngModel)]="selectedAdoration.AdorationStart" [disabled]="isPerpetual()" />
         </div>
         <div>
           <label>End Time</label>
-          <input type="time" [(ngModel)]="selectedAdoration.AdorationEnd" />
+          <input type="time" [(ngModel)]="selectedAdoration.AdorationEnd" [disabled]="isPerpetual()" />
         </div>
       </div>
     </div><!-- end row-1 -->
 
-    <!-- Row 2: Location -->
+    <!-- Row 2: Diocese/Parish -->
     <div class="row-2">
-      <div class="section location" data-title="Location">
-        <div>
-          <label>Location Type</label>
-          <select [(ngModel)]="selectedAdoration.AdorationLocationType">
-            <option value="Parish Church">Parish Church</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label>Location</label>
-          <input type="text" [(ngModel)]="selectedAdoration.AdorationLocation" />
-        </div>
+      <!-- Single-row Diocese/Parish section -->
+      <div class="section diocese-parish-names" data-title="Diocese/Parish">
+        <!-- 3 fields => State(12%), Diocese(42%), Parish(42%) => total 96% -->
         <div>
           <label>State</label>
           <select [(ngModel)]="selectedAdoration.State">
@@ -57,12 +52,6 @@
             <option *ngFor="let s of states" [value]="s">{{ s }}</option>
           </select>
         </div>
-      </div>
-    </div><!-- end row-2 -->
-
-    <!-- Row 3: Diocese/Parish -->
-    <div class="row-3">
-      <div class="section diocese-parish-names" data-title="Diocese/Parish">
         <div>
           <label>Diocese Name</label>
           <select [(ngModel)]="selectedAdoration.DioceseID">
@@ -80,6 +69,25 @@
               {{ p.ParishName }}
             </option>
           </select>
+        </div>
+      </div>
+    </div><!-- end row-2 -->
+
+    <!-- Row 3: Location -->
+    <div class="row-3">
+      <!-- Single-row Location section -->
+      <div class="section location" data-title="Location">
+        <!-- 2 fields => Location Type(20%), Location(78%) => total 98% -->
+        <div>
+          <label>Location Type</label>
+          <select [(ngModel)]="selectedAdoration.AdorationLocationType">
+            <option value="Parish Church">Parish Church</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Location</label>
+          <input type="text" [(ngModel)]="selectedAdoration.AdorationLocation" />
         </div>
       </div>
     </div><!-- end row-3 -->
