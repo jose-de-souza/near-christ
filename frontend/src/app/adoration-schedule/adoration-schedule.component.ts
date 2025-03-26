@@ -16,7 +16,6 @@ import { ParishService, Parish } from '../parish-maintenance/parish.service';
   imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
 })
 export class AdorationScheduleComponent implements OnInit {
-
   // Columns for the results table
   columns = [
     { header: 'Diocese Name', field: 'dioceseName' },
@@ -39,15 +38,16 @@ export class AdorationScheduleComponent implements OnInit {
   states: string[] = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
 
   // The currently selected or new Adoration record
-  // Default AdorationType to 'Regular'
+  // 1) Default AdorationType = 'Regular'
+  // 2) Default AdorationLocationType = 'Other'
   selectedAdoration: Partial<Adoration> = {
     AdorationID: undefined,
     DioceseID: 0,
     ParishID: 0,
     State: '',
     AdorationType: 'Regular',
+    AdorationLocationType: 'Other',
     AdorationLocation: '',
-    AdorationLocationType: '',
     AdorationDay: '',
     AdorationStart: '',
     AdorationEnd: ''
@@ -66,30 +66,60 @@ export class AdorationScheduleComponent implements OnInit {
     this.loadAllParishes();
   }
 
-  // Helper to see if AdorationType is Perpetual => used to disable Day/Start/End
+  /* ---------------------------------------
+     1) Perpetual vs. Regular
+     --------------------------------------- */
   isPerpetual(): boolean {
     return this.selectedAdoration.AdorationType === 'Perpetual';
   }
 
-  /**
-   * If user picks Perpetual, clear Day/Start/End.
-   * If user picks Regular again, we do not restore them.
-   */
   onAdorationTypeChange(): void {
-    if (this.selectedAdoration.AdorationType === 'Perpetual') {
+    if (this.isPerpetual()) {
+      // Clear Day/Start/End
       this.selectedAdoration.AdorationDay = '';
       this.selectedAdoration.AdorationStart = '';
       this.selectedAdoration.AdorationEnd = '';
     }
-    // If user picks Regular again, we do nothing => fields remain empty unless re-entered
   }
 
-  // For the dynamic grid columns => 'auto' for each column
+  /* ---------------------------------------
+     2) Parish Church vs. Other
+     --------------------------------------- */
+  isParishChurch(): boolean {
+    return this.selectedAdoration.AdorationLocationType === 'Parish Church';
+  }
+
+  /**
+   * If user picks 'Parish Church', set location to the parish address (if available) and disable the field.
+   * If user picks 'Other', clear location and enable the field.
+   * Called whenever either the location type or parish changes.
+   */
+  updateLocationFromParish(): void {
+    if (this.isParishChurch()) {
+      // Find the selected parish in parishList
+      const chosenID = Number(this.selectedAdoration.ParishID);
+      const p = this.parishList.find(par => par.ParishID === chosenID);
+      if (p) {
+        // We'll assume p has something like p.ParishAddress or build from p.ParishStName, p.ParishSuburb, etc.
+        // Example:
+        this.selectedAdoration.AdorationLocation = `${p.ParishStNumber} ${p.ParishStName}, ${p.ParishSuburb} ${p.ParishState} ${p.ParishPostcode}` || '';
+      } else {
+        // If no parish is selected or no address
+        this.selectedAdoration.AdorationLocation = '';
+      }
+    } else {
+      // If 'Other', clear the location
+      this.selectedAdoration.AdorationLocation = '';
+    }
+  }
+
+  /* ---------------------------------------
+     3) DRAG & DROP
+     --------------------------------------- */
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
 
-  // Drag & Drop reordering
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
@@ -101,6 +131,9 @@ export class AdorationScheduleComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
+  /* ---------------------------------------
+     4) LOAD / CRUD
+     --------------------------------------- */
   loadAllAdorations(): void {
     this.adorationService.getAllAdorations().subscribe({
       next: (data) => (this.schedules = data),
@@ -228,8 +261,9 @@ export class AdorationScheduleComponent implements OnInit {
       State: '',
       // Default to 'Regular'
       AdorationType: 'Regular',
+      // Default to 'Other'
+      AdorationLocationType: 'Other',
       AdorationLocation: '',
-      AdorationLocationType: '',
       AdorationDay: '',
       AdorationStart: '',
       AdorationEnd: ''

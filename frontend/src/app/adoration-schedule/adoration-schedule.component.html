@@ -63,7 +63,8 @@
         </div>
         <div>
           <label>Parish Name</label>
-          <select [(ngModel)]="selectedAdoration.ParishID">
+          <!-- (change)="updateLocationFromParish()" => if user picks new parish while 'Parish Church' is selected, set location -->
+          <select [(ngModel)]="selectedAdoration.ParishID" (change)="updateLocationFromParish()">
             <option [value]="null">-- select parish --</option>
             <option *ngFor="let p of parishList" [value]="p.ParishID">
               {{ p.ParishName }}
@@ -80,14 +81,16 @@
         <!-- 2 fields => Location Type(20%), Location(78%) => total 98% -->
         <div>
           <label>Location Type</label>
-          <select [(ngModel)]="selectedAdoration.AdorationLocationType">
+          <!-- (change)="updateLocationFromParish()" => if user picks 'Parish Church', set location from parish -->
+          <select [(ngModel)]="selectedAdoration.AdorationLocationType" (change)="updateLocationFromParish()">
             <option value="Parish Church">Parish Church</option>
             <option value="Other">Other</option>
           </select>
         </div>
         <div>
           <label>Location</label>
-          <input type="text" [(ngModel)]="selectedAdoration.AdorationLocation" />
+          <!-- disabled if isParishChurch() => 'Parish Church' -->
+          <input type="text" [(ngModel)]="selectedAdoration.AdorationLocation" [disabled]="isParishChurch()" />
         </div>
       </div>
     </div><!-- end row-3 -->
