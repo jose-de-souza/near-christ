@@ -75,9 +75,9 @@ export class AdorationScheduleComponent implements OnInit {
     this.filteredParishes = [];
   }
 
-  /* -----------------------------
-     1) Perpetual vs. Regular
-     ----------------------------- */
+  /* ---------------------------------------
+     PERPETUAL vs. REGULAR
+     --------------------------------------- */
   isPerpetual(): boolean {
     return this.selectedAdoration.AdorationType === 'Perpetual';
   }
@@ -90,12 +90,12 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* -----------------------------
-     2) State => filter Dioceses
-     ----------------------------- */
+  /* ---------------------------------------
+     STATE => filter Dioceses & disable if not set
+     --------------------------------------- */
   onStateChange(): void {
     if (!this.selectedAdoration.State) {
-      // If no state selected => clear & disable diocese & parish
+      // No state selected: clear & disable diocese & parish
       this.filteredDioceses = [];
       this.filteredParishes = [];
       this.selectedAdoration.DioceseID = undefined;
@@ -103,60 +103,56 @@ export class AdorationScheduleComponent implements OnInit {
       this.dioceseDisabled = true;
       this.parishDisabled = true;
     } else {
-      // Filter diocese by state
+      // Filter dioceseList by chosen state
       const chosenState = this.selectedAdoration.State;
       this.filteredDioceses = this.dioceseList.filter(d => d.DioceseState === chosenState);
-
       if (this.filteredDioceses.length === 0) {
-        // No diocese found => clear & disable diocese & parish
+        // No dioceses available: clear & disable diocese & parish
         this.selectedAdoration.DioceseID = undefined;
         this.selectedAdoration.ParishID = undefined;
         this.filteredParishes = [];
         this.dioceseDisabled = true;
         this.parishDisabled = true;
       } else {
-        // Enable diocese dropdown
+        // Enable diocese dropdown; clear previous diocese & parish selection
         this.dioceseDisabled = false;
-        // Clear old selection
         this.selectedAdoration.DioceseID = undefined;
-        // Clear & disable parish until user picks diocese
-        this.filteredParishes = [];
         this.selectedAdoration.ParishID = undefined;
+        this.filteredParishes = [];
+        // Keep parish disabled until a diocese is selected
         this.parishDisabled = true;
       }
     }
   }
 
-  /* -----------------------------
-     3) Diocese => filter Parishes
-     ----------------------------- */
+  /* ---------------------------------------
+     DIOCESE => filter Parishes & disable if not set
+     --------------------------------------- */
   onDioceseChange(): void {
-    if (!this.selectedAdoration.DioceseID) {
-      // If no diocese => clear & disable parish
+    if (!this.selectedAdoration.DioceseID || this.selectedAdoration.DioceseID === 0) {
+      // No diocese selected: clear & disable parish
       this.filteredParishes = [];
       this.selectedAdoration.ParishID = undefined;
       this.parishDisabled = true;
     } else {
-      // Filter parish by chosen diocese
+      // Filter parishes by chosen diocese
       const chosenID = Number(this.selectedAdoration.DioceseID);
       this.filteredParishes = this.parishList.filter(p => p.DioceseID === chosenID);
-
       if (this.filteredParishes.length === 0) {
-        // No parishes => clear & disable
+        // No parishes available: clear & disable parish
         this.selectedAdoration.ParishID = undefined;
         this.parishDisabled = true;
       } else {
-        // Enable parish dropdown
+        // Enable parish dropdown and clear previous parish selection
         this.parishDisabled = false;
-        // Clear old selection
         this.selectedAdoration.ParishID = undefined;
       }
     }
   }
 
-  /* -----------------------------
-     4) Parish Church vs. Other
-     ----------------------------- */
+  /* ---------------------------------------
+     PARISH CHURCH vs. OTHER for Location
+     --------------------------------------- */
   isParishChurch(): boolean {
     return this.selectedAdoration.AdorationLocationType === 'Parish Church';
   }
@@ -167,7 +163,7 @@ export class AdorationScheduleComponent implements OnInit {
       const p = this.parishList.find(par => par.ParishID === chosenParishID);
       if (p) {
         this.selectedAdoration.AdorationLocation =
-          `${p.ParishStNumber} ${p.ParishStName}, ${p.ParishSuburb} ${p.ParishState} ${p.ParishPostcode}` || '';
+          `${p.ParishStNumber} ${p.ParishStName}, ${p.ParishSuburb} ${p.ParishState} ${p.ParishPostcode}`.trim() || '';
       } else {
         this.selectedAdoration.AdorationLocation = '';
       }
@@ -176,9 +172,9 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* -----------------------------
-     5) DRAG & DROP
-     ----------------------------- */
+  /* ---------------------------------------
+     DRAG & DROP
+     --------------------------------------- */
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -193,9 +189,9 @@ export class AdorationScheduleComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  /* -----------------------------
-     6) LOAD / CRUD
-     ----------------------------- */
+  /* ---------------------------------------
+     LOAD / CRUD
+     --------------------------------------- */
   loadAllAdorations(): void {
     this.adorationService.getAllAdorations().subscribe({
       next: (data) => (this.schedules = data),
@@ -212,11 +208,10 @@ export class AdorationScheduleComponent implements OnInit {
     this.dioceseService.getAllDioceses().subscribe({
       next: (data) => {
         this.dioceseList = data;
-        // If needed, we could pre-filter if there's an initial state
       },
       error: (err) => {
         if (err.status !== 403) {
-          console.error('Failed to load all dioceses:', err);
+          console.error('Failed to load dioceses:', err);
           this.showError('Fatal Error! Please contact support!');
         }
       }
@@ -230,13 +225,16 @@ export class AdorationScheduleComponent implements OnInit {
       },
       error: (err) => {
         if (err.status !== 403) {
-          console.error('Failed to load all parishes:', err);
+          console.error('Failed to load parishes:', err);
           this.showError('Fatal Error! Please contact support!');
         }
       }
     });
   }
 
+  /* ---------------------------------------
+     TABLE RENDERING
+     --------------------------------------- */
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
       return row.diocese?.DioceseName || '';
@@ -247,10 +245,32 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
+  /* ---------------------------------------
+     SELECT ROW: Enable Dropdowns and Populate Data
+     --------------------------------------- */
   selectSchedule(schedule: Adoration): void {
+    // Copy the record to selectedAdoration
     this.selectedAdoration = { ...schedule };
+
+    // If the record has a state, force the state-change logic to run to enable diocese dropdown.
+    if (schedule.State && schedule.State.trim() !== '') {
+      this.onStateChange();
+      this.selectedAdoration.State = schedule.State;
+    }
+    // If a valid diocese is present, set it and run the diocese-change logic to enable parish dropdown.
+    if (schedule.DioceseID && schedule.DioceseID > 0) {
+      this.selectedAdoration.DioceseID = schedule.DioceseID;
+      this.onDioceseChange();
+    }
+    // If a valid parish is present, simply assign it.
+    if (schedule.ParishID && schedule.ParishID > 0) {
+      this.selectedAdoration.ParishID = schedule.ParishID;
+    }
   }
 
+  /* ---------------------------------------
+     CRUD METHODS
+     --------------------------------------- */
   addSchedule(): void {
     this.adorationService.createAdoration(this.selectedAdoration).subscribe({
       next: () => {
@@ -331,7 +351,6 @@ export class AdorationScheduleComponent implements OnInit {
       AdorationStart: '',
       AdorationEnd: ''
     };
-    // Also reset filtered arrays & disable
     this.filteredDioceses = [];
     this.filteredParishes = [];
     this.dioceseDisabled = true;

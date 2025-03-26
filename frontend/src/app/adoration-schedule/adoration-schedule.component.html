@@ -40,10 +40,9 @@
     <!-- Row 2: Diocese/Parish -->
     <div class="row-2">
       <div class="section diocese-parish-names" data-title="Diocese/Parish">
-        <!-- State(12%), Diocese(42%), Parish(42%) => total 96% -->
+        <!-- 3 fields => State(12%), Diocese(42%), Parish(42%) => total 96% -->
         <div>
           <label>State</label>
-          <!-- Disabled if no states at all -->
           <select [(ngModel)]="selectedAdoration.State" (change)="onStateChange()"
             [disabled]="!states || states.length === 0">
             <option value="">Select State</option>
@@ -52,7 +51,6 @@
         </div>
         <div>
           <label>Diocese Name</label>
-          <!-- Disabled if dioceseDisabled is true -->
           <select [(ngModel)]="selectedAdoration.DioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [value]="null">-- select diocese --</option>
             <option *ngFor="let d of filteredDioceses" [value]="d.DioceseID">
@@ -62,7 +60,6 @@
         </div>
         <div>
           <label>Parish Name</label>
-          <!-- Disabled if parishDisabled is true -->
           <select [(ngModel)]="selectedAdoration.ParishID" (change)="updateLocationFromParish()"
             [disabled]="parishDisabled">
             <option [value]="null">-- select parish --</option>
