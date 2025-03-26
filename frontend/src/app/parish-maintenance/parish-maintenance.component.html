@@ -1,33 +1,29 @@
 <div class="parish-maintenance">
     <h2>Parish Maintenance</h2>
 
-    <!-- Form container -->
+    <!-- Form container (light-blue background) -->
     <div class="form-container">
-        <!-- Row 1: Parish Details -->
+        <!-- Section 1: Parish Details -->
         <div class="section parish" data-title="Parish Details">
             <div class="row-1">
                 <!-- Parish Name -->
                 <div class="field-group parishName">
                     <label>Parish Name</label>
                     <input type="text" [(ngModel)]="selectedParish.ParishName" />
-                    <!-- Inline error if user submitted and it's still blank -->
                     <div *ngIf="hasSubmitted && !selectedParish.ParishName?.trim()" class="inline-error">
                         Parish Name is required.
                     </div>
                 </div>
-
                 <!-- Street No -->
                 <div class="field-group streetNo">
                     <label>Street No</label>
                     <input type="text" [(ngModel)]="selectedParish.ParishStNumber" />
                 </div>
-
                 <!-- Street Name -->
                 <div class="field-group streetName">
                     <label>Street Name</label>
                     <input type="text" [(ngModel)]="selectedParish.ParishStName" />
                 </div>
-
                 <!-- Suburb -->
                 <div class="field-group suburb">
                     <label>Suburb</label>
@@ -36,7 +32,7 @@
             </div><!-- end row-1 -->
         </div><!-- end .section.parish -->
 
-        <!-- Row 2: Location / Contact -->
+        <!-- Section 2: Location / Contact -->
         <div class="section location" data-title="Location / Contact">
             <div class="row-2">
                 <!-- State -->
@@ -47,25 +43,21 @@
                         <option *ngFor="let s of states" [value]="s">{{ s }}</option>
                     </select>
                 </div>
-
                 <!-- Postcode -->
                 <div class="field-group postcode">
                     <label>Postcode</label>
                     <input type="text" [(ngModel)]="selectedParish.ParishPostcode" />
                 </div>
-
                 <!-- Phone -->
                 <div class="field-group phone">
                     <label>Phone</label>
                     <input type="text" [(ngModel)]="selectedParish.ParishPhone" />
                 </div>
-
                 <!-- Email -->
                 <div class="field-group email">
                     <label>Email</label>
                     <input type="text" [(ngModel)]="selectedParish.ParishEmail" />
                 </div>
-
                 <!-- Website -->
                 <div class="field-group website">
                     <label>Website</label>
@@ -73,6 +65,31 @@
                 </div>
             </div><!-- end row-2 -->
         </div><!-- end .section.location -->
+
+        <!-- Section 3: Filter (State and Diocese) -->
+        <div class="section filter" data-title="Filter">
+            <div class="row-filter">
+                <!-- State Filter: 12% width -->
+                <div class="field-group state">
+                    <label>State</label>
+                    <select [(ngModel)]="filterState" (change)="onFilterStateChange()">
+                        <option value="">All States</option>
+                        <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+                    </select>
+                </div>
+                <!-- Diocese Filter: takes remaining space -->
+                <div class="field-group diocese">
+                    <label>Diocese</label>
+                    <select [(ngModel)]="filterDioceseID" (change)="onFilterDioceseChange()"
+                        [disabled]="dioceseFilterDisabled">
+                        <option [value]="0">All Dioceses</option>
+                        <option *ngFor="let d of filteredDiocesesForFilter" [ngValue]="d.DioceseID">
+                            {{ d.DioceseName }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div><!-- end .section.filter -->
     </div><!-- end form-container -->
 
     <!-- Buttons -->
@@ -83,13 +100,12 @@
         <button (click)="cancel()">Cancel</button>
     </div>
 
-    <!-- Results Area: Grid-based, drag-and-drop columns -->
+    <!-- Results Area -->
     <div class="results-area">
         <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
             (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
             <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
                 (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-                <!-- Column Header -->
                 <div class="grid-column-header">
                     <span class="drag-handle" cdkDragHandle>☰</span>
                     <ng-template cdkDragPreview>
@@ -102,8 +118,6 @@
                     </ng-template>
                     {{ column.header }}
                 </div>
-
-                <!-- Column cells -->
                 <div class="grid-column-cell" *ngFor="let row of parishes; trackBy: trackByParishID"
                     (click)="selectParish(row)">
                     {{ getCellValue(row, column) }}
