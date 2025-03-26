@@ -8,7 +8,7 @@ import { AdorationQueryComponent } from './adoration-query/adoration-query.compo
 import { CrusadeQueryComponent } from './crusade-query/crusade-query.component';
 
 export const appRoutes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'adoration-query', pathMatch: 'full' },
   { path: 'adoration-query', component: AdorationQueryComponent },
   { path: 'crusade-query', component: CrusadeQueryComponent },
   {
