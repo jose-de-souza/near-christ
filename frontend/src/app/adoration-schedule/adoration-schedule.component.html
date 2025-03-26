@@ -5,12 +5,10 @@
   <div class="form-container">
     <!-- Row 1: Adoration -->
     <div class="row-1">
-      <!-- Single-row Adoration section -->
       <div class="section adoration" data-title="Adoration">
         <!-- 4 fields => each 24% => total 96% -->
         <div>
           <label>Adoration Type</label>
-          <!-- (change)="onAdorationTypeChange()" triggers clearing fields if Perpetual -->
           <select [(ngModel)]="selectedAdoration.AdorationType" (change)="onAdorationTypeChange()">
             <option value="Perpetual">Perpetual</option>
             <option value="Regular">Regular</option>
@@ -18,7 +16,6 @@
         </div>
         <div>
           <label>Day</label>
-          <!-- Disabled if AdorationType is Perpetual -->
           <select [(ngModel)]="selectedAdoration.AdorationDay" [disabled]="isPerpetual()">
             <option value="Sunday">Sunday</option>
             <option value="Monday">Monday</option>
@@ -42,31 +39,34 @@
 
     <!-- Row 2: Diocese/Parish -->
     <div class="row-2">
-      <!-- Single-row Diocese/Parish section -->
       <div class="section diocese-parish-names" data-title="Diocese/Parish">
-        <!-- 3 fields => State(12%), Diocese(42%), Parish(42%) => total 96% -->
+        <!-- State(12%), Diocese(42%), Parish(42%) => total 96% -->
         <div>
           <label>State</label>
-          <select [(ngModel)]="selectedAdoration.State">
+          <!-- Disabled if no states at all -->
+          <select [(ngModel)]="selectedAdoration.State" (change)="onStateChange()"
+            [disabled]="!states || states.length === 0">
             <option value="">Select State</option>
             <option *ngFor="let s of states" [value]="s">{{ s }}</option>
           </select>
         </div>
         <div>
           <label>Diocese Name</label>
-          <select [(ngModel)]="selectedAdoration.DioceseID">
+          <!-- Disabled if dioceseDisabled is true -->
+          <select [(ngModel)]="selectedAdoration.DioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [value]="null">-- select diocese --</option>
-            <option *ngFor="let d of dioceseList" [value]="d.DioceseID">
+            <option *ngFor="let d of filteredDioceses" [value]="d.DioceseID">
               {{ d.DioceseName }}
             </option>
           </select>
         </div>
         <div>
           <label>Parish Name</label>
-          <!-- (change)="updateLocationFromParish()" => if user picks new parish while 'Parish Church' is selected, set location -->
-          <select [(ngModel)]="selectedAdoration.ParishID" (change)="updateLocationFromParish()">
+          <!-- Disabled if parishDisabled is true -->
+          <select [(ngModel)]="selectedAdoration.ParishID" (change)="updateLocationFromParish()"
+            [disabled]="parishDisabled">
             <option [value]="null">-- select parish --</option>
-            <option *ngFor="let p of parishList" [value]="p.ParishID">
+            <option *ngFor="let p of filteredParishes" [value]="p.ParishID">
               {{ p.ParishName }}
             </option>
           </select>
@@ -76,12 +76,10 @@
 
     <!-- Row 3: Location -->
     <div class="row-3">
-      <!-- Single-row Location section -->
       <div class="section location" data-title="Location">
         <!-- 2 fields => Location Type(20%), Location(78%) => total 98% -->
         <div>
           <label>Location Type</label>
-          <!-- (change)="updateLocationFromParish()" => if user picks 'Parish Church', set location from parish -->
           <select [(ngModel)]="selectedAdoration.AdorationLocationType" (change)="updateLocationFromParish()">
             <option value="Parish Church">Parish Church</option>
             <option value="Other">Other</option>
@@ -89,7 +87,6 @@
         </div>
         <div>
           <label>Location</label>
-          <!-- disabled if isParishChurch() => 'Parish Church' -->
           <input type="text" [(ngModel)]="selectedAdoration.AdorationLocation" [disabled]="isParishChurch()" />
         </div>
       </div>
