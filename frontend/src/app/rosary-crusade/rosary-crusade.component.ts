@@ -16,8 +16,7 @@ import { ParishService, Parish } from '../parish-maintenance/parish.service';
   imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
 })
 export class RosaryCrusadeComponent implements OnInit {
-
-  // 1) Column definitions for the grid-based results.
+  // 1) Columns for the results grid
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
@@ -39,11 +38,18 @@ export class RosaryCrusadeComponent implements OnInit {
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
 
+  // Filtered arrays for diocese & parish
+  filteredDioceses: Diocese[] = [];
+  filteredParishes: Parish[] = [];
+
+  // Flags to enable/disable diocese & parish
+  dioceseDisabled = true;
+  parishDisabled = true;
+
   // 3) Crusade array for displaying results
   crusades: Crusade[] = [];
 
   // 4) The crusade record currently being edited
-  //    All fields are now considered "required".
   selectedCrusade: Partial<Crusade> = {
     CrusadeID: undefined,
     DioceseID: 0,
@@ -61,10 +67,9 @@ export class RosaryCrusadeComponent implements OnInit {
     Comments: ''
   };
 
-  // Track if user has tried to Add or Modify (for inline errors).
+  // For inline validation
   hasSubmitted = false;
 
-  // Tells the template how many 'auto' columns to create for the grid.
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -73,16 +78,114 @@ export class RosaryCrusadeComponent implements OnInit {
     private crusadeService: CrusadeService,
     private dioceseService: DioceseService,
     private parishService: ParishService,
-    private snackBar: MatSnackBar  // <-- Inject MatSnackBar
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
     this.loadAllCrusades();
     this.loadAllDioceses();
     this.loadAllParishes();
+    // Start with empty filtered arrays
+    this.filteredDioceses = [];
+    this.filteredParishes = [];
+    // By default, no state => diocese & parish disabled
+    this.dioceseDisabled = true;
+    this.parishDisabled = true;
   }
 
-  // -------------- DRAG & DROP --------------
+  /* ------------------------------------------
+     SELECT ROW => Re-enable State/Diocese/Parish
+     ------------------------------------------ */
+  selectCrusade(c: Crusade): void {
+    this.hasSubmitted = false;
+    // Copy the row
+    this.selectedCrusade = { ...c };
+
+    // 1) If c.State is not empty => run onStateChange logic
+    if (c.State?.trim()) {
+      // Force the logic that sets filteredDioceses & dioceseDisabled
+      this.onStateChange();
+      // Then set the selectedCrusade.State again (just to ensure it's correct)
+      this.selectedCrusade.State = c.State;
+    } else {
+      // If c.State is empty => onStateChange() logic disables diocese & parish
+    }
+
+    // 2) If c.DioceseID is > 0 => run onDioceseChange logic
+    if (c.DioceseID && c.DioceseID > 0) {
+      this.selectedCrusade.DioceseID = c.DioceseID;
+      this.onDioceseChange();
+    }
+
+    // 3) If c.ParishID is > 0 => set it
+    if (c.ParishID && c.ParishID > 0) {
+      this.selectedCrusade.ParishID = c.ParishID;
+    }
+  }
+
+  /* ------------------------------------------
+     DISABLING + FILTER LOGIC FOR STATE/ DIOCESE
+     ------------------------------------------ */
+  onStateChange(): void {
+    if (!this.selectedCrusade.State) {
+      // No state => disable diocese & parish
+      this.dioceseDisabled = true;
+      this.parishDisabled = true;
+      this.selectedCrusade.DioceseID = 0;
+      this.selectedCrusade.ParishID = 0;
+      this.filteredDioceses = [];
+      this.filteredParishes = [];
+    } else {
+      // Filter diocese by chosen state
+      const chosenState = this.selectedCrusade.State;
+      this.filteredDioceses = this.dioceseList.filter(d => d.DioceseState === chosenState);
+
+      if (this.filteredDioceses.length === 0) {
+        // No diocese => disable both
+        this.dioceseDisabled = true;
+        this.parishDisabled = true;
+        this.selectedCrusade.DioceseID = 0;
+        this.selectedCrusade.ParishID = 0;
+        this.filteredParishes = [];
+      } else {
+        // Enable diocese
+        this.dioceseDisabled = false;
+        // Clear old diocese & parish
+        this.selectedCrusade.DioceseID = 0;
+        this.selectedCrusade.ParishID = 0;
+        this.filteredParishes = [];
+        // Keep parish disabled until user picks a diocese
+        this.parishDisabled = true;
+      }
+    }
+  }
+
+  onDioceseChange(): void {
+    if (!this.selectedCrusade.DioceseID || this.selectedCrusade.DioceseID === 0) {
+      // No diocese => disable parish
+      this.parishDisabled = true;
+      this.selectedCrusade.ParishID = 0;
+      this.filteredParishes = [];
+    } else {
+      const chosenID = Number(this.selectedCrusade.DioceseID);
+      const temp = this.parishList.filter(p => p.DioceseID === chosenID);
+      if (temp.length === 0) {
+        // No parishes => disable
+        this.parishDisabled = true;
+        this.selectedCrusade.ParishID = 0;
+        this.filteredParishes = [];
+      } else {
+        // Enable parish
+        this.parishDisabled = false;
+        this.selectedCrusade.ParishID = 0;
+        this.filteredParishes = temp;
+      }
+    }
+  }
+
+  /* ------------------------------------------
+     DRAG & DROP
+     ------------------------------------------ */
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
@@ -93,12 +196,15 @@ export class RosaryCrusadeComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  // -------------- DATA LOADING --------------
+  /* ------------------------------------------
+     LOADING
+     ------------------------------------------ */
   loadAllCrusades(): void {
     this.crusadeService.getAllCrusades().subscribe({
-      next: (data) => (this.crusades = data),
+      next: (data) => {
+        this.crusades = data;
+      },
       error: (err) => {
-        // 403 is handled by the role-based interceptor
         if (err.status !== 403) {
           console.error('Failed to load crusades:', err);
           this.showError('Fatal error loading crusades! Please contact support.');
@@ -109,7 +215,9 @@ export class RosaryCrusadeComponent implements OnInit {
 
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
-      next: (data) => (this.dioceseList = data),
+      next: (data) => {
+        this.dioceseList = data;
+      },
       error: (err) => {
         if (err.status !== 403) {
           console.error('Failed to load dioceses:', err);
@@ -121,7 +229,9 @@ export class RosaryCrusadeComponent implements OnInit {
 
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
-      next: (data) => (this.parishList = data),
+      next: (data) => {
+        this.parishList = data;
+      },
       error: (err) => {
         if (err.status !== 403) {
           console.error('Failed to load parishes:', err);
@@ -131,18 +241,13 @@ export class RosaryCrusadeComponent implements OnInit {
     });
   }
 
-  // -------------- SELECT A ROW --------------
-  selectCrusade(c: Crusade): void {
-    this.selectedCrusade = { ...c };
-  }
-
-  // -------------- CRUD --------------
+  /* ------------------------------------------
+     SELECT / CRUD
+     ------------------------------------------ */
   addCrusade(): void {
     this.hasSubmitted = true;
-
-    // If any required field is missing => show warning & skip
     if (!this.isAllFieldsValid()) {
-      this.showWarning('All fields are required!');
+      this.showWarning('Some required fields are missing.');
       return;
     }
 
@@ -162,15 +267,13 @@ export class RosaryCrusadeComponent implements OnInit {
 
   modifyCrusade(): void {
     if (!this.selectedCrusade.CrusadeID) {
-      this.showWarning('No crusade selected for update!');
+      this.showWarning('No crusade selected to modify!');
       return;
     }
 
     this.hasSubmitted = true;
-
-    // Also check fields before modifying
     if (!this.isAllFieldsValid()) {
-      this.showWarning('All fields are required!');
+      this.showWarning('Some required fields are missing.');
       return;
     }
 
@@ -191,7 +294,7 @@ export class RosaryCrusadeComponent implements OnInit {
 
   deleteCrusade(): void {
     if (!this.selectedCrusade.CrusadeID) {
-      this.showWarning('No crusade selected for deletion!');
+      this.showWarning('No crusade selected to delete!');
       return;
     }
     const id = this.selectedCrusade.CrusadeID;
@@ -213,32 +316,16 @@ export class RosaryCrusadeComponent implements OnInit {
     this.resetForm();
   }
 
-  // -------------- UTILITY --------------
-  // Check if all required fields are present
+  /* ------------------------------------------
+     VALIDATION / UTILS
+     ------------------------------------------ */
   private isAllFieldsValid(): boolean {
-    // DioceseID must be > 0
-    if (!this.selectedCrusade.DioceseID || this.selectedCrusade.DioceseID === 0) return false;
-    // ParishID must be > 0
-    if (!this.selectedCrusade.ParishID || this.selectedCrusade.ParishID === 0) return false;
-    // State must not be blank
+    // minimal checks for demonstration:
     if (!this.selectedCrusade.State?.trim()) return false;
-
-    // Time fields must not be blank
-   /*  if (!this.selectedCrusade.ConfessionStartTime?.trim()) return false;
-    if (!this.selectedCrusade.ConfessionEndTime?.trim()) return false;
-    if (!this.selectedCrusade.MassStartTime?.trim()) return false;
-    if (!this.selectedCrusade.MassEndTime?.trim()) return false; */
+    if (!this.selectedCrusade.DioceseID || this.selectedCrusade.DioceseID === 0) return false;
+    if (!this.selectedCrusade.ParishID || this.selectedCrusade.ParishID === 0) return false;
     if (!this.selectedCrusade.CrusadeStartTime?.trim()) return false;
     if (!this.selectedCrusade.CrusadeEndTime?.trim()) return false;
-
-    // Contact fields must not be blank
-   /*  if (!this.selectedCrusade.ContactName?.trim()) return false;
-    if (!this.selectedCrusade.ContactPhone?.trim()) return false;
-    if (!this.selectedCrusade.ContactEmail?.trim()) return false; */
-
-    // Comments must not be blank
-    /* if (!this.selectedCrusade.Comments?.trim()) return false; */
-
     return true;
   }
 
@@ -270,6 +357,12 @@ export class RosaryCrusadeComponent implements OnInit {
       Comments: ''
     };
     this.hasSubmitted = false;
+
+    // Also reset the diocese & parish dropdown states
+    this.dioceseDisabled = true;
+    this.parishDisabled = true;
+    this.filteredDioceses = [];
+    this.filteredParishes = [];
   }
 
   // -------------- SNACK BAR HELPERS --------------
