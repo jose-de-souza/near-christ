@@ -139,7 +139,7 @@ export class AuthService {
 
     this.ngZone.run(() => {
       this.router.navigateByUrl('/').then(() => {
-        this.router.navigate(['/login']).finally(() => {
+        this.router.navigate(['/adoration-query']).finally(() => {
           this.isNavigating = false;
         });
       });
