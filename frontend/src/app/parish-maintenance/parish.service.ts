@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 
 export interface Parish {
     ParishID: number; // The real PK from the backend
+    DioceseID: number;
     ParishName: string;
     ParishStNumber: string;
     ParishStName: string;
