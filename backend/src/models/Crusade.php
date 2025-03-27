@@ -13,7 +13,6 @@ class Crusade extends Model
     protected $primaryKey = 'CrusadeID';
     public $timestamps = false;
 
-    // Updated fillable: remove old 'State' string, add 'StateID'
     protected $fillable = [
         'StateID',
         'DioceseID',
@@ -30,19 +29,16 @@ class Crusade extends Model
         'Comments'
     ];
 
-    // Crusade belongs to one Diocese
     public function diocese()
     {
         return $this->belongsTo(Diocese::class, 'DioceseID', 'DioceseID');
     }
 
-    // Crusade belongs to one Parish
     public function parish()
     {
         return $this->belongsTo(Parish::class, 'ParishID', 'ParishID');
     }
 
-    // Crusade belongs to one State
     public function state()
     {
         return $this->belongsTo(State::class, 'StateID', 'StateID');

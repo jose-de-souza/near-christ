@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Controllers\Traits\JsonResponseTrait;
 use App\Models\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -11,8 +12,10 @@ use Exception;
 
 class AuthController
 {
+    use JsonResponseTrait;
+
     /**
-     * Handle POST /auth/login
+     * POST /auth/login
      */
     public function login(Request $request, Response $response): Response
     {
@@ -23,30 +26,30 @@ class AuthController
             return $this->jsonResponse($response, 400, false, "Missing email or password");
         }
 
-        // Look up user by email in DB
+        // Look up user by email
         $user = User::where('UserEmail', $input['email'])->first();
         if (!$user) {
             return $this->jsonResponse($response, 401, false, "Invalid credentials");
         }
 
-        // Verify hashed password
+        // Verify password
         if (!password_verify($input['password'], $user->UserPassword)) {
             return $this->jsonResponse($response, 401, false, "Invalid credentials");
         }
 
-        // Generate JWT token
+        // Generate JWT
         $secretKey = $_ENV['JWT_SECRET_KEY'] ?? null;
         if (!$secretKey) {
             return $this->jsonResponse($response, 500, false, "JWT_SECRET_KEY is missing");
         }
 
         $issuedAt       = time();
-        $expirationTime = $issuedAt + 3600; // 1 hour validity
+        $expirationTime = $issuedAt + 3600; // 1 hour
         $payload = [
             'iss'     => $_ENV['APP_URL'] ?? 'http://localhost',
             'iat'     => $issuedAt,
             'exp'     => $expirationTime,
-            'sub'     => $user->UserEmail,  // subject => user's email
+            'sub'     => $user->UserEmail,
             'user_id' => $user->UserID,
             'role'    => $user->UserRole
         ];
@@ -59,7 +62,7 @@ class AuthController
             ]);
         }
 
-        // Return response with JWT token and user info
+        // Return JWT and basic user info
         return $this->jsonResponse($response, 200, true, "Login successful", [
             "accessToken" => $accessToken,
             "user" => [
@@ -69,21 +72,5 @@ class AuthController
                 "role"  => $user->UserRole
             ]
         ]);
-    }
-
-    /**
-     * Utility function to create a JSON response
-     */
-    private function jsonResponse(Response $response, int $status, bool $success, string $message, array $data = []): Response
-    {
-        $payload = [
-            "success" => $success,
-            "status"  => $status,
-            "message" => $message,
-            "data"    => $data
-        ];
-
-        $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
     }
 }

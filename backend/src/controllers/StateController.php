@@ -2,119 +2,108 @@
 
 namespace App\Controllers;
 
+use App\Controllers\Traits\JsonResponseTrait;
 use App\Models\State;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class StateController
 {
+    use JsonResponseTrait;
+
     /**
-     * GET /states - Get all States (optionally including related Dioceses)
+     * GET /states
      */
-    public function getAll(Request $request, Response $response)
+    public function getAll(Request $request, Response $response): Response
     {
         try {
-            // If you want the related dioceses: State::with('dioceses')->get();
             $states = State::all();
-            $response->getBody()->write(json_encode($states));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "All states fetched", $states);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching states", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching states", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * GET /states/{id} - Get a single State by ID (optionally with 'dioceses')
+     * GET /states/{id}
      */
-    public function getById(Request $request, Response $response, $args)
+    public function getById(Request $request, Response $response, array $args): Response
     {
         try {
-            // If you want to load related dioceses => with('dioceses')->find()
             $state = State::find($args['id']);
             if (!$state) {
-                return $this->notFoundResponse($response, "State not found");
+                return $this->jsonResponse($response, 404, false, "State not found");
             }
-            $response->getBody()->write(json_encode($state));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "State fetched successfully", $state);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching state", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching state", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * POST /states - Create a new State
-     * (Protected by AuthMiddleware, presumably)
+     * POST /states
      */
-    public function create(Request $request, Response $response)
+    public function create(Request $request, Response $response): Response
     {
         try {
             $data = json_decode($request->getBody(), true);
+
+            if (empty($data['StateName'])) {
+                return $this->jsonResponse($response, 400, false, "Missing required field: StateName");
+            }
+
             $state = State::create($data);
-            $response->getBody()->write(json_encode($state));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+            return $this->jsonResponse($response, 201, true, "State created successfully", $state);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error creating state", $e);
+            return $this->jsonResponse($response, 500, false, "Error creating state", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * PUT /states/{id} - Update a State
+     * PUT /states/{id}
      */
-    public function update(Request $request, Response $response, $args)
+    public function update(Request $request, Response $response, array $args): Response
     {
         try {
             $state = State::find($args['id']);
             if (!$state) {
-                return $this->notFoundResponse($response, "State not found");
+                return $this->jsonResponse($response, 404, false, "State not found");
             }
+
             $data = json_decode($request->getBody(), true);
             $state->update($data);
-            $response->getBody()->write(json_encode($state));
-            return $response->withHeader('Content-Type', 'application/json');
+
+            return $this->jsonResponse($response, 200, true, "State updated successfully", $state);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error updating state", $e);
+            return $this->jsonResponse($response, 500, false, "Error updating state", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * DELETE /states/{id} - Delete a State
+     * DELETE /states/{id}
      */
-    public function delete(Request $request, Response $response, $args)
+    public function delete(Request $request, Response $response, array $args): Response
     {
         try {
             $state = State::find($args['id']);
             if (!$state) {
-                return $this->notFoundResponse($response, "State not found");
+                return $this->jsonResponse($response, 404, false, "State not found");
             }
             $state->delete();
-            return $response->withStatus(204); // No content
+
+            return $this->jsonResponse($response, 204, true, "State deleted successfully");
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error deleting state", $e);
+            return $this->jsonResponse($response, 500, false, "Error deleting state", [
+                "details" => $e->getMessage()
+            ]);
         }
-    }
-
-    /**
-     * Helper: return a JSON error
-     */
-    private function errorResponse(Response $response, string $message, \Exception $e)
-    {
-        $response->getBody()->write(json_encode([
-            "error" => $message,
-            "details" => $e->getMessage()
-        ]));
-        return $response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(500);
-    }
-
-    /**
-     * Helper: return a JSON 404
-     */
-    private function notFoundResponse(Response $response, string $message)
-    {
-        $response->getBody()->write(json_encode(["error" => $message]));
-        return $response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(404);
     }
 }
