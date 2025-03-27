@@ -21,7 +21,7 @@ export class RosaryCrusadeComponent implements OnInit {
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
-    { header: 'StateID', field: 'StateID' },
+    { header: 'State', field: 'stateName' },
     { header: 'Confession Start', field: 'ConfessionStartTime' },
     { header: 'Confession End', field: 'ConfessionEndTime' },
     { header: 'Mass Start', field: 'MassStartTime' },
@@ -34,21 +34,21 @@ export class RosaryCrusadeComponent implements OnInit {
     { header: 'Comments', field: 'Comments' },
   ];
 
-  // Arrays for states, dioceses, parishes, and crusade records
+  // Data arrays for states, dioceses, parishes, and crusade records
   allStates: State[] = [];
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
   crusades: Crusade[] = [];
 
-  // Filtered lists for diocese & parish
+  // Filtered lists for dioceses & parishes based on selection
   filteredDioceses: Diocese[] = [];
   filteredParishes: Parish[] = [];
 
-  // Flags
+  // Flags for enabling/disabling dropdowns
   dioceseDisabled = true;
   parishDisabled = true;
 
-  // The crusade record currently edited
+  // The crusade record currently being edited
   selectedCrusade: Partial<Crusade> = {
     CrusadeID: undefined,
     StateID: 0,
@@ -91,10 +91,9 @@ export class RosaryCrusadeComponent implements OnInit {
   // Load Data
   // ---------------------------
   loadAllStates(): void {
-    // If back end returns { success, status, message, data: [ ... ] }
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
-        this.allStates = res.data; // Must assign .data
+        this.allStates = res.data;
       },
       error: (err) => {
         console.error('Failed to load states:', err);
@@ -130,7 +129,6 @@ export class RosaryCrusadeComponent implements OnInit {
   loadAllCrusades(): void {
     this.crusadeService.getAllCrusades().subscribe({
       next: (res: any) => {
-        // res.data => array of Crusade objects
         this.crusades = res.data;
       },
       error: (err) => {
@@ -145,10 +143,18 @@ export class RosaryCrusadeComponent implements OnInit {
   // ---------------------------
   selectCrusade(c: Crusade): void {
     this.hasSubmitted = false;
-    this.selectedCrusade = { ...c };
+    // Spread the record into selectedCrusade.
+    // If the backend returns IDs as strings, convert them here.
+    this.selectedCrusade = {
+      ...c,
+      StateID: Number(c.StateID),
+      DioceseID: Number(c.DioceseID),
+      ParishID: Number(c.ParishID)
+    };
 
-    if (c.StateID && c.StateID > 0) {
-      this.onStateChange(); // filter diocese
+    // Refresh filtered lists based on the record.
+    if (this.selectedCrusade.StateID && Number(this.selectedCrusade.StateID) > 0) {
+      this.onStateChange();
     } else {
       this.dioceseDisabled = true;
       this.parishDisabled = true;
@@ -156,8 +162,8 @@ export class RosaryCrusadeComponent implements OnInit {
       this.filteredParishes = [];
     }
 
-    if (c.DioceseID && c.DioceseID > 0) {
-      this.onDioceseChange(); // filter parish
+    if (this.selectedCrusade.DioceseID && Number(this.selectedCrusade.DioceseID) > 0) {
+      this.onDioceseChange();
     } else {
       this.parishDisabled = true;
       this.filteredParishes = [];
@@ -168,7 +174,9 @@ export class RosaryCrusadeComponent implements OnInit {
   // FILTER / DROPDOWN LOGIC
   // ---------------------------
   onStateChange(): void {
-    if (!this.selectedCrusade.StateID || this.selectedCrusade.StateID === 0) {
+    const stateID = Number(this.selectedCrusade.StateID);
+    if (!stateID || stateID === 0) {
+      // No valid state selected: clear and disable both Diocese and Parish.
       this.dioceseDisabled = true;
       this.parishDisabled = true;
       this.selectedCrusade.DioceseID = 0;
@@ -176,8 +184,8 @@ export class RosaryCrusadeComponent implements OnInit {
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
-      const chosenID = Number(this.selectedCrusade.StateID);
-      this.filteredDioceses = this.dioceseList.filter(d => d.StateID === chosenID);
+      // Filter dioceses for the chosen state.
+      this.filteredDioceses = this.dioceseList.filter(d => d.StateID === stateID);
       if (this.filteredDioceses.length === 0) {
         this.dioceseDisabled = true;
         this.parishDisabled = true;
@@ -186,36 +194,46 @@ export class RosaryCrusadeComponent implements OnInit {
         this.filteredParishes = [];
       } else {
         this.dioceseDisabled = false;
-        this.selectedCrusade.DioceseID = 0;
-        this.selectedCrusade.ParishID = 0;
-        this.filteredParishes = [];
-        this.parishDisabled = true;
+        // If the current DioceseID is not in the filtered list, reset it.
+        const currentDioceseID = Number(this.selectedCrusade.DioceseID);
+        const found = this.filteredDioceses.find(d => d.DioceseID === currentDioceseID);
+        if (!found) {
+          this.selectedCrusade.DioceseID = 0;
+          this.selectedCrusade.ParishID = 0;
+          this.filteredParishes = [];
+          this.parishDisabled = true;
+        }
       }
     }
   }
 
   onDioceseChange(): void {
-    if (!this.selectedCrusade.DioceseID || this.selectedCrusade.DioceseID === 0) {
+    const dioceseID = Number(this.selectedCrusade.DioceseID);
+    if (!dioceseID || dioceseID === 0) {
       this.parishDisabled = true;
       this.selectedCrusade.ParishID = 0;
       this.filteredParishes = [];
     } else {
-      const chosenDioceseID = Number(this.selectedCrusade.DioceseID);
-      const temp = this.parishList.filter(p => p.DioceseID === chosenDioceseID);
+      const temp = this.parishList.filter(p => p.DioceseID === dioceseID);
       if (temp.length === 0) {
         this.parishDisabled = true;
         this.selectedCrusade.ParishID = 0;
         this.filteredParishes = [];
       } else {
         this.parishDisabled = false;
-        this.selectedCrusade.ParishID = 0;
+        // If the current ParishID is not found in the filtered list, reset it.
+        const currentParishID = Number(this.selectedCrusade.ParishID);
+        const found = temp.find(p => p.ParishID === currentParishID);
+        if (!found) {
+          this.selectedCrusade.ParishID = 0;
+        }
         this.filteredParishes = temp;
       }
     }
   }
 
   // ---------------------------
-  // CRUD
+  // CRUD Operations
   // ---------------------------
   addCrusade(): void {
     this.hasSubmitted = true;
@@ -305,39 +323,44 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   private isAllFieldsValid(): boolean {
-    if (!this.selectedCrusade.StateID || this.selectedCrusade.StateID <= 0) return false;
-    if (!this.selectedCrusade.DioceseID || this.selectedCrusade.DioceseID <= 0) return false;
-    if (!this.selectedCrusade.ParishID || this.selectedCrusade.ParishID <= 0) return false;
+    if (!this.selectedCrusade.StateID || Number(this.selectedCrusade.StateID) <= 0) return false;
+    if (!this.selectedCrusade.DioceseID || Number(this.selectedCrusade.DioceseID) <= 0) return false;
+    if (!this.selectedCrusade.ParishID || Number(this.selectedCrusade.ParishID) <= 0) return false;
     if (!this.selectedCrusade.CrusadeStartTime?.trim()) return false;
     if (!this.selectedCrusade.CrusadeEndTime?.trim()) return false;
     return true;
   }
 
   // ---------------------------
-  // DRAG & DROP
+  // Drag & Drop for Grid Columns
   // ---------------------------
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
-  onDragEntered(event: any) {
+  onDragEntered(event: any): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
-  onDragExited(event: any) {
+  onDragExited(event: any): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
+  // ---------------------------
+  // Grid Cell Value Lookup
+  // ---------------------------
   getCellValue(row: Crusade, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
       return row.diocese?.DioceseName || '';
     } else if (column.field === 'parishName') {
       return row.parish?.ParishName || '';
+    } else if (column.field === 'stateName') {
+      return row.state?.StateAbbreviation || '';
     } else {
       return (row as any)[column.field] || '';
     }
   }
 
   // ---------------------------
-  // SNACK BAR HELPERS
+  // Snack Bar Helpers
   // ---------------------------
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
@@ -347,7 +370,6 @@ export class RosaryCrusadeComponent implements OnInit {
       panelClass: ['snackbar-warning']
     });
   }
-
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 7000,

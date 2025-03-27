@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment'; // adjust if needed
 
 /**
- * The new Diocese interface with a numeric `StateID` foreign key,
- * and no more `DioceseState` string field.
+ * The Diocese interface, now with a numeric `StateID` foreign key
+ * plus an optional `state` object if your backend returns the relationship.
  */
 export interface Diocese {
   DioceseID: number;
@@ -12,13 +12,18 @@ export interface Diocese {
   DioceseStreetNo: string;
   DioceseStreetName: string;
   DioceseSuburb: string;
-  StateID: number;  // <--- Replaces old DioceseState
+  StateID: number;  // Replaces the old DioceseState string
   DiocesePostcode: string;
   DiocesePhone: string;
   DioceseEmail: string;
   DioceseWebsite: string;
-  // Optional nested object if Laravel returns state:
-  // state?: { StateID: number; StateName: string; StateAbbreviation: string; };
+
+  // NEW: if Laravel returns state with ->with('state'):
+  state?: {
+    StateID: number;
+    StateName: string;
+    StateAbbreviation: string;
+  };
 }
 
 @Injectable({

@@ -34,7 +34,7 @@
       </div>
     </div><!-- end row-1 -->
 
-    <!-- Row 2: Rosary Crusade fields in one line -->
+    <!-- Row 2: Rosary Crusade Fields -->
     <div class="section crusade" data-title="Rosary Crusade">
       <div class="row-2">
         <!-- Crusade Start -->
@@ -54,14 +54,14 @@
           </div>
         </div>
 
-        <!-- State => numeric StateID -->
+        <!-- State Dropdown -->
         <div class="field-group crusade-state">
           <label>State</label>
           <select [(ngModel)]="selectedCrusade.StateID" (change)="onStateChange()"
             [disabled]="!allStates || allStates.length === 0">
-            <option [value]="0">-- select state --</option>
-            <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateName }} ({{ st.StateAbbreviation }})
+            <option [ngValue]="0">-- select state --</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.StateID">
+              {{ st.StateAbbreviation }}
             </option>
           </select>
           <div *ngIf="hasSubmitted && (!selectedCrusade.StateID || selectedCrusade.StateID === 0)" class="inline-error">
@@ -69,12 +69,12 @@
           </div>
         </div>
 
-        <!-- Diocese -->
+        <!-- Diocese Dropdown -->
         <div class="field-group crusade-diocese">
           <label>Diocese</label>
           <select [(ngModel)]="selectedCrusade.DioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
-            <option [value]="0">-- select diocese --</option>
-            <option *ngFor="let d of filteredDioceses" [value]="d.DioceseID">
+            <option [ngValue]="0">-- select diocese --</option>
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.DioceseID">
               {{ d.DioceseName }}
             </option>
           </select>
@@ -84,12 +84,12 @@
           </div>
         </div>
 
-        <!-- Parish -->
+        <!-- Parish Dropdown -->
         <div class="field-group crusade-parish">
           <label>Parish</label>
           <select [(ngModel)]="selectedCrusade.ParishID" [disabled]="parishDisabled">
-            <option [value]="0">-- select parish --</option>
-            <option *ngFor="let p of filteredParishes" [value]="p.ParishID">
+            <option [ngValue]="0">-- select parish --</option>
+            <option *ngFor="let p of filteredParishes" [ngValue]="p.ParishID">
               {{ p.ParishName }}
             </option>
           </select>

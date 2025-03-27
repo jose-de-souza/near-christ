@@ -12,7 +12,7 @@
             <!-- 0 => "All States" -->
             <option [value]="0">All States</option>
             <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateName }} ({{ st.StateAbbreviation }})
+              {{ st.StateAbbreviation }}
             </option>
           </select>
         </div>

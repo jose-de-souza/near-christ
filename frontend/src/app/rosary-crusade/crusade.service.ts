@@ -18,7 +18,7 @@ export interface Crusade {
   ContactEmail: string;
   Comments: string;
 
-  // Optional nested objects from back-end:
+  // Optional relationship objects from the back end
   diocese?: {
     DioceseID: number;
     DioceseName: string;
@@ -26,6 +26,12 @@ export interface Crusade {
   parish?: {
     ParishID: number;
     ParishName: string;
+  };
+  // NEW: 'state' property so we can access state?.StateAbbreviation in the front end
+  state?: {
+    StateID: number;
+    StateName: string;
+    StateAbbreviation: string;
   };
 }
 
@@ -56,9 +62,7 @@ export class CrusadeService {
   }
 
   /**
-   * (Optional) If you want to filter by state_id / diocese_id / parish_id
-   * you can pass numeric stateID. Previously you used 'state' (string),
-   * now it should be 'state_id' for the param name on the back end.
+   * Optional filter method for searching by state_id, diocese_id, parish_id
    */
   searchCrusades(stateID?: number, dioceseID?: number, parishID?: number) {
     let params = new HttpParams();

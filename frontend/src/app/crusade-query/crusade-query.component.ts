@@ -18,10 +18,11 @@ import { StateService, State } from '../state.service';
 })
 export class CrusadeQueryComponent implements OnInit {
   // Columns for the results grid
+  // Updated: the State column => { header: 'State', field: 'state' }
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
-    { header: 'StateID', field: 'StateID' },
+    { header: 'State', field: 'state' }, // <-- changed from "StateID"
     { header: 'Confession Start', field: 'ConfessionStartTime' },
     { header: 'Confession End', field: 'ConfessionEndTime' },
     { header: 'Mass Start', field: 'MassStartTime' },
@@ -77,8 +78,8 @@ export class CrusadeQueryComponent implements OnInit {
      LOAD
   ----------------------------- */
   loadAllStates(): void {
+    // If your back end returns { success, data: [ ... ] }
     this.stateService.getAllStates().subscribe({
-      // If the response is { success, status, message, data: [... States ...] }
       next: (res: any) => {
         this.allStates = res.data; // an array of State objects
       },
@@ -92,8 +93,7 @@ export class CrusadeQueryComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        // res.data => array of Dioceses
-        this.dioceseList = res.data;
+        this.dioceseList = res.data; // array of Dioceses
       },
       error: (err) => {
         console.error('Failed to load dioceses:', err);
@@ -105,8 +105,7 @@ export class CrusadeQueryComponent implements OnInit {
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
       next: (res: any) => {
-        // res.data => array of Parishes
-        this.parishList = res.data;
+        this.parishList = res.data; // array of Parishes
       },
       error: (err) => {
         console.error('Failed to load parishes:', err);
@@ -179,7 +178,6 @@ export class CrusadeQueryComponent implements OnInit {
     const dioceseID = this.selectedDioceseID != null ? this.selectedDioceseID : undefined;
     const parishID = this.selectedParishID != null ? this.selectedParishID : undefined;
 
-    // If searchCrusades also returns { success, data: [ ... ] }, do data.data
     this.crusadeService.searchCrusades(stateID, dioceseID, parishID).subscribe({
       next: (res: any) => {
         // res.data => array of Crusade
@@ -201,6 +199,9 @@ export class CrusadeQueryComponent implements OnInit {
       return row.diocese?.DioceseName || '(No Diocese)';
     } else if (column.field === 'parishName') {
       return row.parish?.ParishName || '(No Parish)';
+    } else if (column.field === 'state') {
+      // Show the StateAbbreviation from row.state:
+      return row.state?.StateAbbreviation || '(No State)';
     } else {
       return (row as any)[column.field] || '';
     }

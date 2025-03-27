@@ -42,7 +42,7 @@
           <select [(ngModel)]="selectedDiocese.StateID">
             <option [value]="0">Select State</option>
             <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateName }} ({{ st.StateAbbreviation }})
+              {{ st.StateAbbreviation }}
             </option>
           </select>
         </div>
@@ -84,7 +84,7 @@
           <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
             <option [value]="0">All States</option>
             <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateName }} ({{ st.StateAbbreviation }})
+              {{ st.StateAbbreviation }}
             </option>
           </select>
         </div>

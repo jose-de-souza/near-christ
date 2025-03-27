@@ -7,7 +7,6 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { Adoration, AdorationService } from './adoration.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
-// NEW: we fetch real states from the server
 import { StateService, State } from '../state.service';
 
 @Component({
@@ -18,23 +17,21 @@ import { StateService, State } from '../state.service';
   imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
 })
 export class AdorationScheduleComponent implements OnInit {
-  // Columns
+  // 1) Changed the State column => { header: 'State', field: 'state' }
   columns = [
     { header: 'Diocese Name', field: 'dioceseName' },
     { header: 'Parish Name', field: 'parishName' },
     { header: 'Type', field: 'AdorationType' },
     { header: 'Location Type', field: 'AdorationLocationType' },
     { header: 'Location', field: 'AdorationLocation' },
-    { header: 'StateID', field: 'StateID' },
+    { header: 'State', field: 'state' }, // <-- was "StateID"
     { header: 'Day', field: 'AdorationDay' },
     { header: 'Start', field: 'AdorationStart' },
     { header: 'End', field: 'AdorationEnd' },
   ];
 
-  // Master list of Adorations
+  // Master lists
   schedules: Adoration[] = [];
-
-  // Master lists of Dioceses, Parishes, States
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
   allStates: State[] = [];
@@ -47,7 +44,7 @@ export class AdorationScheduleComponent implements OnInit {
   dioceseDisabled = true;
   parishDisabled = true;
 
-  // The currently selected (or new) Adoration record
+  // The currently selected or new Adoration
   selectedAdoration: Partial<Adoration> = {
     AdorationID: undefined,
     DioceseID: 0,
@@ -76,15 +73,13 @@ export class AdorationScheduleComponent implements OnInit {
     this.loadAllAdorations();
   }
 
-  /* -------------------------
+  /* ----------------------------------
      LOADING DATA
-  ------------------------- */
+  ---------------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
-      // The response has shape: { success, status, message, data: [ {StateID, ...}, ... ] }
-      // so we store .data in allStates
       next: (res: any) => {
-        this.allStates = res.data;  // Now an array, not an object
+        this.allStates = res.data;
       },
       error: (err) => {
         console.error('Failed to load states:', err);
@@ -96,7 +91,6 @@ export class AdorationScheduleComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        // res.data => array of Dioceses
         this.dioceseList = res.data;
       },
       error: (err) => {
@@ -109,7 +103,7 @@ export class AdorationScheduleComponent implements OnInit {
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
       next: (res: any) => {
-        this.parishList = res.data; // array of Parishes
+        this.parishList = res.data;
       },
       error: (err) => {
         console.error('Failed to load parishes:', err);
@@ -121,7 +115,6 @@ export class AdorationScheduleComponent implements OnInit {
   loadAllAdorations(): void {
     this.adorationService.getAllAdorations().subscribe({
       next: (res: any) => {
-        // res.data => array of Adoration
         this.schedules = res.data;
       },
       error: (err) => {
@@ -131,9 +124,9 @@ export class AdorationScheduleComponent implements OnInit {
     });
   }
 
-  /* -------------------------
+  /* ----------------------------------
      PERPETUAL vs REGULAR
-  ------------------------- */
+  ---------------------------------- */
   isPerpetual(): boolean {
     return this.selectedAdoration.AdorationType === 'Perpetual';
   }
@@ -146,9 +139,9 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* -------------------------
+  /* ----------------------------------
      STATE => Filter Dioceses
-  ------------------------- */
+  ---------------------------------- */
   onStateChange(): void {
     const sID = Number(this.selectedAdoration.StateID || 0);
     if (!sID || sID === 0) {
@@ -176,9 +169,9 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* -------------------------
+  /* ----------------------------------
      DIOCESE => Filter Parishes
-  ------------------------- */
+  ---------------------------------- */
   onDioceseChange(): void {
     const dID = Number(this.selectedAdoration.DioceseID || 0);
     if (!dID || dID === 0) {
@@ -199,9 +192,9 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* -------------------------
+  /* ----------------------------------
      LOCATION
-  ------------------------- */
+  ---------------------------------- */
   isParishChurch(): boolean {
     return this.selectedAdoration.AdorationLocationType === 'Parish Church';
   }
@@ -221,28 +214,33 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* -------------------------
-     SELECT ROW => set fields
-  ------------------------- */
+  /* ----------------------------------
+     SELECT ROW => Re-ordered logic
+  ---------------------------------- */
   selectSchedule(schedule: Adoration): void {
     this.selectedAdoration = { ...schedule };
 
+    // 1) State
+    this.selectedAdoration.StateID = schedule.StateID;
     if (schedule.StateID && schedule.StateID > 0) {
       this.onStateChange();
-      this.selectedAdoration.StateID = schedule.StateID;
     }
+
+    // 2) Diocese
+    this.selectedAdoration.DioceseID = schedule.DioceseID;
     if (schedule.DioceseID && schedule.DioceseID > 0) {
       this.onDioceseChange();
-      this.selectedAdoration.DioceseID = schedule.DioceseID;
     }
+
+    // 3) Parish
     if (schedule.ParishID && schedule.ParishID > 0) {
       this.selectedAdoration.ParishID = schedule.ParishID;
     }
   }
 
-  /* -------------------------
+  /* ----------------------------------
      CRUD
-  ------------------------- */
+  ---------------------------------- */
   addSchedule(): void {
     this.adorationService.createAdoration(this.selectedAdoration).subscribe({
       next: () => {
@@ -315,14 +313,17 @@ export class AdorationScheduleComponent implements OnInit {
     this.parishDisabled = true;
   }
 
-  /* -------------------------
+  /* ----------------------------------
      TABLE HELPER
-  ------------------------- */
+  ---------------------------------- */
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
       return row.diocese?.DioceseName || '';
     } else if (column.field === 'parishName') {
       return row.parish?.ParishName || '';
+    } else if (column.field === 'state') {
+      // Return the state's abbreviation from row.state
+      return row.state?.StateAbbreviation || '';
     } else {
       return (row as any)[column.field] ?? '';
     }
@@ -332,9 +333,9 @@ export class AdorationScheduleComponent implements OnInit {
     return item.AdorationID;
   }
 
-  /* -------------------------
+  /* ----------------------------------
      DRAG & DROP
-  ------------------------- */
+  ---------------------------------- */
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -351,9 +352,9 @@ export class AdorationScheduleComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  /* -------------------------
+  /* ----------------------------------
      SNACK BAR
-  ------------------------- */
+  ---------------------------------- */
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

@@ -49,7 +49,7 @@
             [disabled]="allStates.length === 0">
             <option [value]="0">Select State</option>
             <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateName }} ({{ st.StateAbbreviation }})
+              {{ st.StateAbbreviation }}
             </option>
           </select>
         </div>

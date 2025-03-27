@@ -38,17 +38,16 @@ export class ParishMaintenanceComponent implements OnInit {
     ParishPostcode: '',
     ParishPhone: '',
     ParishEmail: '',
-    ParishWebsite: '',
-    // DioceseID: 0 if you want that
+    ParishWebsite: ''
   };
 
-  // Table columns
+  // Table columns - updated State column
   columns = [
     { header: 'Parish Name', field: 'ParishName' },
     { header: 'St No', field: 'ParishStNumber' },
     { header: 'Street Name', field: 'ParishStName' },
     { header: 'Suburb', field: 'ParishSuburb' },
-    { header: 'StateID', field: 'StateID' },
+    { header: 'State', field: 'state' }, // Column will display the state's abbreviation
     { header: 'PostCode', field: 'ParishPostcode' },
     { header: 'Phone', field: 'ParishPhone' },
     { header: 'Email', field: 'ParishEmail' },
@@ -59,9 +58,9 @@ export class ParishMaintenanceComponent implements OnInit {
   dioceseList: Diocese[] = [];
   filteredDiocesesForFilter: Diocese[] = [];
 
-  // Filter properties
-  filterStateID = 0;
-  filterDioceseID = 0;
+  // Filter properties (the values from the select elements might be strings)
+  filterStateID: any = 0;
+  filterDioceseID: any = 0;
   dioceseFilterDisabled = true;
 
   constructor(
@@ -83,9 +82,8 @@ export class ParishMaintenanceComponent implements OnInit {
   --------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
-      // If your backend returns { success, data: [ {StateID, StateName}, ... ] }
       next: (res: any) => {
-        this.allStates = res.data; // The .data array
+        this.allStates = res.data;
       },
       error: (err: any) => {
         console.error('Failed to load states:', err);
@@ -100,7 +98,7 @@ export class ParishMaintenanceComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        this.dioceseList = res.data; // The .data array
+        this.dioceseList = res.data;
       },
       error: (err: any) => {
         console.error('Failed to load dioceses:', err);
@@ -115,7 +113,6 @@ export class ParishMaintenanceComponent implements OnInit {
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
       next: (res: any) => {
-        // res.data => array of Parish objects
         this.allParishes = res.data;
         this.parishes = res.data;
       },
@@ -212,15 +209,16 @@ export class ParishMaintenanceComponent implements OnInit {
      FILTERS
   --------------------------- */
   onFilterStateChange(): void {
-    if (!this.filterStateID || this.filterStateID === 0) {
-      // Show all
+    const stateID = Number(this.filterStateID);
+    if (!stateID || stateID === 0) {
+      // No state selected; reset filters
       this.filteredDiocesesForFilter = [];
       this.filterDioceseID = 0;
       this.dioceseFilterDisabled = true;
       this.parishes = this.allParishes;
     } else {
-      // Filter diocese by the chosen state
-      this.filteredDiocesesForFilter = this.dioceseList.filter(d => d.StateID === this.filterStateID);
+      // Populate dioceses for the chosen state (ensure number comparison)
+      this.filteredDiocesesForFilter = this.dioceseList.filter(d => d.StateID === stateID);
       this.dioceseFilterDisabled = (this.filteredDiocesesForFilter.length === 0);
       this.applyParishFilter();
     }
@@ -231,12 +229,13 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   private applyParishFilter(): void {
-    if (!this.filterStateID || this.filterStateID === 0) {
+    const stateID = Number(this.filterStateID);
+    if (!stateID || stateID === 0) {
       this.parishes = this.allParishes;
     } else {
-      let filtered = this.allParishes.filter(p => p.StateID === this.filterStateID);
-      if (this.filterDioceseID && this.filterDioceseID > 0) {
-        filtered = filtered.filter(p => p.DioceseID === this.filterDioceseID);
+      let filtered = this.allParishes.filter(p => p.StateID === stateID);
+      if (this.filterDioceseID && Number(this.filterDioceseID) > 0) {
+        filtered = filtered.filter(p => p.DioceseID === Number(this.filterDioceseID));
       }
       this.parishes = filtered;
     }
@@ -256,12 +255,19 @@ export class ParishMaintenanceComponent implements OnInit {
   onDragEntered(event: any): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
+
   onDragExited(event: any): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
+  // getCellValue for displaying State abbreviation
   getCellValue(row: Parish, column: { header: string; field: string }): any {
-    return (row as any)[column.field] || '';
+    if (column.field === 'state') {
+      const st = this.allStates.find(s => s.StateID === row.StateID);
+      return st ? st.StateAbbreviation : '';
+    } else {
+      return (row as any)[column.field] || '';
+    }
   }
 
   trackByParishID(index: number, item: Parish): number {

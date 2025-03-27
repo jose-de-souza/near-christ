@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 import { DioceseService, Diocese } from './diocese.service';
@@ -16,17 +16,17 @@ import { StateService, State } from '../state.service';
 })
 export class DioceseMaintenanceComponent implements OnInit {
 
-  // Full list of dioceses from the backend
+  // Full list of dioceses from back end
   allDioceses: Diocese[] = [];
-  // Filtered subset for the table
+  // Filtered subset displayed in the table
   dioceses: Diocese[] = [];
 
-  // All States from the backend
+  // All states from back end
   allStates: State[] = [];
 
   hasSubmitted = false;
 
-  // The diocese being edited or created
+  // The diocese record being edited/created
   selectedDiocese: Partial<Diocese> = {
     DioceseID: undefined,
     DioceseName: '',
@@ -40,21 +40,21 @@ export class DioceseMaintenanceComponent implements OnInit {
     DioceseWebsite: ''
   };
 
-  // Columns
+  // Updated columns: "State" column uses field "state"
   columns = [
     { header: 'Diocese Name', field: 'DioceseName' },
     { header: 'Street No', field: 'DioceseStreetNo' },
     { header: 'Street Name', field: 'DioceseStreetName' },
     { header: 'Suburb', field: 'DioceseSuburb' },
-    { header: 'StateID', field: 'StateID' },
+    { header: 'State', field: 'state' }, // Changed from "StateID" so that we show the state's abbreviation
     { header: 'Post Code', field: 'DiocesePostcode' },
     { header: 'Phone', field: 'DiocesePhone' },
     { header: 'Email', field: 'DioceseEmail' },
     { header: 'Website', field: 'DioceseWebsite' },
   ];
 
-  // For filtering
-  filterStateID = 0;
+  // Filter property for the dropdown in the filter section
+  filterStateID: any = 0; // 0 means "All States"
 
   constructor(
     private dioceseService: DioceseService,
@@ -72,9 +72,9 @@ export class DioceseMaintenanceComponent implements OnInit {
   --------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
-      // If your backend returns { success, status, message, data: [ ... ] }
       next: (res: any) => {
-        this.allStates = res.data; // Must be an array
+        // Expecting response shape: { success, data: [ ... ] }
+        this.allStates = res.data;
       },
       error: (err) => {
         console.error('Failed to load states:', err);
@@ -89,9 +89,9 @@ export class DioceseMaintenanceComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        // The .data array of diocese objects
+        // res.data => array of Diocese objects (each may include a "state" relationship)
         this.allDioceses = res.data;
-        // By default => show them all
+        // By default, show all dioceses
         this.dioceses = res.data;
       },
       error: (err) => {
@@ -104,20 +104,20 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   /* ---------------------------
-     Filtering by StateID
+     Filter by State
   --------------------------- */
   onFilterStateChange(): void {
-    if (!this.filterStateID || this.filterStateID === 0) {
-      // "All States"
+    const chosenID = Number(this.filterStateID);
+    if (chosenID === 0) {
+      // "All States": show all dioceses
       this.dioceses = this.allDioceses;
     } else {
-      const chosenID = Number(this.filterStateID);
       this.dioceses = this.allDioceses.filter(d => d.StateID === chosenID);
     }
   }
 
   /* ---------------------------
-     Selecting a Diocese row
+     Selecting a Diocese Row
   --------------------------- */
   selectDiocese(d: Diocese): void {
     this.selectedDiocese = { ...d };
@@ -186,9 +186,6 @@ export class DioceseMaintenanceComponent implements OnInit {
     this.resetForm();
   }
 
-  /* ---------------------------
-     Reset Form
-  --------------------------- */
   private resetForm(): void {
     this.selectedDiocese = {
       DioceseID: undefined,
@@ -206,7 +203,7 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   /* ---------------------------
-     Drag & Drop
+     DRAG & DROP FOR THE TABLE
   --------------------------- */
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
@@ -223,15 +220,21 @@ export class DioceseMaintenanceComponent implements OnInit {
   onDragEntered(event: any): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
+
   onDragExited(event: any): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
   /* ---------------------------
-     Cell Value for Table
+     Return cell value for each table cell
   --------------------------- */
   getCellValue(row: Diocese, column: { header: string; field: string }): any {
-    return (row as any)[column.field] ?? '';
+    if (column.field === 'state') {
+      // Show the state's abbreviation (from the related state object)
+      return row.state?.StateAbbreviation || '';
+    } else {
+      return (row as any)[column.field] ?? '';
+    }
   }
 
   trackByDioceseID(index: number, item: Diocese): number {

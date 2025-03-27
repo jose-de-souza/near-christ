@@ -10,7 +10,7 @@
           <select [(ngModel)]="selectedStateID" (change)="onStateChange()" [disabled]="allStates.length === 0">
             <option [value]="0">All States</option>
             <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateName }} ({{ st.StateAbbreviation }})
+              {{ st.StateAbbreviation }}
             </option>
           </select>
         </div>
@@ -37,7 +37,7 @@
           </select>
         </div>
 
-        <!-- Search Button -->
+        <!-- Search -->
         <div class="field-group search">
           <button (click)="searchCrusade()" class="search-button">🔍</button>
         </div>
@@ -45,7 +45,7 @@
     </div>
   </div>
 
-  <!-- Results area: grid-based table -->
+  <!-- Results area as a grid-based table -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
       (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">

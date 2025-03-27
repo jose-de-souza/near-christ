@@ -16,11 +16,11 @@ import { StateService, State } from '../state.service';
   imports: [CommonModule, FormsModule, DragDropModule]
 })
 export class AdorationQueryComponent implements OnInit {
-  // Table columns
+  // **Updated**: The column for state now uses { header: 'State', field: 'state' }
   columns = [
     { header: 'Parish Name', field: 'parishName' },
     { header: 'Diocese Name', field: 'dioceseName' },
-    { header: 'StateID', field: 'StateID' },
+    { header: 'State', field: 'state' },  // Show "State" in header
     { header: 'End', field: 'AdorationEnd' },
     { header: 'Type', field: 'AdorationType' },
     { header: 'Day', field: 'AdorationDay' },
@@ -76,10 +76,9 @@ export class AdorationQueryComponent implements OnInit {
   --------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
-      // If the response is {success, status, message, data: [...states]}
-      // we store states in "allStates"
       next: (res: any) => {
-        this.allStates = res.data; // not just res
+        // If your back end returns { success, message, data: [ ...states ] }
+        this.allStates = res.data;
       },
       error: (err) => {
         console.error('Failed to load states:', err);
@@ -90,7 +89,8 @@ export class AdorationQueryComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        this.dioceseList = res.data; // array of Dioceses
+        // res.data => array of Dioceses
+        this.dioceseList = res.data;
       },
       error: (err) => {
         console.error('Failed to load dioceses:', err);
@@ -101,7 +101,7 @@ export class AdorationQueryComponent implements OnInit {
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
       next: (res: any) => {
-        this.parishList = res.data; // array of Parishes
+        this.parishList = res.data;
       },
       error: (err) => {
         console.error('Failed to load parishes:', err);
@@ -122,7 +122,6 @@ export class AdorationQueryComponent implements OnInit {
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
-      // Filter dioceseList by numeric StateID
       const chosen = Number(this.selectedStateID);
       this.filteredDioceses = this.dioceseList.filter(d => d.StateID === chosen);
 
@@ -134,11 +133,9 @@ export class AdorationQueryComponent implements OnInit {
         this.filteredParishes = [];
       } else {
         this.dioceseDisabled = false;
-        // Clear old diocese & parish
         this.selectedDioceseID = null;
         this.selectedParishID = null;
         this.filteredParishes = [];
-        // Keep parish disabled until diocese is chosen
         this.parishDisabled = true;
       }
     }
@@ -183,7 +180,6 @@ export class AdorationQueryComponent implements OnInit {
     const dioceseID = (this.selectedDioceseID != null) ? this.selectedDioceseID : undefined;
     const parishID = (this.selectedParishID != null) ? this.selectedParishID : undefined;
 
-    // if searchAdorations(...) also returns { data: [...] }, do:
     this.adorationService.searchAdorations(stateID, dioceseID, parishID).subscribe({
       next: (res: any) => {
         // Usually {success, status, message, data: [... adorations ...]}
@@ -204,8 +200,12 @@ export class AdorationQueryComponent implements OnInit {
       return row.diocese?.DioceseName || '';
     } else if (column.field === 'parishName') {
       return row.parish?.ParishName || '';
+    } else if (column.field === 'state') {
+      // We changed to "State" header => "state" field. Return the abbreviation:
+      // row.state?.StateAbbreviation
+      return row.state?.StateAbbreviation || '';
     } else {
-      // e.g. row.StateID, row.AdorationEnd, etc.
+      // e.g. AdorationEnd, AdorationType, etc.
       return (row as any)[column.field] ?? '';
     }
   }
