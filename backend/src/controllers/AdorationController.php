@@ -2,126 +2,128 @@
 
 namespace App\Controllers;
 
+use App\Controllers\Traits\JsonResponseTrait;
 use App\Models\Adoration;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class AdorationController
 {
+    use JsonResponseTrait;
+
     /**
-     * GET /adorations - Get all adorations (with related diocese and parish)
+     * GET /adorations
      */
-    public function getAll(Request $request, Response $response)
+    public function getAll(Request $request, Response $response): Response
     {
         try {
-            $query = Adoration::with(['diocese', 'parish']);
+            $query = Adoration::with(['diocese', 'parish', 'state']);
 
             $params = $request->getQueryParams();
-            $state     = $params['state']       ?? null;
-            $dioceseID = $params['diocese_id']  ?? null;
-            $parishID  = $params['parish_id']   ?? null;
+            $filters = [
+                'StateID'   => $params['state_id']     ?? null,
+                'DioceseID' => $params['diocese_id']   ?? null,
+                'ParishID'  => $params['parish_id']    ?? null,
+            ];
 
-            if ($state && $state !== 'null') {
-                $query->where('State', $state);
-            }
-            if ($dioceseID && $dioceseID !== 'null') {
-                $query->where('DioceseID', $dioceseID);
-            }
-            if ($parishID && $parishID !== 'null') {
-                $query->where('ParishID', $parishID);
+            foreach ($filters as $column => $value) {
+                if ($value && $value !== 'null') {
+                    $query->where($column, $value);
+                }
             }
 
             $adorations = $query->get();
-            $response->getBody()->write(json_encode($adorations));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "All adorations fetched", $adorations);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching adorations", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching adorations", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * GET /adorations/{id} - Get a single adoration by ID (with related diocese and parish)
+     * GET /adorations/{id}
      */
-    public function getById(Request $request, Response $response, $args)
+    public function getById(Request $request, Response $response, array $args): Response
     {
         try {
-            $adoration = Adoration::with(['diocese', 'parish'])->find($args['id']);
+            $adoration = Adoration::with(['diocese', 'parish', 'state'])->find($args['id']);
             if (!$adoration) {
-                return $this->notFoundResponse($response, "Adoration not found");
+                return $this->jsonResponse($response, 404, false, "Adoration not found");
             }
-            $response->getBody()->write(json_encode($adoration));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "Adoration fetched successfully", $adoration);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching adoration", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching adoration", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * POST /adorations - Create a new adoration (Protected by AuthMiddleware)
+     * POST /adorations
      */
-    public function create(Request $request, Response $response)
+    public function create(Request $request, Response $response): Response
     {
         try {
             $data = json_decode($request->getBody(), true);
+
+            // Minimal validation
+            $requiredFields = ['StateID', 'DioceseID', 'ParishID', 'AdorationType'];
+            foreach ($requiredFields as $field) {
+                if (empty($data[$field])) {
+                    return $this->jsonResponse($response, 400, false, "Missing field: {$field}");
+                }
+            }
+
             $adoration = Adoration::create($data);
-            $response->getBody()->write(json_encode($adoration));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+            return $this->jsonResponse($response, 201, true, "Adoration created successfully", $adoration);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error creating adoration", $e);
+            return $this->jsonResponse($response, 500, false, "Error creating adoration", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * PUT /adorations/{id} - Update an adoration (Protected by AuthMiddleware)
+     * PUT /adorations/{id}
      */
-    public function update(Request $request, Response $response, $args)
+    public function update(Request $request, Response $response, array $args): Response
     {
         try {
             $adoration = Adoration::find($args['id']);
             if (!$adoration) {
-                return $this->notFoundResponse($response, "Adoration not found");
+                return $this->jsonResponse($response, 404, false, "Adoration not found");
             }
+
             $data = json_decode($request->getBody(), true);
             $adoration->update($data);
-            $response->getBody()->write(json_encode($adoration));
-            return $response->withHeader('Content-Type', 'application/json');
+
+            return $this->jsonResponse($response, 200, true, "Adoration updated successfully", $adoration);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error updating adoration", $e);
+            return $this->jsonResponse($response, 500, false, "Error updating adoration", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * DELETE /adorations/{id} - Delete an adoration (Protected by AuthMiddleware)
+     * DELETE /adorations/{id}
      */
-    public function delete(Request $request, Response $response, $args)
+    public function delete(Request $request, Response $response, array $args): Response
     {
         try {
             $adoration = Adoration::find($args['id']);
             if (!$adoration) {
-                return $this->notFoundResponse($response, "Adoration not found");
+                return $this->jsonResponse($response, 404, false, "Adoration not found");
             }
+
             $adoration->delete();
-            return $response->withStatus(204); // No content response
+            // 204 = no content, but we'll return a JSON body anyway for consistency
+            return $this->jsonResponse($response, 204, true, "Adoration deleted successfully");
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error deleting adoration", $e);
+            return $this->jsonResponse($response, 500, false, "Error deleting adoration", [
+                "details" => $e->getMessage()
+            ]);
         }
-    }
-
-    /**
-     * Helper function for returning error responses
-     */
-    private function errorResponse(Response $response, string $message, \Exception $e)
-    {
-        $response->getBody()->write(json_encode(["error" => $message, "details" => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-
-    /**
-     * Helper function for returning not found responses
-     */
-    private function notFoundResponse(Response $response, string $message)
-    {
-        $response->getBody()->write(json_encode(["error" => $message]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
     }
 }

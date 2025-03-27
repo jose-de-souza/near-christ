@@ -2,26 +2,25 @@
   <h2>Rosary Crusade Query</h2>
 
   <div class="form-container">
-    <!-- Single 'Filter' Section -->
     <div class="section filter" data-title="Filter">
       <div class="row-1">
         <!-- State -->
         <div class="field-group state">
           <label>State</label>
-          <!-- (change)="onStateChange()" => Filter & disable logic for diocese & parish -->
-          <select [(ngModel)]="selectedState" (change)="onStateChange()" [disabled]="!states || states.length === 0">
-            <option value="">All States</option>
-            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          <select [(ngModel)]="selectedStateID" (change)="onStateChange()" [disabled]="allStates.length === 0">
+            <option [value]="0">All States</option>
+            <option *ngFor="let st of allStates" [value]="st.StateID">
+              {{ st.StateAbbreviation }}
+            </option>
           </select>
         </div>
 
         <!-- Diocese -->
         <div class="field-group diocese">
           <label>Diocese</label>
-          <!-- (change)="onDioceseChange()" => Filter & disable logic for parish -->
           <select [(ngModel)]="selectedDioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
-            <option [value]="null">All Dioceses</option>
-            <option *ngFor="let d of filteredDioceses" [value]="d.DioceseID">
+            <option [ngValue]="null">All Dioceses</option>
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.DioceseID">
               {{ d.DioceseName }}
             </option>
           </select>
@@ -31,55 +30,48 @@
         <div class="field-group parish">
           <label>Parish</label>
           <select [(ngModel)]="selectedParishID" [disabled]="parishDisabled">
-            <option [value]="null">All Parishes</option>
-            <option *ngFor="let p of filteredParishes" [value]="p.ParishID">
+            <option [ngValue]="null">All Parishes</option>
+            <option *ngFor="let p of filteredParishes" [ngValue]="p.ParishID">
               {{ p.ParishName }}
             </option>
           </select>
         </div>
 
-        <!-- Search Button (naked) -->
+        <!-- Search -->
         <div class="field-group search">
           <button (click)="searchCrusade()" class="search-button">🔍</button>
         </div>
-      </div><!-- end row-1 -->
-    </div><!-- end section.filter -->
-  </div><!-- end form-container -->
+      </div>
+    </div>
+  </div>
 
-  <!-- Results area as a grid-based "table" -->
+  <!-- Results area as a grid-based table -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
       (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-      <!-- Each column is a draggable item -->
+
       <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
         (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-        <!-- Column Header -->
-        <div class="grid-column-header">
-          <!-- Drag Handle -->
-          <span class="drag-handle" cdkDragHandle>☰</span>
 
-          <!-- Custom Drag Preview -->
+        <div class="grid-column-header">
+          <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
             <div class="custom-drag-preview">
               {{ column.header }}
             </div>
           </ng-template>
-
-          <!-- Custom Drag Placeholder -->
           <ng-template cdkDragPlaceholder>
             <div class="custom-drag-placeholder">
               Dropping {{ column.header }} here
             </div>
           </ng-template>
-
           {{ column.header }}
         </div>
 
-        <!-- Column cells -->
         <div class="grid-column-cell" *ngFor="let row of results">
           {{ getCellValue(row, column) }}
         </div>
       </div>
     </div>
-  </div><!-- end results-area -->
+  </div>
 </div>

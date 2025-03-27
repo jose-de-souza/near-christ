@@ -2,102 +2,109 @@
 
 namespace App\Controllers;
 
+use App\Controllers\Traits\JsonResponseTrait;
 use App\Models\Diocese;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class DioceseController {
+class DioceseController
+{
+    use JsonResponseTrait;
 
     /**
      * GET /dioceses - Get all dioceses (including related parishes)
      */
-    public function getAll(Request $request, Response $response) {
+    public function getAll(Request $request, Response $response): Response
+    {
         try {
             $dioceses = Diocese::with('parishes')->get();
-            $response->getBody()->write(json_encode($dioceses));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "All dioceses fetched", $dioceses);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching dioceses", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching dioceses", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * GET /dioceses/{id} - Get a single diocese by ID (including related parishes)
+     * GET /dioceses/{id}
      */
-    public function getById(Request $request, Response $response, $args) {
+    public function getById(Request $request, Response $response, array $args): Response
+    {
         try {
             $diocese = Diocese::with('parishes')->find($args['id']);
             if (!$diocese) {
-                return $this->notFoundResponse($response, "Diocese not found");
+                return $this->jsonResponse($response, 404, false, "Diocese not found");
             }
-            $response->getBody()->write(json_encode($diocese));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "Diocese fetched successfully", $diocese);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching diocese", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching diocese", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * POST /dioceses - Create a new diocese (Protected by AuthMiddleware)
+     * POST /dioceses
      */
-    public function create(Request $request, Response $response) {
+    public function create(Request $request, Response $response): Response
+    {
         try {
             $data = json_decode($request->getBody(), true);
+
+            // Minimal validation
+            if (empty($data['DioceseName']) || empty($data['StateID'])) {
+                return $this->jsonResponse($response, 400, false, "Missing required fields: DioceseName or StateID");
+            }
+
             $diocese = Diocese::create($data);
-            $response->getBody()->write(json_encode($diocese));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+            return $this->jsonResponse($response, 201, true, "Diocese created successfully", $diocese);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error creating diocese", $e);
+            return $this->jsonResponse($response, 500, false, "Error creating diocese", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * PUT /dioceses/{id} - Update a diocese (Protected by AuthMiddleware)
+     * PUT /dioceses/{id}
      */
-    public function update(Request $request, Response $response, $args) {
+    public function update(Request $request, Response $response, array $args): Response
+    {
         try {
             $diocese = Diocese::find($args['id']);
             if (!$diocese) {
-                return $this->notFoundResponse($response, "Diocese not found");
+                return $this->jsonResponse($response, 404, false, "Diocese not found");
             }
+
             $data = json_decode($request->getBody(), true);
             $diocese->update($data);
-            $response->getBody()->write(json_encode($diocese));
-            return $response->withHeader('Content-Type', 'application/json');
+
+            return $this->jsonResponse($response, 200, true, "Diocese updated successfully", $diocese);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error updating diocese", $e);
+            return $this->jsonResponse($response, 500, false, "Error updating diocese", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * DELETE /dioceses/{id} - Delete a diocese (Protected by AuthMiddleware)
+     * DELETE /dioceses/{id}
      */
-    public function delete(Request $request, Response $response, $args) {
+    public function delete(Request $request, Response $response, array $args): Response
+    {
         try {
             $diocese = Diocese::find($args['id']);
             if (!$diocese) {
-                return $this->notFoundResponse($response, "Diocese not found");
+                return $this->jsonResponse($response, 404, false, "Diocese not found");
             }
             $diocese->delete();
-            return $response->withStatus(204); // No content response
+
+            return $this->jsonResponse($response, 204, true, "Diocese deleted successfully");
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error deleting diocese", $e);
+            return $this->jsonResponse($response, 500, false, "Error deleting diocese", [
+                "details" => $e->getMessage()
+            ]);
         }
-    }
-
-    /**
-     * Helper function for returning error responses
-     */
-    private function errorResponse(Response $response, string $message, \Exception $e) {
-        $response->getBody()->write(json_encode(["error" => $message, "details" => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-
-    /**
-     * Helper function for returning not found responses
-     */
-    private function notFoundResponse(Response $response, string $message) {
-        $response->getBody()->write(json_encode(["error" => $message]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
     }
 }

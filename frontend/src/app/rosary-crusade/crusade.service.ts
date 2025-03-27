@@ -4,9 +4,9 @@ import { environment } from '../../environments/environment';
 
 export interface Crusade {
   CrusadeID: number;
+  StateID: number;          // numeric foreign key
   DioceseID: number;
   ParishID: number;
-  State: string;
   ConfessionStartTime: string;
   ConfessionEndTime: string;
   MassStartTime: string;
@@ -17,7 +17,8 @@ export interface Crusade {
   ContactPhone: string;
   ContactEmail: string;
   Comments: string;
-  // Optional nested objects from the backend:
+
+  // Optional relationship objects from the back end
   diocese?: {
     DioceseID: number;
     DioceseName: string;
@@ -26,13 +27,19 @@ export interface Crusade {
     ParishID: number;
     ParishName: string;
   };
+  // NEW: 'state' property so we can access state?.StateAbbreviation in the front end
+  state?: {
+    StateID: number;
+    StateName: string;
+    StateAbbreviation: string;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
 export class CrusadeService {
   private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAllCrusades() {
     return this.http.get<Crusade[]>(`${this.baseUrl}/crusades`);
@@ -54,10 +61,13 @@ export class CrusadeService {
     return this.http.delete(`${this.baseUrl}/crusades/${id}`);
   }
 
-  searchCrusades(state?: string, dioceseID?: number, parishID?: number) {
+  /**
+   * Optional filter method for searching by state_id, diocese_id, parish_id
+   */
+  searchCrusades(stateID?: number, dioceseID?: number, parishID?: number) {
     let params = new HttpParams();
-    if (state && state.trim()) {
-      params = params.set('state', state.trim());
+    if (stateID && stateID > 0) {
+      params = params.set('state_id', stateID.toString());
     }
     if (dioceseID && dioceseID > 0) {
       params = params.set('diocese_id', dioceseID.toString());

@@ -2,31 +2,36 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
-// If the backend returns diocese / parish objects,  can define them optionally
+// If the backend returns diocese / parish objects, define them optionally:
 export interface Adoration {
   AdorationID: number;
-  DioceseID: number;             // must match a valid DioceseID
-  ParishID: number;              // must match a valid ParishID
-  State: string;
-  AdorationType: string;
+  DioceseID: number;           // references a valid Diocese
+  ParishID: number;            // references a valid Parish
+  StateID: number;             // numeric foreign key => references State table
+  AdorationType: string;       // 'Regular' or 'Perpetual'
   AdorationLocation: string;
   AdorationLocationType: string;
-  AdorationDay: string;
-  AdorationStart: string;
-  AdorationEnd: string;
+  AdorationDay: string;        // e.g. 'Monday', or empty if Perpetual
+  AdorationStart: string;      // e.g. '09:00:00'
+  AdorationEnd: string;        // e.g. '17:00:00'
 
-  // (Optional) Relationship objects if Laravel returns them with ->with('diocese','parish')
+  // (Optional) Relationship objects if Laravel returns them with ->with('diocese','parish','state')
   diocese?: {
     DioceseID: number;
     DioceseName: string;
-    // etc...
+    // ...
   };
   parish?: {
     ParishID: number;
     ParishName: string;
-    // etc...
+    // ...
   };
-  [key: string]: any;
+  state?: {
+    StateID: number;
+    StateName: string;
+    StateAbbreviation: string;
+  };
+  [key: string]: any; // optional for expansion
 }
 
 @Injectable({ providedIn: 'root' })
@@ -60,18 +65,11 @@ export class AdorationService {
     return this.http.delete(`${this.baseUrl}/adorations/${id}`);
   }
 
-  // SEARCH with optional filters
-  /**
-  * SEARCH with optional filters.
-  * If 'state' or 'dioceseID' or 'parishID' is not provided or is zero/blank,
-  * it won't be sent as a query param.
-  */
-  searchAdorations(state?: string, dioceseID?: number, parishID?: number) {
+  // Optionally: search with filters (state_id, diocese_id, parish_id)
+  searchAdorations(stateID?: number, dioceseID?: number, parishID?: number) {
     let params = new HttpParams();
-
-    // Only set param if it’s actually provided and non-empty
-    if (state && state.trim()) {
-      params = params.set('state', state.trim());
+    if (stateID && stateID > 0) {
+      params = params.set('state_id', stateID.toString());
     }
     if (dioceseID && dioceseID > 0) {
       params = params.set('diocese_id', dioceseID.toString());
@@ -79,8 +77,6 @@ export class AdorationService {
     if (parishID && parishID > 0) {
       params = params.set('parish_id', parishID.toString());
     }
-
     return this.http.get<Adoration[]>(`${this.baseUrl}/adorations`, { params });
   }
-
 }

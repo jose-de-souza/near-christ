@@ -2,26 +2,37 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment'; // adjust if needed
 
+/**
+ * The Diocese interface, now with a numeric `StateID` foreign key
+ * plus an optional `state` object if your backend returns the relationship.
+ */
 export interface Diocese {
-  DioceseID: number;   // The real PK from the backend
+  DioceseID: number;
   DioceseName: string;
   DioceseStreetNo: string;
   DioceseStreetName: string;
   DioceseSuburb: string;
-  DioceseState: string;
+  StateID: number;  // Replaces the old DioceseState string
   DiocesePostcode: string;
   DiocesePhone: string;
   DioceseEmail: string;
   DioceseWebsite: string;
+
+  // NEW: if Laravel returns state with ->with('state'):
+  state?: {
+    StateID: number;
+    StateName: string;
+    StateAbbreviation: string;
+  };
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class DioceseService {
-  private baseUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl; // e.g. "http://localhost:8000"
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // GET all dioceses
   getAllDioceses() {

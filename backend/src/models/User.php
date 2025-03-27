@@ -9,13 +9,13 @@ class User extends Model
     // Explicitly define the underlying table
     protected $table = 'User';
 
-    // Define the primary key column
+    // Primary key
     protected $primaryKey = 'UserID';
 
-    // This table does not have created_at / updated_at columns
+    // Disable timestamps if the User table doesn't have created_at / updated_at
     public $timestamps = false;
 
-    // Which attributes can be mass-assigned
+    // Fields allowed to be mass assigned
     protected $fillable = [
         'UserName',
         'UserEmail',
@@ -24,20 +24,20 @@ class User extends Model
     ];
 
     /**
-     * Mutator for UserPassword:
-     * Automatically hash the password before saving to DB.
+     * Automatically hash the password before saving.
+     * Eloquent "Mutator":
      */
     public function setUserPasswordAttribute($value)
     {
+        // If $value is already a bcrypt hash, use as-is
         if (
             is_string($value)
             && strlen($value) === 60
-            && ((substr($value, 0, 4) === '$2y$') || (substr($value, 0, 4) === '$2a$'))
+            && (substr($value, 0, 4) === '$2y$' || substr($value, 0, 4) === '$2a$')
         ) {
-            // If it's already hashed, store as-is
             $this->attributes['UserPassword'] = $value;
         } else {
-            // If not hashed, use password_hash with BCRYPT
+            // Otherwise, hash the plain password
             $this->attributes['UserPassword'] = password_hash($value, PASSWORD_BCRYPT);
         }
     }

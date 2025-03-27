@@ -2,131 +2,128 @@
 
 namespace App\Controllers;
 
+use App\Controllers\Traits\JsonResponseTrait;
 use App\Models\Crusade;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class CrusadeController
 {
+    use JsonResponseTrait;
+
     /**
      * GET /crusades
-     * Return all crusades (with related diocese and parish), optionally filtered.
+     * Optionally filtered by state_id, diocese_id, parish_id
      */
-    public function getAll(Request $request, Response $response)
+    public function getAll(Request $request, Response $response): Response
     {
         try {
-            // Start with Eloquent query that eager loads diocese & parish
-            $query = Crusade::with(['diocese', 'parish']);
+            $query = Crusade::with(['diocese', 'parish', 'state']);
 
-            // Read potential filters from query params
-            $params    = $request->getQueryParams();
-            $state     = $params['state']       ?? null;
-            $dioceseID = $params['diocese_id']  ?? null;
-            $parishID  = $params['parish_id']   ?? null;
+            $params = $request->getQueryParams();
+            $filters = [
+                'StateID'   => $params['state_id']     ?? null,
+                'DioceseID' => $params['diocese_id']   ?? null,
+                'ParishID'  => $params['parish_id']    ?? null,
+            ];
 
-            // Apply filters only if non-null and not the literal 'null' string
-            if ($state && $state !== 'null') {
-                $query->where('State', $state);
-            }
-            if ($dioceseID && $dioceseID !== 'null') {
-                $query->where('DioceseID', $dioceseID);
-            }
-            if ($parishID && $parishID !== 'null') {
-                $query->where('ParishID', $parishID);
+            foreach ($filters as $column => $value) {
+                if ($value && $value !== 'null') {
+                    $query->where($column, $value);
+                }
             }
 
             $crusades = $query->get();
-            $response->getBody()->write(json_encode($crusades));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "All crusades fetched", $crusades);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching crusades", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching crusades", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
-
     /**
-     * GET /crusades/{id} - Get a single crusade by ID (with related diocese and parish)
+     * GET /crusades/{id}
      */
-    public function getById(Request $request, Response $response, $args)
+    public function getById(Request $request, Response $response, array $args): Response
     {
         try {
-            $crusade = Crusade::with(['diocese', 'parish'])->find($args['id']);
+            $crusade = Crusade::with(['diocese', 'parish', 'state'])->find($args['id']);
             if (!$crusade) {
-                return $this->notFoundResponse($response, "Crusade not found");
+                return $this->jsonResponse($response, 404, false, "Crusade not found");
             }
-            $response->getBody()->write(json_encode($crusade));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($response, 200, true, "Crusade fetched successfully", $crusade);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error fetching crusade", $e);
+            return $this->jsonResponse($response, 500, false, "Error fetching crusade", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * POST /crusades - Create a new crusade (Protected by AuthMiddleware)
+     * POST /crusades
      */
-    public function create(Request $request, Response $response)
+    public function create(Request $request, Response $response): Response
     {
         try {
             $data = json_decode($request->getBody(), true);
+
+            // Minimal validation
+            $requiredFields = ['StateID', 'DioceseID', 'ParishID'];
+            foreach ($requiredFields as $field) {
+                if (empty($data[$field])) {
+                    return $this->jsonResponse($response, 400, false, "Missing field: {$field}");
+                }
+            }
+
             $crusade = Crusade::create($data);
-            $response->getBody()->write(json_encode($crusade));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+            return $this->jsonResponse($response, 201, true, "Crusade created successfully", $crusade);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error creating crusade", $e);
+            return $this->jsonResponse($response, 500, false, "Error creating crusade", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * PUT /crusades/{id} - Update a crusade (Protected by AuthMiddleware)
+     * PUT /crusades/{id}
      */
-    public function update(Request $request, Response $response, $args)
+    public function update(Request $request, Response $response, array $args): Response
     {
         try {
             $crusade = Crusade::find($args['id']);
             if (!$crusade) {
-                return $this->notFoundResponse($response, "Crusade not found");
+                return $this->jsonResponse($response, 404, false, "Crusade not found");
             }
+
             $data = json_decode($request->getBody(), true);
             $crusade->update($data);
-            $response->getBody()->write(json_encode($crusade));
-            return $response->withHeader('Content-Type', 'application/json');
+
+            return $this->jsonResponse($response, 200, true, "Crusade updated successfully", $crusade);
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error updating crusade", $e);
+            return $this->jsonResponse($response, 500, false, "Error updating crusade", [
+                "details" => $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * DELETE /crusades/{id} - Delete a crusade (Protected by AuthMiddleware)
+     * DELETE /crusades/{id}
      */
-    public function delete(Request $request, Response $response, $args)
+    public function delete(Request $request, Response $response, array $args): Response
     {
         try {
             $crusade = Crusade::find($args['id']);
             if (!$crusade) {
-                return $this->notFoundResponse($response, "Crusade not found");
+                return $this->jsonResponse($response, 404, false, "Crusade not found");
             }
+
             $crusade->delete();
-            return $response->withStatus(204); // No content response
+            return $this->jsonResponse($response, 204, true, "Crusade deleted successfully");
         } catch (\Exception $e) {
-            return $this->errorResponse($response, "Error deleting crusade", $e);
+            return $this->jsonResponse($response, 500, false, "Error deleting crusade", [
+                "details" => $e->getMessage()
+            ]);
         }
-    }
-
-    /**
-     * Helper function for returning error responses
-     */
-    private function errorResponse(Response $response, string $message, \Exception $e)
-    {
-        $response->getBody()->write(json_encode(["error" => $message, "details" => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-
-    /**
-     * Helper function for returning not found responses
-     */
-    private function notFoundResponse(Response $response, string $message)
-    {
-        $response->getBody()->write(json_encode(["error" => $message]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
     }
 }

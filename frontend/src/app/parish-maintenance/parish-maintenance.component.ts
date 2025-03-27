@@ -7,6 +7,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 import { ParishService, Parish } from './parish.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
+import { StateService, State } from '../state.service';
 
 @Component({
   selector: 'app-parish-maintenance',
@@ -16,126 +17,115 @@ import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service'
   styleUrls: ['./parish-maintenance.component.scss']
 })
 export class ParishMaintenanceComponent implements OnInit {
-  // Complete list of parishes from the backend
+  // Full list of parishes
   allParishes: Parish[] = [];
-  // The currently displayed list (filtered)
+  // Displayed list (filtered)
   parishes: Parish[] = [];
 
   hasSubmitted = false;
 
-  // Predefined states
-  states: string[] = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
+  // Full list of states from back end
+  allStates: State[] = [];
 
-  // The parish record being edited
+  // The parish being edited
   selectedParish: Partial<Parish> = {
     ParishID: undefined,
     ParishName: '',
     ParishStNumber: '',
     ParishStName: '',
     ParishSuburb: '',
-    ParishState: '',
+    StateID: 0,
     ParishPostcode: '',
     ParishPhone: '',
     ParishEmail: '',
     ParishWebsite: ''
   };
 
-  // Columns for the results grid
+  // Table columns - updated State column
   columns = [
     { header: 'Parish Name', field: 'ParishName' },
     { header: 'St No', field: 'ParishStNumber' },
     { header: 'Street Name', field: 'ParishStName' },
     { header: 'Suburb', field: 'ParishSuburb' },
-    { header: 'State', field: 'ParishState' },
+    { header: 'State', field: 'state' }, // Column will display the state's abbreviation
     { header: 'PostCode', field: 'ParishPostcode' },
     { header: 'Phone', field: 'ParishPhone' },
     { header: 'Email', field: 'ParishEmail' },
     { header: 'Website', field: 'ParishWebsite' }
   ];
 
-  // For the filter
+  // Diocese data for filtering
   dioceseList: Diocese[] = [];
-  filterState = '';
-  filterDioceseID: number | null = 0;
   filteredDiocesesForFilter: Diocese[] = [];
+
+  // Filter properties (the values from the select elements might be strings)
+  filterStateID: any = 0;
+  filterDioceseID: any = 0;
   dioceseFilterDisabled = true;
 
   constructor(
     private parishService: ParishService,
     private dioceseService: DioceseService,
+    private stateService: StateService,
     private router: Router,
     private snackBar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
-    this.loadAllParishes();
+    this.loadAllStates();
     this.loadAllDioceses();
+    this.loadAllParishes();
   }
 
-  // ---------------------------
-  // DRAG & DROP for the table
-  // ---------------------------
-  get gridTemplateColumns(): string {
-    return this.columns.map(() => 'auto').join(' ');
-  }
-
-  onDrop(event: CdkDragDrop<any[]>): void {
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
-  }
-
-  onDragEntered(event: any): void {
-    event.container.element.nativeElement.classList.add('cdk-drag-over');
-  }
-
-  onDragExited(event: any): void {
-    event.container.element.nativeElement.classList.remove('cdk-drag-over');
-  }
-
-  getCellValue(row: Parish, column: { header: string; field: string }): any {
-    return (row as any)[column.field] || '';
-  }
-
-  trackByParishID(index: number, item: Parish): number {
-    return item.ParishID;
-  }
-
-  selectParish(parish: Parish): void {
-    this.selectedParish = { ...parish };
-  }
-
-  // ---------------------------
-  // LOAD / CRUD
-  // ---------------------------
-  loadAllParishes(): void {
-    this.parishService.getAllParishes().subscribe({
-      next: (data: Parish[]) => {
-        // Store the full list AND the displayed list
-        this.allParishes = data;
-        this.parishes = data;
+  /* ---------------------------
+     Load States
+  --------------------------- */
+  loadAllStates(): void {
+    this.stateService.getAllStates().subscribe({
+      next: (res: any) => {
+        this.allStates = res.data;
       },
       error: (err: any) => {
-        if (err.status !== 403) {
-          console.error('Failed to load parishes:', err);
-          this.showError('Fatal error loading parishes! Please contact support.');
-        }
+        console.error('Failed to load states:', err);
+        this.showError('Could not load states from server.');
       }
     });
   }
 
+  /* ---------------------------
+     Load Dioceses
+  --------------------------- */
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
-      next: (data: Diocese[]) => {
-        this.dioceseList = data;
+      next: (res: any) => {
+        this.dioceseList = res.data;
       },
       error: (err: any) => {
-        if (err.status !== 403) {
-          console.error('Failed to load dioceses:', err);
-          this.showError('Fatal error loading dioceses! Please contact support.');
-        }
+        console.error('Failed to load dioceses:', err);
+        this.showError('Could not load dioceses from server.');
       }
     });
   }
 
+  /* ---------------------------
+     Load Parishes
+  --------------------------- */
+  loadAllParishes(): void {
+    this.parishService.getAllParishes().subscribe({
+      next: (res: any) => {
+        this.allParishes = res.data;
+        this.parishes = res.data;
+      },
+      error: (err: any) => {
+        console.error('Failed to load parishes:', err);
+        this.showError('Fatal error loading parishes!');
+      }
+    });
+  }
+
+  /* ---------------------------
+     CRUD
+  --------------------------- */
   addParish(): void {
     this.hasSubmitted = true;
     if (!this.selectedParish.ParishName?.trim()) {
@@ -148,10 +138,8 @@ export class ParishMaintenanceComponent implements OnInit {
         this.resetForm();
       },
       error: (err: any) => {
-        if (err.status !== 403) {
-          console.error('Failed to create parish:', err);
-          this.showError('Fatal error creating parish! Please contact support.');
-        }
+        console.error('Failed to create parish:', err);
+        this.showError('Fatal error creating parish!');
       }
     });
   }
@@ -168,10 +156,8 @@ export class ParishMaintenanceComponent implements OnInit {
         this.resetForm();
       },
       error: (err: any) => {
-        if (err.status !== 403) {
-          console.error('Failed to update parish:', err);
-          this.showError('Fatal error updating parish! Please contact support.');
-        }
+        console.error('Failed to update parish:', err);
+        this.showError('Fatal error updating parish!');
       }
     });
   }
@@ -188,10 +174,8 @@ export class ParishMaintenanceComponent implements OnInit {
         this.resetForm();
       },
       error: (err: any) => {
-        if (err.status !== 403) {
-          console.error('Failed to delete parish:', err);
-          this.showError('Fatal error deleting parish! Please contact support.');
-        }
+        console.error('Failed to delete parish:', err);
+        this.showError('Fatal error deleting parish!');
       }
     });
   }
@@ -207,7 +191,7 @@ export class ParishMaintenanceComponent implements OnInit {
       ParishStNumber: '',
       ParishStName: '',
       ParishSuburb: '',
-      ParishState: '',
+      StateID: 0,
       ParishPostcode: '',
       ParishPhone: '',
       ParishEmail: '',
@@ -216,21 +200,25 @@ export class ParishMaintenanceComponent implements OnInit {
     this.hasSubmitted = false;
   }
 
-  // ---------------------------
-  // FILTER LOGIC
-  // ---------------------------
+  selectParish(parish: Parish): void {
+    this.selectedParish = { ...parish };
+    this.hasSubmitted = false;
+  }
+
+  /* ---------------------------
+     FILTERS
+  --------------------------- */
   onFilterStateChange(): void {
-    if (!this.filterState) {
-      // No state => show all
+    const stateID = Number(this.filterStateID);
+    if (!stateID || stateID === 0) {
+      // No state selected; reset filters
       this.filteredDiocesesForFilter = [];
       this.filterDioceseID = 0;
       this.dioceseFilterDisabled = true;
       this.parishes = this.allParishes;
     } else {
-      // Filter dioceses by the chosen state
-      this.filteredDiocesesForFilter = this.dioceseList.filter(
-        (d: Diocese) => d.DioceseState === this.filterState
-      );
+      // Populate dioceses for the chosen state (ensure number comparison)
+      this.filteredDiocesesForFilter = this.dioceseList.filter(d => d.StateID === stateID);
       this.dioceseFilterDisabled = (this.filteredDiocesesForFilter.length === 0);
       this.applyParishFilter();
     }
@@ -241,25 +229,58 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   private applyParishFilter(): void {
-    if (!this.filterState) {
-      // If no state => show all parishes
+    const stateID = Number(this.filterStateID);
+    if (!stateID || stateID === 0) {
       this.parishes = this.allParishes;
     } else {
-      // Filter for the selected state
-      let filtered = this.allParishes.filter(
-        (p: Parish) => p.ParishState === this.filterState
-      );
-      // Then filter by diocese if > 0
-      if (this.filterDioceseID && this.filterDioceseID > 0) {
-        filtered = filtered.filter((p: Parish) => p.DioceseID === this.filterDioceseID);
+      let filtered = this.allParishes.filter(p => p.StateID === stateID);
+      if (this.filterDioceseID && Number(this.filterDioceseID) > 0) {
+        filtered = filtered.filter(p => p.DioceseID === Number(this.filterDioceseID));
       }
       this.parishes = filtered;
     }
   }
 
-  // ---------------------------
-  // SNACK BAR HELPERS
-  // ---------------------------
+  /* ---------------------------
+     DRAG & DROP
+  --------------------------- */
+  get gridTemplateColumns(): string {
+    return this.columns.map(() => 'auto').join(' ');
+  }
+
+  onDrop(event: CdkDragDrop<any[]>): void {
+    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
+  }
+
+  onDragEntered(event: any): void {
+    event.container.element.nativeElement.classList.add('cdk-drag-over');
+  }
+
+  onDragExited(event: any): void {
+    event.container.element.nativeElement.classList.remove('cdk-drag-over');
+  }
+
+  // getCellValue for displaying State abbreviation
+  getCellValue(row: Parish, column: { header: string; field: string }): any {
+    if (column.field === 'state') {
+      const st = this.allStates.find(s => s.StateID === row.StateID);
+      return st ? st.StateAbbreviation : '';
+    } else {
+      return (row as any)[column.field] || '';
+    }
+  }
+
+  trackByParishID(index: number, item: Parish): number {
+    return item.ParishID;
+  }
+
+  trackByParishColumn(index: number, item: any) {
+    return item.field;
+  }
+
+  /* ---------------------------
+     SNACK BAR
+  --------------------------- */
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
