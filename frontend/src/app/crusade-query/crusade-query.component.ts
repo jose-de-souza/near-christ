@@ -168,11 +168,11 @@ export class CrusadeQueryComponent implements OnInit {
      SEARCH
   ----------------------------- */
   searchCrusade(): void {
-    console.log('Searching Crusade with:', {
+   /*  console.log('Searching Crusade with:', {
       stateID: this.selectedStateID || '(All)',
       dioceseID: this.selectedDioceseID ?? '(All)',
       parishID: this.selectedParishID ?? '(All)',
-    });
+    }); */
 
     const stateID = this.selectedStateID > 0 ? this.selectedStateID : undefined;
     const dioceseID = this.selectedDioceseID != null ? this.selectedDioceseID : undefined;
@@ -182,10 +182,10 @@ export class CrusadeQueryComponent implements OnInit {
       next: (res: any) => {
         // res.data => array of Crusade
         this.results = res.data;
-        console.log('Crusade query results =>', this.results);
+        /* console.log('Crusade query results =>', this.results); */
       },
       error: (err) => {
-        console.error('Failed to search crusades =>', err);
+        /* console.error('Failed to search crusades =>', err); */
         this.showError('Fatal error searching Crusades!');
       }
     });

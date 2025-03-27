@@ -169,11 +169,11 @@ export class AdorationQueryComponent implements OnInit {
      SEARCH
   --------------------------- */
   searchAdoration(): void {
-    console.log('User selected =>', {
+   /*  console.log('User selected =>', {
       stateID: this.selectedStateID || '(All)',
       dioceseID: this.selectedDioceseID ?? '(All)',
       parishID: this.selectedParishID ?? '(All)',
-    });
+    }); */
 
     // Convert 0 => undefined for state, null => undefined for diocese/parish
     const stateID = (this.selectedStateID && this.selectedStateID > 0) ? this.selectedStateID : undefined;
@@ -184,10 +184,10 @@ export class AdorationQueryComponent implements OnInit {
       next: (res: any) => {
         // Usually {success, status, message, data: [... adorations ...]}
         this.results = res.data;
-        console.log('Adoration query results =>', this.results);
+        /* console.log('Adoration query results =>', this.results); */
       },
       error: (err) => {
-        console.error('Failed to search adorations =>', err);
+        /* console.error('Failed to search adorations =>', err); */
       }
     });
   }
