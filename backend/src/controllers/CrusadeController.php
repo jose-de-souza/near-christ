@@ -10,23 +10,21 @@ class CrusadeController
 {
     /**
      * GET /crusades
-     * Return all crusades (with related diocese and parish), optionally filtered.
+     * Optionally filtered by state_id, diocese_id, parish_id
      */
     public function getAll(Request $request, Response $response)
     {
         try {
-            // Start with Eloquent query that eager loads diocese & parish
-            $query = Crusade::with(['diocese', 'parish']);
+            // Eager load diocese, parish, state
+            $query = Crusade::with(['diocese', 'parish', 'state']);
 
-            // Read potential filters from query params
             $params    = $request->getQueryParams();
-            $state     = $params['state']       ?? null;
-            $dioceseID = $params['diocese_id']  ?? null;
-            $parishID  = $params['parish_id']   ?? null;
+            $stateID   = $params['state_id']     ?? null;
+            $dioceseID = $params['diocese_id']   ?? null;
+            $parishID  = $params['parish_id']    ?? null;
 
-            // Apply filters only if non-null and not the literal 'null' string
-            if ($state && $state !== 'null') {
-                $query->where('State', $state);
+            if ($stateID && $stateID !== 'null') {
+                $query->where('StateID', $stateID);
             }
             if ($dioceseID && $dioceseID !== 'null') {
                 $query->where('DioceseID', $dioceseID);
@@ -43,14 +41,13 @@ class CrusadeController
         }
     }
 
-
     /**
-     * GET /crusades/{id} - Get a single crusade by ID (with related diocese and parish)
+     * GET /crusades/{id}
      */
     public function getById(Request $request, Response $response, $args)
     {
         try {
-            $crusade = Crusade::with(['diocese', 'parish'])->find($args['id']);
+            $crusade = Crusade::with(['diocese', 'parish', 'state'])->find($args['id']);
             if (!$crusade) {
                 return $this->notFoundResponse($response, "Crusade not found");
             }
@@ -62,12 +59,13 @@ class CrusadeController
     }
 
     /**
-     * POST /crusades - Create a new crusade (Protected by AuthMiddleware)
+     * POST /crusades
      */
     public function create(Request $request, Response $response)
     {
         try {
             $data = json_decode($request->getBody(), true);
+            // Expect "StateID", "DioceseID", "ParishID", etc.
             $crusade = Crusade::create($data);
             $response->getBody()->write(json_encode($crusade));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
@@ -77,7 +75,7 @@ class CrusadeController
     }
 
     /**
-     * PUT /crusades/{id} - Update a crusade (Protected by AuthMiddleware)
+     * PUT /crusades/{id}
      */
     public function update(Request $request, Response $response, $args)
     {
@@ -96,7 +94,7 @@ class CrusadeController
     }
 
     /**
-     * DELETE /crusades/{id} - Delete a crusade (Protected by AuthMiddleware)
+     * DELETE /crusades/{id}
      */
     public function delete(Request $request, Response $response, $args)
     {
@@ -106,27 +104,25 @@ class CrusadeController
                 return $this->notFoundResponse($response, "Crusade not found");
             }
             $crusade->delete();
-            return $response->withStatus(204); // No content response
+            return $response->withStatus(204);
         } catch (\Exception $e) {
             return $this->errorResponse($response, "Error deleting crusade", $e);
         }
     }
 
-    /**
-     * Helper function for returning error responses
-     */
     private function errorResponse(Response $response, string $message, \Exception $e)
     {
         $response->getBody()->write(json_encode(["error" => $message, "details" => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(500);
     }
 
-    /**
-     * Helper function for returning not found responses
-     */
     private function notFoundResponse(Response $response, string $message)
     {
         $response->getBody()->write(json_encode(["error" => $message]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(404);
     }
 }

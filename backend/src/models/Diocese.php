@@ -6,27 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Diocese extends Model
 {
-    // Define table name explicitly (if different from default pluralization)
     protected $table = 'Diocese';
-
-    // Define primary key
     protected $primaryKey = 'DioceseID';
-
-    // Disable timestamps since the table does not have created_at / updated_at fields
     public $timestamps = false;
 
-    // Protect against mass assignment vulnerabilities
+    // Updated fillable: remove old 'DioceseState' and add 'StateID'
     protected $fillable = [
         'DioceseName',
         'DioceseStreetNo',
         'DioceseStreetName',
         'DioceseSuburb',
-        'DioceseState',
+        'StateID',           // numeric foreign key to State
         'DiocesePostcode',
         'DiocesePhone',
         'DioceseEmail',
-        'DioceseWebsite'
+        'DioceseWebsite',
     ];
+
+    // Relationship: One Diocese belongsTo One State
+    public function state()
+    {
+        return $this->belongsTo(State::class, 'StateID', 'StateID');
+    }
 
     // Relationship: One Diocese has Many Parishes
     public function parishes()
@@ -37,12 +38,12 @@ class Diocese extends Model
     // Relationship: One Diocese has Many Adorations
     public function adorations()
     {
-        return $this->hasMany(Adoration::class, 'DioceseID', 'DioceseID');
+        return $this->hasMany(\App\Models\Adoration::class, 'DioceseID', 'DioceseID');
     }
 
     // Relationship: One Diocese has Many Crusades
     public function crusades()
     {
-        return $this->hasMany(Crusade::class, 'DioceseID', 'DioceseID');
+        return $this->hasMany(\App\Models\Crusade::class, 'DioceseID', 'DioceseID');
     }
 }

@@ -3,23 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Diocese;
+use App\Models\Parish;
+use App\Models\State;
 
 class Crusade extends Model
 {
-    // Define table name explicitly
     protected $table = 'Crusade';
-
-    // Define primary key
     protected $primaryKey = 'CrusadeID';
-
-    // Disable timestamps as the table does not have created_at / updated_at fields
     public $timestamps = false;
 
-    // Protect against mass assignment vulnerabilities
+    // Updated fillable: remove old 'State' string, add 'StateID'
     protected $fillable = [
+        'StateID',
         'DioceseID',
         'ParishID',
-        'State',
         'ConfessionStartTime',
         'ConfessionEndTime',
         'MassStartTime',
@@ -32,15 +30,21 @@ class Crusade extends Model
         'Comments'
     ];
 
-    // Relationship: Many Crusades belong to One Diocese
+    // Crusade belongs to one Diocese
     public function diocese()
     {
         return $this->belongsTo(Diocese::class, 'DioceseID', 'DioceseID');
     }
 
-    // Relationship: Many Crusades belong to One Parish
+    // Crusade belongs to one Parish
     public function parish()
     {
         return $this->belongsTo(Parish::class, 'ParishID', 'ParishID');
+    }
+
+    // Crusade belongs to one State
+    public function state()
+    {
+        return $this->belongsTo(State::class, 'StateID', 'StateID');
     }
 }

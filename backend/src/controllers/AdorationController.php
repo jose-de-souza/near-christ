@@ -9,24 +9,29 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class AdorationController
 {
     /**
-     * GET /adorations - Get all adorations (with related diocese and parish)
+     * GET /adorations
+     * Optional filters: ?state_id=1&diocese_id=2&parish_id=3
      */
     public function getAll(Request $request, Response $response)
     {
         try {
-            $query = Adoration::with(['diocese', 'parish']);
+            // Eager-load diocese, parish, and state relationships
+            $query = Adoration::with(['diocese', 'parish', 'state']);
 
-            $params = $request->getQueryParams();
-            $state     = $params['state']       ?? null;
-            $dioceseID = $params['diocese_id']  ?? null;
-            $parishID  = $params['parish_id']   ?? null;
+            $params      = $request->getQueryParams();
+            $stateID     = $params['state_id']     ?? null;
+            $dioceseID   = $params['diocese_id']   ?? null;
+            $parishID    = $params['parish_id']    ?? null;
 
-            if ($state && $state !== 'null') {
-                $query->where('State', $state);
+            // Filter by StateID if provided
+            if ($stateID && $stateID !== 'null') {
+                $query->where('StateID', $stateID);
             }
+            // Filter by DioceseID if provided
             if ($dioceseID && $dioceseID !== 'null') {
                 $query->where('DioceseID', $dioceseID);
             }
+            // Filter by ParishID if provided
             if ($parishID && $parishID !== 'null') {
                 $query->where('ParishID', $parishID);
             }
@@ -40,12 +45,13 @@ class AdorationController
     }
 
     /**
-     * GET /adorations/{id} - Get a single adoration by ID (with related diocese and parish)
+     * GET /adorations/{id}
+     * Return a single adoration with diocese, parish, and state
      */
     public function getById(Request $request, Response $response, $args)
     {
         try {
-            $adoration = Adoration::with(['diocese', 'parish'])->find($args['id']);
+            $adoration = Adoration::with(['diocese', 'parish', 'state'])->find($args['id']);
             if (!$adoration) {
                 return $this->notFoundResponse($response, "Adoration not found");
             }
@@ -57,12 +63,14 @@ class AdorationController
     }
 
     /**
-     * POST /adorations - Create a new adoration (Protected by AuthMiddleware)
+     * POST /adorations
+     * Create a new adoration
      */
     public function create(Request $request, Response $response)
     {
         try {
             $data = json_decode($request->getBody(), true);
+            // Expect data to contain "StateID", "DioceseID", etc.
             $adoration = Adoration::create($data);
             $response->getBody()->write(json_encode($adoration));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
@@ -72,7 +80,8 @@ class AdorationController
     }
 
     /**
-     * PUT /adorations/{id} - Update an adoration (Protected by AuthMiddleware)
+     * PUT /adorations/{id}
+     * Update an adoration
      */
     public function update(Request $request, Response $response, $args)
     {
@@ -91,7 +100,8 @@ class AdorationController
     }
 
     /**
-     * DELETE /adorations/{id} - Delete an adoration (Protected by AuthMiddleware)
+     * DELETE /adorations/{id}
+     * Delete an adoration
      */
     public function delete(Request $request, Response $response, $args)
     {
@@ -101,27 +111,30 @@ class AdorationController
                 return $this->notFoundResponse($response, "Adoration not found");
             }
             $adoration->delete();
-            return $response->withStatus(204); // No content response
+            return $response->withStatus(204);
         } catch (\Exception $e) {
             return $this->errorResponse($response, "Error deleting adoration", $e);
         }
     }
 
-    /**
-     * Helper function for returning error responses
-     */
+    // Helper for error responses
     private function errorResponse(Response $response, string $message, \Exception $e)
     {
-        $response->getBody()->write(json_encode(["error" => $message, "details" => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        $response->getBody()->write(json_encode([
+            "error" => $message,
+            "details" => $e->getMessage()
+        ]));
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(500);
     }
 
-    /**
-     * Helper function for returning not found responses
-     */
+    // Helper for not found
     private function notFoundResponse(Response $response, string $message)
     {
         $response->getBody()->write(json_encode(["error" => $message]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(404);
     }
 }
