@@ -37,7 +37,7 @@
     <!-- Row 2: Rosary Crusade fields in one line -->
     <div class="section crusade" data-title="Rosary Crusade">
       <div class="row-2">
-        <!-- Start (10%) -->
+        <!-- Crusade Start -->
         <div class="field-group crusade-start">
           <label>Start</label>
           <input type="time" [(ngModel)]="selectedCrusade.CrusadeStartTime" />
@@ -45,8 +45,7 @@
             Crusade Start is required.
           </div>
         </div>
-
-        <!-- End (10%) -->
+        <!-- Crusade End -->
         <div class="field-group crusade-end">
           <label>End</label>
           <input type="time" [(ngModel)]="selectedCrusade.CrusadeEndTime" />
@@ -55,24 +54,24 @@
           </div>
         </div>
 
-        <!-- State (10%) -->
+        <!-- State => numeric StateID -->
         <div class="field-group crusade-state">
           <label>State</label>
-          <!-- (change)="onStateChange()" => filter & disable logic for Diocese & Parish -->
-          <select [(ngModel)]="selectedCrusade.State" (change)="onStateChange()"
-            [disabled]="!states || states.length === 0">
-            <option value="">-- select state --</option>
-            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          <select [(ngModel)]="selectedCrusade.StateID" (change)="onStateChange()"
+            [disabled]="!allStates || allStates.length === 0">
+            <option [value]="0">-- select state --</option>
+            <option *ngFor="let st of allStates" [value]="st.StateID">
+              {{ st.StateName }} ({{ st.StateAbbreviation }})
+            </option>
           </select>
-          <div *ngIf="hasSubmitted && !selectedCrusade.State?.trim()" class="inline-error">
+          <div *ngIf="hasSubmitted && (!selectedCrusade.StateID || selectedCrusade.StateID === 0)" class="inline-error">
             State is required.
           </div>
         </div>
 
-        <!-- Diocese (32%) -->
+        <!-- Diocese -->
         <div class="field-group crusade-diocese">
           <label>Diocese</label>
-          <!-- (change)="onDioceseChange()" => filter & disable logic for Parish -->
           <select [(ngModel)]="selectedCrusade.DioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [value]="0">-- select diocese --</option>
             <option *ngFor="let d of filteredDioceses" [value]="d.DioceseID">
@@ -85,7 +84,7 @@
           </div>
         </div>
 
-        <!-- Parish (32%) -->
+        <!-- Parish -->
         <div class="field-group crusade-parish">
           <label>Parish</label>
           <select [(ngModel)]="selectedCrusade.ParishID" [disabled]="parishDisabled">
@@ -102,22 +101,17 @@
       </div>
     </div><!-- end row-2 -->
 
-    <!-- Row 3: Contact => 3 fields => 33%, 31%, 30% -->
+    <!-- Row 3: Contact -->
     <div class="section contact" data-title="Contact">
       <div class="row-3">
-        <!-- Contact Name (33%) -->
         <div class="field-group contact-name">
           <label>Contact Name</label>
           <input type="text" [(ngModel)]="selectedCrusade.ContactName" />
         </div>
-
-        <!-- Contact Phone (31%) -->
         <div class="field-group contact-phone">
           <label>Contact Phone</label>
           <input type="text" [(ngModel)]="selectedCrusade.ContactPhone" />
         </div>
-
-        <!-- Contact Email (30%) -->
         <div class="field-group contact-email">
           <label>Contact Email</label>
           <input type="text" [(ngModel)]="selectedCrusade.ContactEmail" />
@@ -125,7 +119,7 @@
       </div>
     </div><!-- end row-3 -->
 
-    <!-- Row 4: Comments spanning full width -->
+    <!-- Row 4: Comments -->
     <div class="section comments" data-title="Comments">
       <div class="row-4">
         <textarea [(ngModel)]="selectedCrusade.Comments"></textarea>
@@ -141,12 +135,14 @@
     <button (click)="cancel()">Cancel</button>
   </div>
 
-  <!-- Results Area (Grid-Based, Drag-and-Drop Columns) -->
+  <!-- Results Area -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
       (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+
       <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
         (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
@@ -157,6 +153,7 @@
           </ng-template>
           {{ column.header }}
         </div>
+
         <div class="grid-column-cell" *ngFor="let row of crusades" (click)="selectCrusade(row)">
           {{ getCellValue(row, column) }}
         </div>

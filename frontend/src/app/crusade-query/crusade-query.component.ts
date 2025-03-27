@@ -7,6 +7,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { CrusadeService, Crusade } from '../rosary-crusade/crusade.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
+import { StateService, State } from '../state.service';
 
 @Component({
   standalone: true,
@@ -16,11 +17,11 @@ import { ParishService, Parish } from '../parish-maintenance/parish.service';
   imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
 })
 export class CrusadeQueryComponent implements OnInit {
-  // 1) Columns for the grid-based results
+  // Columns for the results grid
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
-    { header: 'State', field: 'State' },
+    { header: 'StateID', field: 'StateID' },
     { header: 'Confession Start', field: 'ConfessionStartTime' },
     { header: 'Confession End', field: 'ConfessionEndTime' },
     { header: 'Mass Start', field: 'MassStartTime' },
@@ -33,55 +34,92 @@ export class CrusadeQueryComponent implements OnInit {
     { header: 'Comments', field: 'Comments' },
   ];
 
-  // 2) Master arrays
-  states = ['NSW', 'ACT', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT'];
+  // Real states from the back-end
+  allStates: State[] = [];
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
 
-  // Filtered arrays for the dropdowns
+  // Filtered subsets
   filteredDioceses: Diocese[] = [];
   filteredParishes: Parish[] = [];
 
-  // Flags to enable/disable the diocese & parish dropdown
+  // Flags to enable/disable diocese & parish
   dioceseDisabled = true;
   parishDisabled = true;
 
-  // 3) Current filter selections
-  // "All States" => selectedState = ""
-  // "All Dioceses" => selectedDioceseID = null
-  // "All Parishes" => selectedParishID = null
-  selectedState: string = '';
+  // Current filter selections
+  // 0 => "All States", null => "All Dioceses/Parishes"
+  selectedStateID = 0;
   selectedDioceseID: number | null = null;
   selectedParishID: number | null = null;
 
-  // 4) Query results from the backend
+  // Query results
   results: Crusade[] = [];
 
   constructor(
     private crusadeService: CrusadeService,
     private dioceseService: DioceseService,
     private parishService: ParishService,
-    private snackBar: MatSnackBar // For optional error/warning messages
+    private stateService: StateService,
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
+    this.loadAllStates();
     this.loadAllDioceses();
     this.loadAllParishes();
-    // Start with empty filtered arrays
-    this.filteredDioceses = [];
-    this.filteredParishes = [];
-    // By default, no state => diocese & parish are disabled
+    // Initially disable diocese & parish
     this.dioceseDisabled = true;
     this.parishDisabled = true;
   }
 
   /* -----------------------------
-     DISABLING + FILTER LOGIC
-     ----------------------------- */
+     LOAD
+  ----------------------------- */
+  loadAllStates(): void {
+    this.stateService.getAllStates().subscribe({
+      // If the response is { success, status, message, data: [... States ...] }
+      next: (res: any) => {
+        this.allStates = res.data; // an array of State objects
+      },
+      error: (err) => {
+        console.error('Failed to load states:', err);
+        this.showError('Error loading states from server.');
+      }
+    });
+  }
 
+  loadAllDioceses(): void {
+    this.dioceseService.getAllDioceses().subscribe({
+      next: (res: any) => {
+        // res.data => array of Dioceses
+        this.dioceseList = res.data;
+      },
+      error: (err) => {
+        console.error('Failed to load dioceses:', err);
+        this.showError('Error loading dioceses.');
+      }
+    });
+  }
+
+  loadAllParishes(): void {
+    this.parishService.getAllParishes().subscribe({
+      next: (res: any) => {
+        // res.data => array of Parishes
+        this.parishList = res.data;
+      },
+      error: (err) => {
+        console.error('Failed to load parishes:', err);
+        this.showError('Error loading parishes.');
+      }
+    });
+  }
+
+  /* -----------------------------
+     FILTER LOGIC
+  ----------------------------- */
   onStateChange(): void {
-    if (!this.selectedState) {
-      // "All States" => disable diocese & parish
+    if (!this.selectedStateID || this.selectedStateID === 0) {
       this.dioceseDisabled = true;
       this.parishDisabled = true;
       this.selectedDioceseID = null;
@@ -89,24 +127,19 @@ export class CrusadeQueryComponent implements OnInit {
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
-      // Filter dioceseList by chosen state
-      this.filteredDioceses = this.dioceseList.filter(d => d.DioceseState === this.selectedState);
-
+      const chosenStateID = Number(this.selectedStateID);
+      this.filteredDioceses = this.dioceseList.filter(d => d.StateID === chosenStateID);
       if (this.filteredDioceses.length === 0) {
-        // No diocese => disable both
         this.dioceseDisabled = true;
         this.parishDisabled = true;
         this.selectedDioceseID = null;
         this.selectedParishID = null;
         this.filteredParishes = [];
       } else {
-        // Enable diocese
         this.dioceseDisabled = false;
-        // Clear old diocese & parish
         this.selectedDioceseID = null;
         this.selectedParishID = null;
         this.filteredParishes = [];
-        // Keep parish disabled until a diocese is picked
         this.parishDisabled = true;
       }
     }
@@ -114,20 +147,17 @@ export class CrusadeQueryComponent implements OnInit {
 
   onDioceseChange(): void {
     if (this.selectedDioceseID == null) {
-      // "All Dioceses" => disable parish
       this.parishDisabled = true;
       this.selectedParishID = null;
       this.filteredParishes = [];
     } else {
-      const chosenID = Number(this.selectedDioceseID);
-      const temp = this.parishList.filter(p => p.DioceseID === chosenID);
+      const chosenDioceseID = Number(this.selectedDioceseID);
+      const temp = this.parishList.filter(p => p.DioceseID === chosenDioceseID);
       if (temp.length === 0) {
-        // No parishes => disable
         this.parishDisabled = true;
         this.selectedParishID = null;
         this.filteredParishes = [];
       } else {
-        // Enable parish
         this.parishDisabled = false;
         this.selectedParishID = null;
         this.filteredParishes = temp;
@@ -137,39 +167,45 @@ export class CrusadeQueryComponent implements OnInit {
 
   /* -----------------------------
      SEARCH
-     ----------------------------- */
-
+  ----------------------------- */
   searchCrusade(): void {
     console.log('Searching Crusade with:', {
-      state: this.selectedState || '(All)',
+      stateID: this.selectedStateID || '(All)',
       dioceseID: this.selectedDioceseID ?? '(All)',
       parishID: this.selectedParishID ?? '(All)',
     });
 
-    // Convert blank or null to undefined so they're not used in query
-    const state = this.selectedState ? this.selectedState : undefined;
+    const stateID = this.selectedStateID > 0 ? this.selectedStateID : undefined;
     const dioceseID = this.selectedDioceseID != null ? this.selectedDioceseID : undefined;
     const parishID = this.selectedParishID != null ? this.selectedParishID : undefined;
 
-    this.crusadeService.searchCrusades(state, dioceseID, parishID).subscribe({
-      next: (data) => {
-        this.results = data;
-        console.log('Crusade query results =>', data);
+    // If searchCrusades also returns { success, data: [ ... ] }, do data.data
+    this.crusadeService.searchCrusades(stateID, dioceseID, parishID).subscribe({
+      next: (res: any) => {
+        // res.data => array of Crusade
+        this.results = res.data;
+        console.log('Crusade query results =>', this.results);
       },
       error: (err) => {
-        if (err.status !== 403) {
-          console.error('Failed to search crusades =>', err);
-          this.showError('Fatal error searching Crusades! Please contact support.');
-        }
+        console.error('Failed to search crusades =>', err);
+        this.showError('Fatal error searching Crusades!');
       }
     });
   }
 
   /* -----------------------------
      TABLE
-     ----------------------------- */
+  ----------------------------- */
+  getCellValue(row: Crusade, column: { header: string; field: string }): any {
+    if (column.field === 'dioceseName') {
+      return row.diocese?.DioceseName || '(No Diocese)';
+    } else if (column.field === 'parishName') {
+      return row.parish?.ParishName || '(No Parish)';
+    } else {
+      return (row as any)[column.field] || '';
+    }
+  }
 
-  // Build a dynamic grid layout
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -184,52 +220,9 @@ export class CrusadeQueryComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  // Return the correct cell value for each row & column
-  getCellValue(row: Crusade, column: { header: string; field: string }): any {
-    if (column.field === 'dioceseName') {
-      return row.diocese?.DioceseName || '(No Diocese)';
-    } else if (column.field === 'parishName') {
-      return row.parish?.ParishName || '(No Parish)';
-    } else {
-      return (row as any)[column.field] || '';
-    }
-  }
-
-  /* -----------------------------
-     LOAD
-     ----------------------------- */
-
-  loadAllDioceses(): void {
-    this.dioceseService.getAllDioceses().subscribe({
-      next: (data) => {
-        this.dioceseList = data;
-      },
-      error: (err) => {
-        if (err.status !== 403) {
-          console.error('Failed to load dioceses:', err);
-          this.showError('Fatal error loading dioceses!');
-        }
-      }
-    });
-  }
-
-  loadAllParishes(): void {
-    this.parishService.getAllParishes().subscribe({
-      next: (data) => {
-        this.parishList = data;
-      },
-      error: (err) => {
-        if (err.status !== 403) {
-          console.error('Failed to load parishes:', err);
-          this.showError('Fatal error loading parishes!');
-        }
-      }
-    });
-  }
-
   /* -----------------------------
      HELPER
-     ----------------------------- */
+  ----------------------------- */
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 5000,

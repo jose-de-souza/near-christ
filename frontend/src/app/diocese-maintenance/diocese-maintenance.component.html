@@ -1,9 +1,10 @@
 <div class="diocese-maintenance">
   <h2>Diocese Maintenance</h2>
 
-  <!-- form-container => houses the top sections, the buttons, AND the Filter section -->
+  <!-- form-container => houses top sections, CRUD buttons, and the Filter section -->
   <div class="form-container">
-    <!-- Row 1: Diocese Details -->
+
+    <!-- SECTION #1: Diocese Details -->
     <div class="section diocese" data-title="Diocese Details">
       <div class="row-1">
         <!-- Diocese Name -->
@@ -14,63 +15,55 @@
             Diocese Name is required.
           </div>
         </div>
-
         <!-- Street No -->
         <div class="field-group streetNo">
           <label>Street No</label>
           <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetNo" />
         </div>
-
         <!-- Street Name -->
         <div class="field-group streetName">
           <label>Street Name</label>
           <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetName" />
         </div>
-
         <!-- Suburb -->
         <div class="field-group suburb">
           <label>Suburb</label>
           <input type="text" [(ngModel)]="selectedDiocese.DioceseSuburb" />
         </div>
-      </div><!-- end row-1 -->
+      </div>
     </div><!-- end .section.diocese -->
 
-    <!-- Row 2: Location / Contact -->
+    <!-- SECTION #2: Location / Contact -->
     <div class="section location" data-title="Location / Contact">
       <div class="row-2">
-        <!-- State -->
+        <!-- Now we store the foreign key => selectedDiocese.StateID -->
         <div class="field-group state">
           <label>State</label>
-          <select [(ngModel)]="selectedDiocese.DioceseState">
-            <option value="">Select State</option>
-            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          <select [(ngModel)]="selectedDiocese.StateID">
+            <option [value]="0">Select State</option>
+            <option *ngFor="let st of allStates" [value]="st.StateID">
+              {{ st.StateName }} ({{ st.StateAbbreviation }})
+            </option>
           </select>
         </div>
 
-        <!-- Postcode -->
         <div class="field-group postcode">
           <label>Postcode</label>
           <input type="text" [(ngModel)]="selectedDiocese.DiocesePostcode" />
         </div>
-
-        <!-- Phone -->
         <div class="field-group phone">
           <label>Phone</label>
           <input type="text" [(ngModel)]="selectedDiocese.DiocesePhone" />
         </div>
-
-        <!-- Email -->
         <div class="field-group email">
           <label>Email</label>
           <input type="text" [(ngModel)]="selectedDiocese.DioceseEmail" />
         </div>
-
-        <!-- Website -->
         <div class="field-group website">
           <label>Website</label>
           <input type="text" [(ngModel)]="selectedDiocese.DioceseWebsite" />
         </div>
-      </div><!-- end row-2 -->
+      </div>
     </div><!-- end .section.location -->
 
     <!-- CRUD Buttons -->
@@ -81,27 +74,33 @@
       <button (click)="cancel()">Cancel</button>
     </div>
 
-    <!-- Filter Section => EXACT same .section styling => same bounding box as above -->
+    <!-- SECTION #3: Filter => uses the same .section styling -->
     <div class="section filter" data-title="Filter">
       <div class="row-filter">
-        <!-- State Filter => 12% width -->
+        <!-- We store the user's chosen StateID in filterStateID (number).
+             0 => "All States" -->
         <div class="field-group state">
           <label>State</label>
-          <select [(ngModel)]="filterState" (change)="onFilterStateChange()">
-            <option value="">All States</option>
-            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
+            <option [value]="0">All States</option>
+            <option *ngFor="let st of allStates" [value]="st.StateID">
+              {{ st.StateName }} ({{ st.StateAbbreviation }})
+            </option>
           </select>
         </div>
       </div>
     </div><!-- end .section.filter -->
-  </div><!-- end form-container -->
 
-  <!-- Results area: grid-based, drag-and-drop columns -->
+  </div><!-- end .form-container -->
+
+  <!-- Results area => table with drag-and-drop columns -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
       (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-      <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
+
+      <div class="grid-column" *ngFor="let column of columns; trackBy: trackColumn" cdkDrag [cdkDragData]="column"
         (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+
         <!-- Column Header -->
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
@@ -121,7 +120,8 @@
           (click)="selectDiocese(row)">
           {{ getCellValue(row, column) }}
         </div>
+
       </div>
     </div>
-  </div>
+  </div><!-- end results-area -->
 </div>
