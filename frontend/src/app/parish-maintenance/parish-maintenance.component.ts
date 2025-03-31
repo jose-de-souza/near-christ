@@ -26,6 +26,8 @@ export class ParishMaintenanceComponent implements OnInit {
 
   // Full list of states from back end
   allStates: State[] = [];
+  // The State dropbox is only deactivated if there are no States available
+  stateDropdownDisabled: boolean = true;
 
   // The parish being edited
   selectedParish: Partial<Parish> = {
@@ -35,33 +37,39 @@ export class ParishMaintenanceComponent implements OnInit {
     ParishStName: '',
     ParishSuburb: '',
     StateID: 0,
+    DioceseID: 0,
     ParishPostcode: '',
     ParishPhone: '',
     ParishEmail: '',
     ParishWebsite: ''
   };
 
-  // Table columns - updated State column
+  // Table columns – Diocese column added right after State
   columns = [
     { header: 'Parish Name', field: 'ParishName' },
     { header: 'St No', field: 'ParishStNumber' },
     { header: 'Street Name', field: 'ParishStName' },
     { header: 'Suburb', field: 'ParishSuburb' },
-    { header: 'State', field: 'state' }, // Column will display the state's abbreviation
+    { header: 'State', field: 'state' }, // Will display state's abbreviation
+    { header: 'Diocese', field: 'diocese' }, // Will display diocese name
     { header: 'PostCode', field: 'ParishPostcode' },
     { header: 'Phone', field: 'ParishPhone' },
     { header: 'Email', field: 'ParishEmail' },
     { header: 'Website', field: 'ParishWebsite' }
   ];
 
-  // Diocese data for filtering
+  // Master list of all dioceses
   dioceseList: Diocese[] = [];
-  filteredDiocesesForFilter: Diocese[] = [];
 
-  // Filter properties (the values from the select elements might be strings)
+  // For the Filter section
+  filteredDiocesesForFilter: Diocese[] = [];
   filterStateID: any = 0;
   filterDioceseID: any = 0;
-  dioceseFilterDisabled = true;
+  dioceseFilterDisabled: boolean = true; // By default, filter Diocese is deactivated
+
+  // For the Location/Contact section
+  locationDioceses: Diocese[] = [];        // Only the dioceses for the selectedParish.StateID
+  locationDioceseDisabled: boolean = true; // By default, main Diocese is deactivated
 
   constructor(
     private parishService: ParishService,
@@ -84,10 +92,13 @@ export class ParishMaintenanceComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data;
+        // Enable the State dropbox if states are available
+        this.stateDropdownDisabled = this.allStates.length === 0;
       },
       error: (err: any) => {
         console.error('Failed to load states:', err);
         this.showError('Could not load states from server.');
+        this.stateDropdownDisabled = true;
       }
     });
   }
@@ -124,12 +135,12 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   /* ---------------------------
-     CRUD
+     CRUD Operations
   --------------------------- */
   addParish(): void {
     this.hasSubmitted = true;
-    if (!this.selectedParish.ParishName?.trim()) {
-      this.showWarning('Parish Name is required!');
+    if (!this.selectedParish.ParishName?.trim() || !this.selectedParish.StateID || !this.selectedParish.DioceseID) {
+      this.showWarning('Parish Name, State, and Diocese are required!');
       return;
     }
     this.parishService.createParish(this.selectedParish).subscribe({
@@ -192,32 +203,65 @@ export class ParishMaintenanceComponent implements OnInit {
       ParishStName: '',
       ParishSuburb: '',
       StateID: 0,
+      DioceseID: 0,
       ParishPostcode: '',
       ParishPhone: '',
       ParishEmail: '',
       ParishWebsite: ''
     };
     this.hasSubmitted = false;
+    // Also reset location diocese
+    this.locationDioceses = [];
+    this.locationDioceseDisabled = true;
   }
 
   selectParish(parish: Parish): void {
     this.selectedParish = { ...parish };
     this.hasSubmitted = false;
+    // Possibly call onLocationStateChange() if we want to refresh the location diocese state
+    this.onLocationStateChange();
   }
 
   /* ---------------------------
-     FILTERS
+     MAIN LOCATION/CONTACT LOGIC
+     for linking State -> Diocese
+  --------------------------- */
+  onLocationStateChange(): void {
+    const stID = Number(this.selectedParish.StateID);
+    if (!stID || stID === 0) {
+      // No state => Clear and disable diocese
+      this.locationDioceses = [];
+      this.selectedParish.DioceseID = 0;
+      this.locationDioceseDisabled = true;
+    } else {
+      // Filter all dioceses for the chosen state
+      const relevant = this.dioceseList.filter(d => d.StateID === stID);
+      this.locationDioceses = relevant;
+      // Enable diocese only if there's at least one
+      this.locationDioceseDisabled = (relevant.length === 0);
+      // If the previously selected diocese is no longer valid, reset it
+      if (
+        this.selectedParish.DioceseID &&
+        !relevant.some(d => d.DioceseID === this.selectedParish.DioceseID)
+      ) {
+        this.selectedParish.DioceseID = 0;
+      }
+    }
+  }
+
+  /* ---------------------------
+     FILTERS for Linking State, Diocese & Parish
+     (Separate from the main Location/Contact section)
   --------------------------- */
   onFilterStateChange(): void {
     const stateID = Number(this.filterStateID);
     if (!stateID || stateID === 0) {
-      // No state selected; reset filters
+      // Clear and deactivate the Filter's diocese dropbox
       this.filteredDiocesesForFilter = [];
       this.filterDioceseID = 0;
       this.dioceseFilterDisabled = true;
       this.parishes = this.allParishes;
     } else {
-      // Populate dioceses for the chosen state (ensure number comparison)
       this.filteredDiocesesForFilter = this.dioceseList.filter(d => d.StateID === stateID);
       this.dioceseFilterDisabled = (this.filteredDiocesesForFilter.length === 0);
       this.applyParishFilter();
@@ -260,11 +304,14 @@ export class ParishMaintenanceComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  // getCellValue for displaying State abbreviation
+  // getCellValue for displaying State abbreviation and Diocese name
   getCellValue(row: Parish, column: { header: string; field: string }): any {
     if (column.field === 'state') {
       const st = this.allStates.find(s => s.StateID === row.StateID);
       return st ? st.StateAbbreviation : '';
+    } else if (column.field === 'diocese') {
+      const d = this.dioceseList.find(di => di.DioceseID === row.DioceseID);
+      return d ? d.DioceseName : '';
     } else {
       return (row as any)[column.field] || '';
     }
