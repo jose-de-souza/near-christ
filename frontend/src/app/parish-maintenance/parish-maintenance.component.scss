@@ -52,9 +52,13 @@
             .row-2,
             .row-filter {
                 display: flex;
-                flex-wrap: nowrap;
+                /* Important: allow the row to stretch the entire width. */
+                width: 100%;
+                /* Keep gap: 5px for spacing between fields. */
                 gap: 5px;
                 align-items: flex-end;
+                flex-wrap: nowrap;
+                /* or wrap if you want them to break onto new lines */
             }
 
             /* Row 1: Parish Details */
@@ -78,31 +82,8 @@
                 max-width: 29%;
             }
 
-            /* Row 2: Location / Contact */
-            .row-2 .state {
-                flex: 0 0 10%;
-                max-width: 10%;
-            }
-
-            .row-2 .postcode {
-                flex: 0 0 10%;
-                max-width: 10%;
-            }
-
-            .row-2 .phone {
-                flex: 0 0 22%;
-                max-width: 22%;
-            }
-
-            .row-2 .email {
-                flex: 0 0 28%;
-                max-width: 28%;
-            }
-
-            .row-2 .website {
-                flex: 0 0 28%;
-                max-width: 28%;
-            }
+            /* Remove any default "Row 2: Location / Contact" width rules here
+               to avoid conflicts with the custom rules below. */
 
             .field-group {
                 display: flex;
@@ -320,4 +301,37 @@
     padding: 10px;
     font-style: italic;
     color: #555;
+}
+
+/* ONLY these rules apply for the Location / Contact row widths */
+.section.location {
+    .row-1 {
+
+        /* State => 14%, Diocese => 86% */
+        .state {
+            flex: 1 1 14%;
+            max-width: 14%;
+        }
+
+        .diocese {
+            flex: 1 1 86%;
+            max-width: 86%;
+        }
+    }
+
+    .row-2 {
+
+        /* Postcode => 14%, Phone/Email/Website => 28% each */
+        .postcode {
+            flex: 1 1 14%;
+            max-width: 14%;
+        }
+
+        .phone,
+        .email,
+        .website {
+            flex: 1 1 28%;
+            max-width: 28%;
+        }
+    }
 }

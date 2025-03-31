@@ -34,17 +34,33 @@
 
         <!-- Section #2: Location / Contact -->
         <div class="section location" data-title="Location / Contact">
-            <div class="row-2">
-                <!-- State dropdown -->
+            <!-- Row 1: State & Diocese -->
+            <div class="row-1">
                 <div class="field-group state">
                     <label>State</label>
-                    <select [(ngModel)]="selectedParish.StateID">
+                    <select [(ngModel)]="selectedParish.StateID" (change)="onLocationStateChange()"
+                        [disabled]="stateDropdownDisabled">
                         <option [value]="0">Select State</option>
                         <option *ngFor="let st of allStates" [value]="st.StateID">
                             {{ st.StateAbbreviation }}
                         </option>
                     </select>
                 </div>
+                <div class="field-group diocese">
+                    <label>Diocese</label>
+                    <select [(ngModel)]="selectedParish.DioceseID" [disabled]="locationDioceseDisabled">
+                        <option [value]="0">Select Diocese</option>
+                        <option *ngFor="let d of locationDioceses" [value]="d.DioceseID">
+                            {{ d.DioceseName }}
+                        </option>
+                    </select>
+                    <div *ngIf="hasSubmitted && !selectedParish.DioceseID" class="inline-error">
+                        Diocese is required.
+                    </div>
+                </div>
+            </div>
+            <!-- Row 2: Other fields -->
+            <div class="row-2">
                 <div class="field-group postcode">
                     <label>Postcode</label>
                     <input type="text" [(ngModel)]="selectedParish.ParishPostcode" />
@@ -104,10 +120,8 @@
     <div class="results-area">
         <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
             (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-
             <div class="grid-column" *ngFor="let column of columns; trackBy: trackByParishColumn" cdkDrag
                 [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-
                 <div class="grid-column-header">
                     <span class="drag-handle" cdkDragHandle>☰</span>
                     <ng-template cdkDragPreview>
@@ -120,7 +134,6 @@
                     </ng-template>
                     {{ column.header }}
                 </div>
-
                 <div class="grid-column-cell" *ngFor="let row of parishes; trackBy: trackByParishID"
                     (click)="selectParish(row)">
                     {{ getCellValue(row, column) }}
