@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 })
 export class AppComponent {
   title = 'NEAR CHRIST';
+  subtitle = 'A service of the Australian Medjugorje Centre';
 
   // Using functional injection for the Router, with a small hack to avoid TS error
   private router = inject<Router>(Router as never);

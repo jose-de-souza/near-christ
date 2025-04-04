@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f5f5f5; /* or palette.$background-color */
+  background-color: palette.$background-color;
   padding: 10px 20px;
 
   .header {
@@ -12,13 +12,26 @@
     align-items: center;
     gap: 10px;
 
-    .app-title {
-      color: palette.$wine; /* Or whichever color  prefer */
-    }
-
     .icon {
       width: 70px;
       height: 70px;
+    }
+
+    /* Container for title and subtitle */
+    .text-container {
+      display: flex;
+      flex-direction: column;
+
+      .app-title {
+        color: palette.$wine;
+        margin: 0;
+        /* optional, to remove extra spacing */
+      }
+
+      .subtitle {
+        margin: 0;
+        /* optional, to remove extra spacing */
+      }
     }
   }
 
@@ -34,6 +47,7 @@
       color: #333;
       font-weight: 500;
     }
+
     li a:hover {
       text-decoration: underline;
     }
@@ -47,7 +61,7 @@
       border-radius: 4px;
       cursor: pointer;
       color: #fff;
-      background-color: #386790; /* adjust to the palette if  want */
+      background-color: #386790;
     }
   }
 }
