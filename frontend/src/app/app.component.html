@@ -28,7 +28,7 @@
   <!-- Auth Buttons -->
   <div class="auth-buttons">
     @if (!auth.isAuthenticated()) {
-    <a routerLink="/login"><button>Login</button></a>
+    <a routerLink="/login"><button>Admin Login</button></a>
     }
     @else {
     <button (click)="auth.logout()">Logout</button>
