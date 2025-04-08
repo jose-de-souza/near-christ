@@ -244,6 +244,7 @@ export class AdorationScheduleComponent implements OnInit {
   addSchedule(): void {
     this.adorationService.createAdoration(this.selectedAdoration).subscribe({
       next: () => {
+        this.showInfo('Adoration Schedule has been added');
         this.loadAllAdorations();
         this.resetForm();
       },
@@ -355,6 +356,15 @@ export class AdorationScheduleComponent implements OnInit {
   /* ----------------------------------
      SNACK BAR
   ---------------------------------- */
+  private showInfo(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-info']
+    });
+  }
+
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

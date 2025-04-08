@@ -145,6 +145,7 @@ export class ParishMaintenanceComponent implements OnInit {
     }
     this.parishService.createParish(this.selectedParish).subscribe({
       next: () => {
+        this.showInfo(this.selectedParish.ParishName + ' has been added');
         this.loadAllParishes();
         this.resetForm();
       },
@@ -328,6 +329,15 @@ export class ParishMaintenanceComponent implements OnInit {
   /* ---------------------------
      SNACK BAR
   --------------------------- */
+  private showInfo(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-info']
+    });
+  }
+
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

@@ -1,11 +1,20 @@
 .snackbar-error {
-    background-color: #d32f2f !important; // a red color
+    background-color: #f44336 !important;
+    /* Material Red 500 */
     color: #fff !important;
+    /* White text for contrast */
 }
 
 .snackbar-warning {
-    background-color: #ffeb3b !important; // A bright Material yellow
-    color: #333 !important; // Dark text for contrast
+    background-color: #ff9800 !important;
+    /* Material Orange 500 */
+    color: #fff !important;
+}
+
+.snackbar-info {
+    background-color: #2196f3 !important;
+    /* Material Blue 500 */
+    color: #fff !important;
 }
 
 .inline-error {

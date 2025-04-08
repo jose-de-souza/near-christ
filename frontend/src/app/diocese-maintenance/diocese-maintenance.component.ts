@@ -136,6 +136,7 @@ export class DioceseMaintenanceComponent implements OnInit {
 
     this.dioceseService.createDiocese(this.selectedDiocese).subscribe({
       next: () => {
+        this.showInfo(this.selectedDiocese.DioceseName + ' has been added');
         this.loadAllDioceses();
         this.resetForm();
       },
@@ -244,6 +245,15 @@ export class DioceseMaintenanceComponent implements OnInit {
   /* ---------------------------
      SNACK BAR HELPERS
   --------------------------- */
+  private showInfo(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-info']
+    });
+  }
+
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
