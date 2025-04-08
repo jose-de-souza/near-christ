@@ -90,6 +90,7 @@ export class UserMaintenanceComponent implements OnInit {
     }
     this.userService.createUser(this.selectedUser).subscribe({
       next: () => {
+        this.showInfo(this.selectedUser.UserName + " has been added");
         this.loadAllUsers();
         this.resetForm();
       },
@@ -198,6 +199,15 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   // -------------- SNACK BAR HELPERS --------------
+  private showInfo(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-info']
+    });
+  }
+
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

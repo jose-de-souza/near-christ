@@ -243,6 +243,7 @@ export class RosaryCrusadeComponent implements OnInit {
     }
     this.crusadeService.createCrusade(this.selectedCrusade).subscribe({
       next: () => {
+        this.showInfo('The Crusade has been added');
         this.loadAllCrusades();
         this.resetForm();
       },
@@ -362,6 +363,15 @@ export class RosaryCrusadeComponent implements OnInit {
   // ---------------------------
   // Snack Bar Helpers
   // ---------------------------
+  private showInfo(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-info']
+    });
+  }
+
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
