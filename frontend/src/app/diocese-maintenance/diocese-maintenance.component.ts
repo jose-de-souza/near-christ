@@ -155,6 +155,7 @@ export class DioceseMaintenanceComponent implements OnInit {
     const id = this.selectedDiocese.DioceseID;
     this.dioceseService.updateDiocese(id, this.selectedDiocese).subscribe({
       next: () => {
+        this.showInfo(this.selectedDiocese.DioceseName + ' modified');
         this.loadAllDioceses();
         this.resetForm();
       },

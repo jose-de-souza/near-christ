@@ -117,6 +117,7 @@ export class UserMaintenanceComponent implements OnInit {
     const id = this.selectedUser.UserID;
     this.userService.updateUser(id, this.selectedUser).subscribe({
       next: () => {
+        this.showInfo(this.selectedUser.UserName + " modified");
         this.loadAllUsers();
         this.resetForm();
       },

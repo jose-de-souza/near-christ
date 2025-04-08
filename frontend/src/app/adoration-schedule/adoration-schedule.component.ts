@@ -263,6 +263,7 @@ export class AdorationScheduleComponent implements OnInit {
     const id = this.selectedAdoration.AdorationID;
     this.adorationService.updateAdoration(id!, this.selectedAdoration).subscribe({
       next: () => {
+        this.showInfo('Adoration Schedule modified');
         this.loadAllAdorations();
         this.resetForm();
       },

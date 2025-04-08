@@ -267,6 +267,7 @@ export class RosaryCrusadeComponent implements OnInit {
     const id = this.selectedCrusade.CrusadeID;
     this.crusadeService.updateCrusade(id, this.selectedCrusade).subscribe({
       next: () => {
+        this.showInfo('Crusade modified');
         this.loadAllCrusades();
         this.resetForm();
       },
