@@ -164,6 +164,7 @@ export class ParishMaintenanceComponent implements OnInit {
     const id = this.selectedParish.ParishID;
     this.parishService.updateParish(id, this.selectedParish).subscribe({
       next: () => {
+        this.showInfo(this.selectedParish.ParishName + ' modified');
         this.loadAllParishes();
         this.resetForm();
       },
