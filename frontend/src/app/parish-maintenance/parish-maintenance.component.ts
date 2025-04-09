@@ -4,15 +4,25 @@ import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ParishService, Parish } from './parish.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { StateService, State } from '../state.service';
 
+// Import the ConfirmationDialogComponent (but do not list it in the `imports` array).
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+
 @Component({
   selector: 'app-parish-maintenance',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    MatSnackBarModule,
+    MatDialogModule // Required for opening the confirmation dialog
+  ],
   templateUrl: './parish-maintenance.component.html',
   styleUrls: ['./parish-maintenance.component.scss']
 })
@@ -26,7 +36,7 @@ export class ParishMaintenanceComponent implements OnInit {
 
   // Full list of states from back end
   allStates: State[] = [];
-  // The State dropbox is only deactivated if there are no States available
+  // The State dropbox is disabled if no States available
   stateDropdownDisabled: boolean = true;
 
   // The parish being edited
@@ -44,14 +54,14 @@ export class ParishMaintenanceComponent implements OnInit {
     ParishWebsite: ''
   };
 
-  // Table columns – Diocese column added right after State
+  // Table columns – includes "State" & "Diocese"
   columns = [
     { header: 'Parish Name', field: 'ParishName' },
     { header: 'St No', field: 'ParishStNumber' },
     { header: 'Street Name', field: 'ParishStName' },
     { header: 'Suburb', field: 'ParishSuburb' },
-    { header: 'State', field: 'state' }, // Will display state's abbreviation
-    { header: 'Diocese', field: 'diocese' }, // Will display diocese name
+    { header: 'State', field: 'state' },
+    { header: 'Diocese', field: 'diocese' },
     { header: 'PostCode', field: 'ParishPostcode' },
     { header: 'Phone', field: 'ParishPhone' },
     { header: 'Email', field: 'ParishEmail' },
@@ -61,22 +71,23 @@ export class ParishMaintenanceComponent implements OnInit {
   // Master list of all dioceses
   dioceseList: Diocese[] = [];
 
-  // For the Filter section
+  // Filter section
   filteredDiocesesForFilter: Diocese[] = [];
-  filterStateID: any = 0;
-  filterDioceseID: any = 0;
-  dioceseFilterDisabled: boolean = true; // By default, filter Diocese is deactivated
+  filterStateID: number = 0;
+  filterDioceseID: number = 0;
+  dioceseFilterDisabled: boolean = true;
 
   // For the Location/Contact section
-  locationDioceses: Diocese[] = [];        // Only the dioceses for the selectedParish.StateID
-  locationDioceseDisabled: boolean = true; // By default, main Diocese is deactivated
+  locationDioceses: Diocese[] = [];
+  locationDioceseDisabled: boolean = true;
 
   constructor(
     private parishService: ParishService,
     private dioceseService: DioceseService,
     private stateService: StateService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog // so we can open the confirmation dialog
   ) { }
 
   ngOnInit(): void {
@@ -92,8 +103,7 @@ export class ParishMaintenanceComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data;
-        // Enable the State dropbox if states are available
-        this.stateDropdownDisabled = this.allStates.length === 0;
+        this.stateDropdownDisabled = (this.allStates.length === 0);
       },
       error: (err: any) => {
         console.error('Failed to load states:', err);
@@ -145,7 +155,7 @@ export class ParishMaintenanceComponent implements OnInit {
     }
     this.parishService.createParish(this.selectedParish).subscribe({
       next: () => {
-        this.showInfo(this.selectedParish.ParishName + ' has been added');
+        this.showInfo(`${this.selectedParish.ParishName} has been added`);
         this.loadAllParishes();
         this.resetForm();
       },
@@ -164,7 +174,7 @@ export class ParishMaintenanceComponent implements OnInit {
     const id = this.selectedParish.ParishID;
     this.parishService.updateParish(id, this.selectedParish).subscribe({
       next: () => {
-        this.showInfo(this.selectedParish.ParishName + ' modified');
+        this.showInfo(`${this.selectedParish.ParishName} modified`);
         this.loadAllParishes();
         this.resetForm();
       },
@@ -180,15 +190,28 @@ export class ParishMaintenanceComponent implements OnInit {
       this.showWarning('No parish selected to delete!');
       return;
     }
-    const id = this.selectedParish.ParishID;
-    this.parishService.deleteParish(id).subscribe({
-      next: () => {
-        this.loadAllParishes();
-        this.resetForm();
+
+    // Exactly like diocese-maintenance:
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `Are you sure you wish to delete parish "${this.selectedParish.ParishName}"?`
       },
-      error: (err: any) => {
-        console.error('Failed to delete parish:', err);
-        this.showError('Fatal error deleting parish!');
+      panelClass: 'orange-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        const id = this.selectedParish.ParishID!;
+        this.parishService.deleteParish(id).subscribe({
+          next: () => {
+            this.loadAllParishes();
+            this.resetForm();
+          },
+          error: (err: any) => {
+            console.error('Failed to delete parish:', err);
+            this.showError('Fatal error deleting parish!');
+          }
+        });
       }
     });
   }
@@ -220,28 +243,24 @@ export class ParishMaintenanceComponent implements OnInit {
   selectParish(parish: Parish): void {
     this.selectedParish = { ...parish };
     this.hasSubmitted = false;
-    // Possibly call onLocationStateChange() if we want to refresh the location diocese state
+    // Possibly call onLocationStateChange() if we want to refresh the location diocese
     this.onLocationStateChange();
   }
 
   /* ---------------------------
      MAIN LOCATION/CONTACT LOGIC
-     for linking State -> Diocese
   --------------------------- */
   onLocationStateChange(): void {
     const stID = Number(this.selectedParish.StateID);
-    if (!stID || stID === 0) {
+    if (!stID) {
       // No state => Clear and disable diocese
       this.locationDioceses = [];
       this.selectedParish.DioceseID = 0;
       this.locationDioceseDisabled = true;
     } else {
-      // Filter all dioceses for the chosen state
       const relevant = this.dioceseList.filter(d => d.StateID === stID);
       this.locationDioceses = relevant;
-      // Enable diocese only if there's at least one
       this.locationDioceseDisabled = (relevant.length === 0);
-      // If the previously selected diocese is no longer valid, reset it
       if (
         this.selectedParish.DioceseID &&
         !relevant.some(d => d.DioceseID === this.selectedParish.DioceseID)
@@ -252,13 +271,12 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   /* ---------------------------
-     FILTERS for Linking State, Diocese & Parish
-     (Separate from the main Location/Contact section)
+     FILTERS for Linking State/Diocese & Parish
   --------------------------- */
   onFilterStateChange(): void {
     const stateID = Number(this.filterStateID);
-    if (!stateID || stateID === 0) {
-      // Clear and deactivate the Filter's diocese dropbox
+    if (!stateID) {
+      // Clear & deactivate
       this.filteredDiocesesForFilter = [];
       this.filterDioceseID = 0;
       this.dioceseFilterDisabled = true;
@@ -276,11 +294,11 @@ export class ParishMaintenanceComponent implements OnInit {
 
   private applyParishFilter(): void {
     const stateID = Number(this.filterStateID);
-    if (!stateID || stateID === 0) {
+    if (!stateID) {
       this.parishes = this.allParishes;
     } else {
       let filtered = this.allParishes.filter(p => p.StateID === stateID);
-      if (this.filterDioceseID && Number(this.filterDioceseID) > 0) {
+      if (this.filterDioceseID && this.filterDioceseID > 0) {
         filtered = filtered.filter(p => p.DioceseID === Number(this.filterDioceseID));
       }
       this.parishes = filtered;
@@ -306,7 +324,7 @@ export class ParishMaintenanceComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  // getCellValue for displaying State abbreviation and Diocese name
+  // getCellValue for displaying State abbreviation / Diocese name
   getCellValue(row: Parish, column: { header: string; field: string }): any {
     if (column.field === 'state') {
       const st = this.allStates.find(s => s.StateID === row.StateID);
