@@ -3,16 +3,26 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { DioceseService, Diocese } from './diocese.service';
 import { StateService, State } from '../state.service';
+
+// Import your ConfirmationDialog
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-diocese-maintenance',
   templateUrl: './diocese-maintenance.component.html',
   styleUrls: ['./diocese-maintenance.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    MatSnackBarModule,
+    MatDialogModule           // Needed for the dialog
+  ]
 })
 export class DioceseMaintenanceComponent implements OnInit {
 
@@ -40,13 +50,13 @@ export class DioceseMaintenanceComponent implements OnInit {
     DioceseWebsite: ''
   };
 
-  // Updated columns: "State" column uses field "state"
+  // Updated columns
   columns = [
     { header: 'Diocese Name', field: 'DioceseName' },
     { header: 'Street No', field: 'DioceseStreetNo' },
     { header: 'Street Name', field: 'DioceseStreetName' },
     { header: 'Suburb', field: 'DioceseSuburb' },
-    { header: 'State', field: 'state' }, // Changed from "StateID" so that we show the state's abbreviation
+    { header: 'State', field: 'state' },
     { header: 'Post Code', field: 'DiocesePostcode' },
     { header: 'Phone', field: 'DiocesePhone' },
     { header: 'Email', field: 'DioceseEmail' },
@@ -54,12 +64,13 @@ export class DioceseMaintenanceComponent implements OnInit {
   ];
 
   // Filter property for the dropdown in the filter section
-  filterStateID: any = 0; // 0 means "All States"
+  filterStateID: number = 0; // 0 => "All States"
 
   constructor(
     private dioceseService: DioceseService,
     private stateService: StateService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog // <-- inject MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -73,7 +84,6 @@ export class DioceseMaintenanceComponent implements OnInit {
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
-        // Expecting response shape: { success, data: [ ... ] }
         this.allStates = res.data;
       },
       error: (err) => {
@@ -89,9 +99,8 @@ export class DioceseMaintenanceComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        // res.data => array of Diocese objects (each may include a "state" relationship)
         this.allDioceses = res.data;
-        // By default, show all dioceses
+        // By default, show all
         this.dioceses = res.data;
       },
       error: (err) => {
@@ -109,7 +118,7 @@ export class DioceseMaintenanceComponent implements OnInit {
   onFilterStateChange(): void {
     const chosenID = Number(this.filterStateID);
     if (chosenID === 0) {
-      // "All States": show all dioceses
+      // "All States": show all
       this.dioceses = this.allDioceses;
     } else {
       this.dioceses = this.allDioceses.filter(d => d.StateID === chosenID);
@@ -136,7 +145,7 @@ export class DioceseMaintenanceComponent implements OnInit {
 
     this.dioceseService.createDiocese(this.selectedDiocese).subscribe({
       next: () => {
-        this.showInfo(this.selectedDiocese.DioceseName + ' has been added');
+        this.showInfo(`${this.selectedDiocese.DioceseName} has been added`);
         this.loadAllDioceses();
         this.resetForm();
       },
@@ -155,7 +164,7 @@ export class DioceseMaintenanceComponent implements OnInit {
     const id = this.selectedDiocese.DioceseID;
     this.dioceseService.updateDiocese(id, this.selectedDiocese).subscribe({
       next: () => {
-        this.showInfo(this.selectedDiocese.DioceseName + ' modified');
+        this.showInfo(`${this.selectedDiocese.DioceseName} modified`);
         this.loadAllDioceses();
         this.resetForm();
       },
@@ -171,15 +180,29 @@ export class DioceseMaintenanceComponent implements OnInit {
       this.showWarning('No diocese selected to delete!');
       return;
     }
-    const id = this.selectedDiocese.DioceseID;
-    this.dioceseService.deleteDiocese(id).subscribe({
-      next: () => {
-        this.loadAllDioceses();
-        this.resetForm();
+
+    // 1) Open the Confirmation Dialog
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `Are you sure you want to delete "${this.selectedDiocese.DioceseName}"?`
       },
-      error: (err) => {
-        console.error('Failed to delete diocese:', err);
-        this.showError('Fatal error deleting diocese! Please contact support.');
+      panelClass: 'orange-dialog'
+    });
+
+    // 2) If user confirmed => proceed
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        const id = this.selectedDiocese.DioceseID!;
+        this.dioceseService.deleteDiocese(id).subscribe({
+          next: () => {
+            this.loadAllDioceses();
+            this.resetForm();
+          },
+          error: (err) => {
+            console.error('Failed to delete diocese:', err);
+            this.showError('Fatal error deleting diocese! Please contact support.');
+          }
+        });
       }
     });
   }
@@ -232,7 +255,6 @@ export class DioceseMaintenanceComponent implements OnInit {
   --------------------------- */
   getCellValue(row: Diocese, column: { header: string; field: string }): any {
     if (column.field === 'state') {
-      // Show the state's abbreviation (from the related state object)
       return row.state?.StateAbbreviation || '';
     } else {
       return (row as any)[column.field] ?? '';

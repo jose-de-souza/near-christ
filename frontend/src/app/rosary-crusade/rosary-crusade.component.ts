@@ -3,18 +3,28 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { CrusadeService, Crusade } from './crusade.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
 import { StateService, State } from '../state.service';
 
+// Import the Confirmation Dialog, but do NOT add it to the component's "imports" array.
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+
 @Component({
   selector: 'app-rosary-crusade',
   templateUrl: './rosary-crusade.component.html',
   styleUrls: ['./rosary-crusade.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    MatSnackBarModule,
+    MatDialogModule // Needed for the confirmation dialog
+  ]
 })
 export class RosaryCrusadeComponent implements OnInit {
   // Columns for the results grid
@@ -34,13 +44,13 @@ export class RosaryCrusadeComponent implements OnInit {
     { header: 'Comments', field: 'Comments' },
   ];
 
-  // Data arrays for states, dioceses, parishes, and crusade records
+  // Data arrays
   allStates: State[] = [];
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
   crusades: Crusade[] = [];
 
-  // Filtered lists for dioceses & parishes based on selection
+  // Filtered lists
   filteredDioceses: Diocese[] = [];
   filteredParishes: Parish[] = [];
 
@@ -77,7 +87,8 @@ export class RosaryCrusadeComponent implements OnInit {
     private dioceseService: DioceseService,
     private parishService: ParishService,
     private stateService: StateService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog // for the confirmation dialog
   ) { }
 
   ngOnInit(): void {
@@ -143,8 +154,7 @@ export class RosaryCrusadeComponent implements OnInit {
   // ---------------------------
   selectCrusade(c: Crusade): void {
     this.hasSubmitted = false;
-    // Spread the record into selectedCrusade.
-    // If the backend returns IDs as strings, convert them here.
+    // Copy the record
     this.selectedCrusade = {
       ...c,
       StateID: Number(c.StateID),
@@ -152,7 +162,7 @@ export class RosaryCrusadeComponent implements OnInit {
       ParishID: Number(c.ParishID)
     };
 
-    // Refresh filtered lists based on the record.
+    // Refresh filters
     if (this.selectedCrusade.StateID && Number(this.selectedCrusade.StateID) > 0) {
       this.onStateChange();
     } else {
@@ -176,7 +186,7 @@ export class RosaryCrusadeComponent implements OnInit {
   onStateChange(): void {
     const stateID = Number(this.selectedCrusade.StateID);
     if (!stateID || stateID === 0) {
-      // No valid state selected: clear and disable both Diocese and Parish.
+      // Clear
       this.dioceseDisabled = true;
       this.parishDisabled = true;
       this.selectedCrusade.DioceseID = 0;
@@ -184,7 +194,6 @@ export class RosaryCrusadeComponent implements OnInit {
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
-      // Filter dioceses for the chosen state.
       this.filteredDioceses = this.dioceseList.filter(d => d.StateID === stateID);
       if (this.filteredDioceses.length === 0) {
         this.dioceseDisabled = true;
@@ -194,7 +203,6 @@ export class RosaryCrusadeComponent implements OnInit {
         this.filteredParishes = [];
       } else {
         this.dioceseDisabled = false;
-        // If the current DioceseID is not in the filtered list, reset it.
         const currentDioceseID = Number(this.selectedCrusade.DioceseID);
         const found = this.filteredDioceses.find(d => d.DioceseID === currentDioceseID);
         if (!found) {
@@ -221,7 +229,6 @@ export class RosaryCrusadeComponent implements OnInit {
         this.filteredParishes = [];
       } else {
         this.parishDisabled = false;
-        // If the current ParishID is not found in the filtered list, reset it.
         const currentParishID = Number(this.selectedCrusade.ParishID);
         const found = temp.find(p => p.ParishID === currentParishID);
         if (!found) {
@@ -283,15 +290,28 @@ export class RosaryCrusadeComponent implements OnInit {
       this.showWarning('No crusade selected to delete!');
       return;
     }
-    const id = this.selectedCrusade.CrusadeID;
-    this.crusadeService.deleteCrusade(id).subscribe({
-      next: () => {
-        this.loadAllCrusades();
-        this.resetForm();
+
+    // Open the ConfirmationDialog exactly as in the other maintenance comps
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `Are you sure you want to delete this Crusade?`
       },
-      error: (err) => {
-        console.error('Failed to delete crusade:', err);
-        this.showError('Error deleting crusade.');
+      panelClass: 'orange-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        const id = this.selectedCrusade.CrusadeID!;
+        this.crusadeService.deleteCrusade(id).subscribe({
+          next: () => {
+            this.loadAllCrusades();
+            this.resetForm();
+          },
+          error: (err) => {
+            console.error('Failed to delete crusade:', err);
+            this.showError('Error deleting crusade.');
+          }
+        });
       }
     });
   }

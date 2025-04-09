@@ -3,48 +3,53 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { Adoration, AdorationService } from './adoration.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
 import { StateService, State } from '../state.service';
 
+// Import your new ConfirmationDialog
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+
 @Component({
   selector: 'app-adoration-schedule',
   templateUrl: './adoration-schedule.component.html',
   styleUrls: ['./adoration-schedule.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    MatSnackBarModule,
+    MatDialogModule
+  ]
 })
 export class AdorationScheduleComponent implements OnInit {
-  // 1) Changed the State column => { header: 'State', field: 'state' }
   columns = [
     { header: 'Diocese Name', field: 'dioceseName' },
     { header: 'Parish Name', field: 'parishName' },
     { header: 'Type', field: 'AdorationType' },
     { header: 'Location Type', field: 'AdorationLocationType' },
     { header: 'Location', field: 'AdorationLocation' },
-    { header: 'State', field: 'state' }, // <-- was "StateID"
+    { header: 'State', field: 'state' },
     { header: 'Day', field: 'AdorationDay' },
     { header: 'Start', field: 'AdorationStart' },
     { header: 'End', field: 'AdorationEnd' },
   ];
 
-  // Master lists
   schedules: Adoration[] = [];
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
   allStates: State[] = [];
 
-  // Filtered arrays
   filteredDioceses: Diocese[] = [];
   filteredParishes: Parish[] = [];
 
-  // Flags
   dioceseDisabled = true;
   parishDisabled = true;
 
-  // The currently selected or new Adoration
   selectedAdoration: Partial<Adoration> = {
     AdorationID: undefined,
     DioceseID: 0,
@@ -63,7 +68,8 @@ export class AdorationScheduleComponent implements OnInit {
     private dioceseService: DioceseService,
     private parishService: ParishService,
     private stateService: StateService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog // <-- needed to open the confirmation dialog
   ) { }
 
   ngOnInit(): void {
@@ -144,7 +150,7 @@ export class AdorationScheduleComponent implements OnInit {
   ---------------------------------- */
   onStateChange(): void {
     const sID = Number(this.selectedAdoration.StateID || 0);
-    if (!sID || sID === 0) {
+    if (!sID) {
       this.filteredDioceses = [];
       this.filteredParishes = [];
       this.selectedAdoration.DioceseID = 0;
@@ -174,7 +180,7 @@ export class AdorationScheduleComponent implements OnInit {
   ---------------------------------- */
   onDioceseChange(): void {
     const dID = Number(this.selectedAdoration.DioceseID || 0);
-    if (!dID || dID === 0) {
+    if (!dID) {
       this.filteredParishes = [];
       this.selectedAdoration.ParishID = 0;
       this.parishDisabled = true;
@@ -215,26 +221,19 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   /* ----------------------------------
-     SELECT ROW => Re-ordered logic
+     SELECT ROW
   ---------------------------------- */
   selectSchedule(schedule: Adoration): void {
     this.selectedAdoration = { ...schedule };
 
     // 1) State
-    this.selectedAdoration.StateID = schedule.StateID;
-    if (schedule.StateID && schedule.StateID > 0) {
+    if (schedule.StateID) {
       this.onStateChange();
     }
 
     // 2) Diocese
-    this.selectedAdoration.DioceseID = schedule.DioceseID;
-    if (schedule.DioceseID && schedule.DioceseID > 0) {
+    if (schedule.DioceseID) {
       this.onDioceseChange();
-    }
-
-    // 3) Parish
-    if (schedule.ParishID && schedule.ParishID > 0) {
-      this.selectedAdoration.ParishID = schedule.ParishID;
     }
   }
 
@@ -261,7 +260,7 @@ export class AdorationScheduleComponent implements OnInit {
       return;
     }
     const id = this.selectedAdoration.AdorationID;
-    this.adorationService.updateAdoration(id!, this.selectedAdoration).subscribe({
+    this.adorationService.updateAdoration(id, this.selectedAdoration).subscribe({
       next: () => {
         this.showInfo('Adoration Schedule modified');
         this.loadAllAdorations();
@@ -279,15 +278,29 @@ export class AdorationScheduleComponent implements OnInit {
       this.showWarning('No adoration selected to delete!');
       return;
     }
-    const id = this.selectedAdoration.AdorationID;
-    this.adorationService.deleteAdoration(id!).subscribe({
-      next: () => {
-        this.loadAllAdorations();
-        this.resetForm();
+
+    // 1) Show the ConfirmationDialog
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `Are you sure you wish to delete this Adoration schedule?`
       },
-      error: (err) => {
-        console.error('Failed to delete adoration:', err);
-        this.showError('Error deleting adoration schedule.');
+      panelClass: 'orange-dialog'
+    });
+
+    // 2) If confirmed => proceed with actual deletion
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        const id = this.selectedAdoration.AdorationID!;
+        this.adorationService.deleteAdoration(id).subscribe({
+          next: () => {
+            this.loadAllAdorations();
+            this.resetForm();
+          },
+          error: (err) => {
+            console.error('Failed to delete adoration:', err);
+            this.showError('Error deleting adoration schedule.');
+          }
+        });
       }
     });
   }
@@ -316,7 +329,7 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   /* ----------------------------------
-     TABLE HELPER
+     TABLE HELPERS
   ---------------------------------- */
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
@@ -324,7 +337,6 @@ export class AdorationScheduleComponent implements OnInit {
     } else if (column.field === 'parishName') {
       return row.parish?.ParishName || '';
     } else if (column.field === 'state') {
-      // Return the state's abbreviation from row.state
       return row.state?.StateAbbreviation || '';
     } else {
       return (row as any)[column.field] ?? '';
@@ -346,11 +358,11 @@ export class AdorationScheduleComponent implements OnInit {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
 
-  onDragEntered(event: any) {
+  onDragEntered(event: any): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
 
-  onDragExited(event: any) {
+  onDragExited(event: any): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 

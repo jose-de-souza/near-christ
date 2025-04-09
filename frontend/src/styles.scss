@@ -1,3 +1,4 @@
+/* Red error Snackbar */
 .snackbar-error {
     background-color: #f44336 !important;
     /* Material Red 500 */
@@ -5,18 +6,21 @@
     /* White text for contrast */
 }
 
+/* Orange warning Snackbar */
 .snackbar-warning {
     background-color: #ff9800 !important;
     /* Material Orange 500 */
     color: #fff !important;
 }
 
+/* Blue info Snackbar */
 .snackbar-info {
     background-color: #2196f3 !important;
     /* Material Blue 500 */
     color: #fff !important;
 }
 
+/* Inline error text styling */
 .inline-error {
     color: red;
     font-size: 0.85rem;
