@@ -1,3 +1,5 @@
+@use "sass:color";
+
 @use '../palette';
 
 .adoration-schedule {
@@ -160,7 +162,7 @@
             background-color: palette.$save-button-bg;
 
             &:hover {
-                background-color: darken(palette.$neutral-color, 10%);
+                background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
             }
         }
 
@@ -184,7 +186,7 @@
             background-color: palette.$neutral-color;
 
             &:hover {
-                background-color: darken(palette.$neutral-color, 10%);
+                background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
             }
         }
     }

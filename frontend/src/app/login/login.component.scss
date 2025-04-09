@@ -1,3 +1,5 @@
+@use "sass:color";
+
 @use '../palette';
 
 .login-container {
@@ -94,7 +96,7 @@
             }
 
             .cancel-btn:hover {
-                background-color: darken(palette.$neutral-color, 10%);
+                background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
             }
         }
     }
