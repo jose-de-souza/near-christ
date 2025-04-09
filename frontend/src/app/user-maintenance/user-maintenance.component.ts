@@ -3,12 +3,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
 import { UserService, User } from './user.service';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-user-maintenance',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    MatSnackBarModule,
+    MatDialogModule    
+  ],
   templateUrl: './user-maintenance.component.html',
   styleUrls: ['./user-maintenance.component.scss']
 })
@@ -26,20 +35,23 @@ export class UserMaintenanceComponent implements OnInit {
   // Track whether the user has tried to create/update (for inline validation)
   hasSubmitted = false;
 
-  // The currently selected (or new) user.
-  // Note: When editing an existing user, we clear out the UserPassword field.
+  // The currently selected (or new) user
   selectedUser: Partial<User> = {
     UserID: undefined,
     UserName: '',
     UserEmail: '',
     UserRole: 'STANDARD',
-    UserPassword: '' // This will be cleared when an existing user is selected.
+    UserPassword: ''
   };
 
   // Possible user roles for the dropdown
   userRoles = ['ADMIN', 'SUPERVISOR', 'STANDARD'];
 
-  constructor(private userService: UserService, private snackBar: MatSnackBar) { }
+  constructor(
+    private userService: UserService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
     this.loadAllUsers();
@@ -58,7 +70,6 @@ export class UserMaintenanceComponent implements OnInit {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  // Dynamically build grid CSS columns for each column in `this.columns`
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -77,7 +88,7 @@ export class UserMaintenanceComponent implements OnInit {
 
   // -------------- SELECT --------------
   selectUser(u: User): void {
-    // Create a shallow copy of the selected user and clear the password
+    // Copy the selected user and clear password
     this.selectedUser = { ...u, UserPassword: '' };
   }
 
@@ -90,7 +101,7 @@ export class UserMaintenanceComponent implements OnInit {
     }
     this.userService.createUser(this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(this.selectedUser.UserName + " has been added");
+        this.showInfo(this.selectedUser.UserName + ' has been added');
         this.loadAllUsers();
         this.resetForm();
       },
@@ -117,7 +128,7 @@ export class UserMaintenanceComponent implements OnInit {
     const id = this.selectedUser.UserID;
     this.userService.updateUser(id, this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(this.selectedUser.UserName + " modified");
+        this.showInfo(this.selectedUser.UserName + ' modified');
         this.loadAllUsers();
         this.resetForm();
       },
@@ -136,17 +147,30 @@ export class UserMaintenanceComponent implements OnInit {
       this.showWarning('No user selected to delete!');
       return;
     }
-    const id = this.selectedUser.UserID;
-    this.userService.deleteUser(id).subscribe({
-      next: () => {
-        this.loadAllUsers();
-        this.resetForm();
+
+    // Open the confirmation dialog with panelClass for scoping
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `Are you sure you wish to delete user "${this.selectedUser.UserName}"?`
       },
-      error: (err) => {
-        if (err.status !== 403) {
-          console.error('Failed to delete user:', err);
-          this.showError('Fatal error deleting user! Please contact support.');
-        }
+      panelClass: 'orange-dialog' // <--- Here is the custom class
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        const id = this.selectedUser.UserID!;
+        this.userService.deleteUser(id).subscribe({
+          next: () => {
+            this.loadAllUsers();
+            this.resetForm();
+          },
+          error: (err) => {
+            if (err.status !== 403) {
+              console.error('Failed to delete user:', err);
+              this.showError('Fatal error deleting user! Please contact support.');
+            }
+          }
+        });
       }
     });
   }
@@ -157,7 +181,6 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   // -------------- UTILITIES --------------
-  // Return the correct cell value for the given user/column
   getCellValue(row: User, column: { header: string; field: string }): any {
     return (row as any)[column.field] || '';
   }
@@ -170,7 +193,6 @@ export class UserMaintenanceComponent implements OnInit {
     return column.field;
   }
 
-  // Reset the form state
   private resetForm(): void {
     this.selectedUser = {
       UserID: undefined,
@@ -182,7 +204,6 @@ export class UserMaintenanceComponent implements OnInit {
     this.hasSubmitted = false;
   }
 
-  // Validate required fields for CREATE
   private isValidForCreate(): boolean {
     if (!this.selectedUser.UserName?.trim()) { return false; }
     if (!this.selectedUser.UserEmail?.trim()) { return false; }
@@ -191,7 +212,6 @@ export class UserMaintenanceComponent implements OnInit {
     return true;
   }
 
-  // Validate required fields for UPDATE (password is optional)
   private isValidForUpdate(): boolean {
     if (!this.selectedUser.UserName?.trim()) { return false; }
     if (!this.selectedUser.UserEmail?.trim()) { return false; }
