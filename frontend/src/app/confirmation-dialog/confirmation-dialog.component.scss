@@ -1,8 +1,7 @@
-.orange-dialog .mat-dialog-container {
+.orange-dialog .mat-mdc-dialog-surface {
     background-color: #ff9800 !important;
-    /* Material Orange 500 */
-    color: #fff !important;
-    padding: 20px !important;
+    color: #000 !important;
+    padding: 20px;
     border-radius: 6px;
     max-width: 500px;
 }
@@ -28,5 +27,13 @@ button {
     padding: 8px 12px;
     cursor: pointer;
     background-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    
+}
+
+.button-yes {
+    color: red;
+}
+
+.button-no {
+    color: grey;
 }
