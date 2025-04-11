@@ -81,6 +81,9 @@ export class ParishMaintenanceComponent implements OnInit {
   locationDioceses: Diocese[] = [];
   locationDioceseDisabled: boolean = true;
 
+  // === UI mode: 'view' or 'editing' ===
+  uiMode: 'view' | 'editing' = 'view';
+
   constructor(
     private parishService: ParishService,
     private dioceseService: DioceseService,
@@ -103,7 +106,7 @@ export class ParishMaintenanceComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data;
-        this.stateDropdownDisabled = (this.allStates.length === 0);
+        this.stateDropdownDisabled = this.allStates.length === 0;
       },
       error: (err: any) => {
         console.error('Failed to load states:', err);
@@ -158,6 +161,8 @@ export class ParishMaintenanceComponent implements OnInit {
         this.showInfo(`${this.selectedParish.ParishName} has been added`);
         this.loadAllParishes();
         this.resetForm();
+        // Done adding => return to view mode
+        this.uiMode = 'view';
       },
       error: (err: any) => {
         console.error('Failed to create parish:', err);
@@ -177,6 +182,8 @@ export class ParishMaintenanceComponent implements OnInit {
         this.showInfo(`${this.selectedParish.ParishName} modified`);
         this.loadAllParishes();
         this.resetForm();
+        // Done editing => return to view mode
+        this.uiMode = 'view';
       },
       error: (err: any) => {
         console.error('Failed to update parish:', err);
@@ -206,6 +213,7 @@ export class ParishMaintenanceComponent implements OnInit {
           next: () => {
             this.loadAllParishes();
             this.resetForm();
+            this.uiMode = 'view';
           },
           error: (err: any) => {
             console.error('Failed to delete parish:', err);
@@ -217,7 +225,9 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   cancel(): void {
+    // Cancel any pending edits and return to 'view' mode
     this.resetForm();
+    this.uiMode = 'view';
   }
 
   private resetForm(): void {
@@ -240,9 +250,13 @@ export class ParishMaintenanceComponent implements OnInit {
     this.locationDioceseDisabled = true;
   }
 
+  /* ---------------------------
+     Selecting a row => editing mode
+  --------------------------- */
   selectParish(parish: Parish): void {
     this.selectedParish = { ...parish };
     this.hasSubmitted = false;
+    this.uiMode = 'editing';
     // Possibly call onLocationStateChange() if we want to refresh the location diocese
     this.onLocationStateChange();
   }
@@ -260,11 +274,8 @@ export class ParishMaintenanceComponent implements OnInit {
     } else {
       const relevant = this.dioceseList.filter(d => d.StateID === stID);
       this.locationDioceses = relevant;
-      this.locationDioceseDisabled = (relevant.length === 0);
-      if (
-        this.selectedParish.DioceseID &&
-        !relevant.some(d => d.DioceseID === this.selectedParish.DioceseID)
-      ) {
+      this.locationDioceseDisabled = relevant.length === 0;
+      if (this.selectedParish.DioceseID && !relevant.some(d => d.DioceseID === this.selectedParish.DioceseID)) {
         this.selectedParish.DioceseID = 0;
       }
     }
@@ -283,7 +294,7 @@ export class ParishMaintenanceComponent implements OnInit {
       this.parishes = this.allParishes;
     } else {
       this.filteredDiocesesForFilter = this.dioceseList.filter(d => d.StateID === stateID);
-      this.dioceseFilterDisabled = (this.filteredDiocesesForFilter.length === 0);
+      this.dioceseFilterDisabled = this.filteredDiocesesForFilter.length === 0;
       this.applyParishFilter();
     }
   }

@@ -110,10 +110,16 @@
 
     <!-- Buttons -->
     <div class="buttons">
-        <button (click)="addParish()">Add</button>
-        <button (click)="modifyParish()">Modify</button>
-        <button (click)="deleteParish()">Delete</button>
-        <button (click)="cancel()">Cancel</button>
+        <!--
+          UI mode approach:
+            - Add is disabled if uiMode === 'editing'
+            - Modify/Delete disabled if uiMode !== 'editing'
+            - Cancel disabled if uiMode === 'view'
+      -->
+        <button (click)="addParish()" [disabled]="uiMode === 'editing'">Add</button>
+        <button (click)="modifyParish()" [disabled]="uiMode !== 'editing'">Modify</button>
+        <button (click)="deleteParish()" [disabled]="uiMode !== 'editing'">Delete</button>
+        <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
     </div>
 
     <!-- Results area -->

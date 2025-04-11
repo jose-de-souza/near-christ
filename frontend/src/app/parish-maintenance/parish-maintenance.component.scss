@@ -1,5 +1,4 @@
 @use "sass:color";
-
 @use '../palette';
 
 .parish-maintenance {
@@ -56,14 +55,12 @@
                 display: flex;
                 /* Important: allow the row to stretch the entire width. */
                 width: 100%;
-                /* Keep gap: 5px for spacing between fields. */
                 gap: 5px;
                 align-items: flex-end;
                 flex-wrap: nowrap;
-                /* or wrap if you want them to break onto new lines */
             }
 
-            /* Row 1: Parish Details */
+            /* Parish details row-1 */
             .row-1 .parishName {
                 flex: 0 0 30%;
                 max-width: 30%;
@@ -83,9 +80,6 @@
                 flex: 0 0 29%;
                 max-width: 29%;
             }
-
-            /* Remove any default "Row 2: Location / Contact" width rules here
-               to avoid conflicts with the custom rules below. */
 
             .field-group {
                 display: flex;
@@ -161,6 +155,17 @@
 
             &:hover {
                 background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+            }
+        }
+
+        /* Style for truly disabled buttons */
+        button:disabled {
+            background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+            cursor: not-allowed;
+            opacity: 0.6;
+
+            &:hover {
+                background-color: color.scale(palette.$neutral-color, $lightness: 80%);
             }
         }
     }
