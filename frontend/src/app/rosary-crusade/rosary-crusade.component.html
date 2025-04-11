@@ -32,7 +32,8 @@
           </div>
         </div>
       </div>
-    </div><!-- end row-1 -->
+    </div>
+    <!-- end row-1 -->
 
     <!-- Row 2: Rosary Crusade Fields -->
     <div class="section crusade" data-title="Rosary Crusade">
@@ -99,7 +100,8 @@
           </div>
         </div>
       </div>
-    </div><!-- end row-2 -->
+    </div>
+    <!-- end row-2 -->
 
     <!-- Row 3: Contact -->
     <div class="section contact" data-title="Contact">
@@ -117,39 +119,48 @@
           <input type="text" [(ngModel)]="selectedCrusade.ContactEmail" />
         </div>
       </div>
-    </div><!-- end row-3 -->
+    </div>
+    <!-- end row-3 -->
 
     <!-- Row 4: Comments -->
     <div class="section comments" data-title="Comments">
       <div class="row-4">
         <textarea [(ngModel)]="selectedCrusade.Comments"></textarea>
       </div>
-    </div><!-- end row-4 -->
-  </div><!-- end form-container -->
+    </div>
+    <!-- end row-4 -->
+  </div>
+  <!-- end form-container -->
 
   <!-- Buttons -->
   <div class="buttons">
-    <button (click)="addCrusade()">Add</button>
-    <button (click)="modifyCrusade()">Modify</button>
-    <button (click)="deleteCrusade()">Delete</button>
-    <button (click)="cancel()">Cancel</button>
+    <!-- 
+      UI mode approach:
+       - Add is disabled if uiMode === 'editing'
+       - Modify & Delete are disabled if uiMode !== 'editing'
+       - Cancel is disabled if uiMode === 'view'
+    -->
+    <button (click)="addCrusade()" [disabled]="uiMode === 'editing'">Add</button>
+    <button (click)="modifyCrusade()" [disabled]="uiMode !== 'editing'">Modify</button>
+    <button (click)="deleteCrusade()" [disabled]="uiMode !== 'editing'">Delete</button>
+    <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
   </div>
 
   <!-- Results Area -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
       (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-
       <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
         (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
             <div class="custom-drag-preview">{{ column.header }}</div>
           </ng-template>
           <ng-template cdkDragPlaceholder>
-            <div class="custom-drag-placeholder">Dropping {{ column.header }} here</div>
+            <div class="custom-drag-placeholder">
+              Dropping {{ column.header }} here
+            </div>
           </ng-template>
           {{ column.header }}
         </div>

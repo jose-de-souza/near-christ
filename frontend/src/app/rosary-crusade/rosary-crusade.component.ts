@@ -78,6 +78,9 @@ export class RosaryCrusadeComponent implements OnInit {
 
   hasSubmitted = false;
 
+  // === UI Mode: 'view' or 'editing' ===
+  uiMode: 'view' | 'editing' = 'view';
+
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -150,7 +153,7 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   // ---------------------------
-  // SELECT / EDIT
+  // SELECT / EDIT => switch to editing
   // ---------------------------
   selectCrusade(c: Crusade): void {
     this.hasSubmitted = false;
@@ -161,6 +164,8 @@ export class RosaryCrusadeComponent implements OnInit {
       DioceseID: Number(c.DioceseID),
       ParishID: Number(c.ParishID)
     };
+
+    this.uiMode = 'editing';
 
     // Refresh filters
     if (this.selectedCrusade.StateID && Number(this.selectedCrusade.StateID) > 0) {
@@ -243,6 +248,7 @@ export class RosaryCrusadeComponent implements OnInit {
   // CRUD Operations
   // ---------------------------
   addCrusade(): void {
+    // The button is disabled if uiMode === 'editing', so no need to check that again
     this.hasSubmitted = true;
     if (!this.isAllFieldsValid()) {
       this.showWarning('Some required fields are missing.');
@@ -253,6 +259,8 @@ export class RosaryCrusadeComponent implements OnInit {
         this.showInfo('The Crusade has been added');
         this.loadAllCrusades();
         this.resetForm();
+        // Done => Return to 'view' mode
+        this.uiMode = 'view';
       },
       error: (err) => {
         console.error('Failed to create crusade:', err);
@@ -262,6 +270,7 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   modifyCrusade(): void {
+    // The button is disabled if uiMode !== 'editing'
     if (!this.selectedCrusade.CrusadeID) {
       this.showWarning('No crusade selected to modify!');
       return;
@@ -277,6 +286,7 @@ export class RosaryCrusadeComponent implements OnInit {
         this.showInfo('Crusade modified');
         this.loadAllCrusades();
         this.resetForm();
+        this.uiMode = 'view';
       },
       error: (err) => {
         console.error('Failed to update crusade:', err);
@@ -286,6 +296,7 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   deleteCrusade(): void {
+    // The button is disabled if uiMode !== 'editing'
     if (!this.selectedCrusade.CrusadeID) {
       this.showWarning('No crusade selected to delete!');
       return;
@@ -306,6 +317,8 @@ export class RosaryCrusadeComponent implements OnInit {
           next: () => {
             this.loadAllCrusades();
             this.resetForm();
+            // Done => Return to 'view' mode
+            this.uiMode = 'view';
           },
           error: (err) => {
             console.error('Failed to delete crusade:', err);
@@ -317,7 +330,9 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   cancel(): void {
+    // Cancel editing => back to view mode
     this.resetForm();
+    this.uiMode = 'view';
   }
 
   private resetForm(): void {
@@ -401,6 +416,7 @@ export class RosaryCrusadeComponent implements OnInit {
       panelClass: ['snackbar-warning']
     });
   }
+
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 7000,
