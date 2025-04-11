@@ -68,10 +68,13 @@
 
     <!-- CRUD Buttons -->
     <div class="buttons">
-      <button (click)="addDiocese()">Add</button>
-      <button (click)="modifyDiocese()">Modify</button>
-      <button (click)="deleteDiocese()">Delete</button>
-      <button (click)="cancel()">Cancel</button>
+      <!--
+          These buttons are actually disabled in the DOM so the user can't click.
+      -->
+      <button (click)="addDiocese()" [disabled]="uiMode === 'editing'">Add</button>
+      <button (click)="modifyDiocese()" [disabled]="uiMode !== 'editing'">Modify</button>
+      <button (click)="deleteDiocese()" [disabled]="uiMode !== 'editing'">Delete</button>
+      <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
     </div>
 
     <!-- SECTION #3: Filter => uses the same .section styling -->

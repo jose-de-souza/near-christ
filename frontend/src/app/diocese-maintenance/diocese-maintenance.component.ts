@@ -36,6 +36,9 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   hasSubmitted = false;
 
+  // UI mode: 'view' => no record selected, 'editing' => a record is selected
+  uiMode: 'view' | 'editing' = 'view';
+
   // The diocese record being edited/created
   selectedDiocese: Partial<Diocese> = {
     DioceseID: undefined,
@@ -50,7 +53,7 @@ export class DioceseMaintenanceComponent implements OnInit {
     DioceseWebsite: ''
   };
 
-  // Updated columns
+  // Table columns
   columns = [
     { header: 'Diocese Name', field: 'DioceseName' },
     { header: 'Street No', field: 'DioceseStreetNo' },
@@ -127,10 +130,12 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   /* ---------------------------
      Selecting a Diocese Row
+     => switch to editing mode
   --------------------------- */
   selectDiocese(d: Diocese): void {
     this.selectedDiocese = { ...d };
     this.hasSubmitted = false;
+    this.uiMode = 'editing';
   }
 
   /* ---------------------------
@@ -148,6 +153,8 @@ export class DioceseMaintenanceComponent implements OnInit {
         this.showInfo(`${this.selectedDiocese.DioceseName} has been added`);
         this.loadAllDioceses();
         this.resetForm();
+        // Return to view mode
+        this.uiMode = 'view';
       },
       error: (err) => {
         console.error('Failed to create diocese:', err);
@@ -157,16 +164,20 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   modifyDiocese(): void {
+    // The "Modify" button is disabled unless uiMode === 'editing'
     if (!this.selectedDiocese.DioceseID) {
       this.showWarning('No diocese selected to update!');
       return;
     }
+
     const id = this.selectedDiocese.DioceseID;
     this.dioceseService.updateDiocese(id, this.selectedDiocese).subscribe({
       next: () => {
         this.showInfo(`${this.selectedDiocese.DioceseName} modified`);
         this.loadAllDioceses();
         this.resetForm();
+        // Return to view mode
+        this.uiMode = 'view';
       },
       error: (err) => {
         console.error('Failed to update diocese:', err);
@@ -176,6 +187,7 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   deleteDiocese(): void {
+    // The "Delete" button is disabled unless uiMode === 'editing'
     if (!this.selectedDiocese.DioceseID) {
       this.showWarning('No diocese selected to delete!');
       return;
@@ -197,6 +209,8 @@ export class DioceseMaintenanceComponent implements OnInit {
           next: () => {
             this.loadAllDioceses();
             this.resetForm();
+            // Return to view mode
+            this.uiMode = 'view';
           },
           error: (err) => {
             console.error('Failed to delete diocese:', err);
@@ -208,7 +222,9 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   cancel(): void {
+    // Cancel any pending edits and return to 'view' mode
     this.resetForm();
+    this.uiMode = 'view';
   }
 
   private resetForm(): void {

@@ -1,5 +1,4 @@
 @use "sass:color";
-
 @use '../palette';
 
 .diocese-maintenance {
@@ -29,10 +28,10 @@
         border-radius: 8px;
 
         /* 
-      Each .section => bounding box with a label in the top-left corner.
-      The background is the same as .form-container => so it looks 
-      like a “light-blue box” with a visible border & label. 
-    */
+          Each .section => bounding box with a label in the top-left corner.
+          The background is the same as .form-container => so it looks 
+          like a “light-blue box” with a visible border & label. 
+        */
         .section {
             position: relative;
             border: 1px solid palette.$secondary-color;
@@ -64,8 +63,8 @@
             }
 
             /*
-        Row 1 => 4 fields => total ~98%
-      */
+                Row 1 => 4 fields => total ~98%
+            */
             .row-1 .dioceseName {
                 flex: 0 0 30%;
                 max-width: 30%;
@@ -87,8 +86,8 @@
             }
 
             /*
-        Row 2 => 5 fields => total ~98%
-      */
+                Row 2 => 5 fields => total ~98%
+            */
             .row-2 .state {
                 flex: 0 0 10%;
                 max-width: 10%;
@@ -160,6 +159,7 @@
             color: white;
         }
 
+        /* For each button, apply background color, plus a hover effect */
         button:nth-child(1) {
             background-color: palette.$save-button-bg;
 
@@ -189,6 +189,21 @@
 
             &:hover {
                 background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+            }
+        }
+
+        /* 
+            Explicitly style disabled buttons so they look different 
+            and show 'not-allowed' cursor. 
+        */
+        button:disabled {
+            background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+            cursor: not-allowed;
+            opacity: 0.6;
+
+            /* Prevent hover color changes */
+            &:hover {
+                background-color: color.scale(palette.$neutral-color, $lightness: 80%);
             }
         }
     }

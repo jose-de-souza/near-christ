@@ -38,7 +38,8 @@
           <input type="time" [(ngModel)]="selectedAdoration.AdorationEnd" [disabled]="isPerpetual()" />
         </div>
       </div>
-    </div><!-- end row-1 -->
+    </div>
+    <!-- end row-1 -->
 
     <!-- Row 2: State / Diocese / Parish -->
     <div class="row-2">
@@ -75,7 +76,8 @@
           </select>
         </div>
       </div>
-    </div><!-- end row-2 -->
+    </div>
+    <!-- end row-2 -->
 
     <!-- Row 3: Location -->
     <div class="row-3">
@@ -92,25 +94,31 @@
           <input type="text" [(ngModel)]="selectedAdoration.AdorationLocation" [disabled]="isParishChurch()" />
         </div>
       </div>
-    </div><!-- end row-3 -->
-  </div><!-- end form-container -->
+    </div>
+    <!-- end row-3 -->
+  </div>
+  <!-- end form-container -->
 
   <!-- Action Buttons -->
   <div class="buttons">
-    <button (click)="addSchedule()">Add</button>
-    <button (click)="modifySchedule()">Modify</button>
-    <button (click)="deleteSchedule()">Delete</button>
-    <button (click)="cancel()">Cancel</button>
+    <!-- 
+      Using UI mode approach:
+       - Add is disabled if uiMode === 'editing'
+       - Modify/Delete are disabled if uiMode !== 'editing'
+       - Cancel is disabled if uiMode === 'view'
+    -->
+    <button (click)="addSchedule()" [disabled]="uiMode === 'editing'">Add</button>
+    <button (click)="modifySchedule()" [disabled]="uiMode !== 'editing'">Modify</button>
+    <button (click)="deleteSchedule()" [disabled]="uiMode !== 'editing'">Delete</button>
+    <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
   </div>
 
   <!-- Results Area -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
       (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-
       <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
         (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>

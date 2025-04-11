@@ -1,5 +1,4 @@
 @use "sass:color";
-
 @use '../palette';
 
 .adoration-schedule {
@@ -28,8 +27,8 @@
 
         /*
       Row 1 => Adoration (4 fields => 24% each => total 100%)
-      Row 2 => Diocese/Parish (3 fields => State=10%, Diocese=42%, Parish=42% => total 96%)
-      Row 3 => Location (2 fields => Type=20%, Location=78% => total 98%)
+      Row 2 => Diocese/Parish (3 fields => State=12%, Diocese=42%, Parish=42% => total 96%)
+      Row 3 => Location (2 fields => Type=20%, Location=78% => total ~98%)
     */
         .row-1,
         .row-2,
@@ -42,7 +41,6 @@
             position: relative;
             border: 1px solid palette.$secondary-color;
             border-radius: 8px;
-            /* We place all fields side by side => flex-wrap: nowrap */
             display: flex;
             flex-wrap: nowrap;
             gap: 15px;
@@ -99,21 +97,18 @@
             }
         }
 
-        /* Row 2 => Diocese/Parish => 3 fields => 12%, 42%, 42% => total 96% */
+        /* Row 2 => State=12%, Diocese=42%, Parish=42% => total 96% */
         .section.diocese-parish-names>div:nth-child(1) {
-            /* State => 12% */
             flex: 0 0 12%;
             max-width: 12%;
         }
 
         .section.diocese-parish-names>div:nth-child(2) {
-            /* Diocese => 42% */
             flex: 0 0 42%;
             max-width: 42%;
         }
 
         .section.diocese-parish-names>div:nth-child(3) {
-            /* Parish => 42% */
             flex: 0 0 42%;
             max-width: 42%;
         }
@@ -124,15 +119,13 @@
             width: 100% !important;
         }
 
-        /* Row 3 => Location => 2 fields => 20%, 78% => total 98% */
+        /* Row 3 => Type=20%, Location=78% => total ~98% */
         .section.location>div:nth-child(1) {
-            /* Location Type => 20% */
             flex: 0 0 20%;
             max-width: 20%;
         }
 
         .section.location>div:nth-child(2) {
-            /* Location => 78% */
             flex: 0 0 78%;
             max-width: 78%;
         }
@@ -189,6 +182,17 @@
                 background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
             }
         }
+
+        /* NEW: style for disabled buttons so they appear truly inactive */
+        button:disabled {
+            background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+            cursor: not-allowed;
+            opacity: 0.6;
+
+            &:hover {
+                background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+            }
+        }
     }
 
     .results-area {
@@ -197,7 +201,6 @@
         border-radius: 8px;
         padding: 10px;
         overflow-x: auto;
-        /* horizontal scroll if columns exceed container width */
 
         .grid-table {
             display: grid;
