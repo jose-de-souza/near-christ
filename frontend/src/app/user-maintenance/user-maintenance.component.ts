@@ -16,7 +16,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
     FormsModule,
     DragDropModule,
     MatSnackBarModule,
-    MatDialogModule    
+    MatDialogModule
   ],
   templateUrl: './user-maintenance.component.html',
   styleUrls: ['./user-maintenance.component.scss']
@@ -46,6 +46,9 @@ export class UserMaintenanceComponent implements OnInit {
 
   // Possible user roles for the dropdown
   userRoles = ['ADMIN', 'SUPERVISOR', 'STANDARD'];
+
+  // === UI MODE: 'view' or 'editing' ===
+  uiMode: 'view' | 'editing' = 'view';
 
   constructor(
     private userService: UserService,
@@ -86,24 +89,31 @@ export class UserMaintenanceComponent implements OnInit {
     });
   }
 
-  // -------------- SELECT --------------
+  // -------------- SELECT => editing mode --------------
   selectUser(u: User): void {
     // Copy the selected user and clear password
     this.selectedUser = { ...u, UserPassword: '' };
+    this.hasSubmitted = false;
+    this.uiMode = 'editing';
   }
 
   // -------------- CREATE --------------
   addUser(): void {
+    // If currently editing, user must cancel or save changes first (button is disabled in the template).
     this.hasSubmitted = true;
+
     if (!this.isValidForCreate()) {
       this.showWarning('User Name, Email, Role, and Password are required to create a new user.');
       return;
     }
+
     this.userService.createUser(this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(this.selectedUser.UserName + ' has been added');
+        this.showInfo(`${this.selectedUser.UserName} has been added`);
         this.loadAllUsers();
         this.resetForm();
+        // Return to view mode
+        this.uiMode = 'view';
       },
       error: (err) => {
         if (err.status !== 403) {
@@ -116,11 +126,13 @@ export class UserMaintenanceComponent implements OnInit {
 
   // -------------- UPDATE --------------
   modifyUser(): void {
+    // The "Modify" button is only enabled if uiMode === 'editing'
     if (!this.selectedUser.UserID) {
       this.showWarning('No user selected to update!');
       return;
     }
     this.hasSubmitted = true;
+
     if (!this.isValidForUpdate()) {
       this.showWarning('User Name, Email, and Role are required to update!');
       return;
@@ -128,9 +140,11 @@ export class UserMaintenanceComponent implements OnInit {
     const id = this.selectedUser.UserID;
     this.userService.updateUser(id, this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(this.selectedUser.UserName + ' modified');
+        this.showInfo(`${this.selectedUser.UserName} modified`);
         this.loadAllUsers();
         this.resetForm();
+        // Return to view mode
+        this.uiMode = 'view';
       },
       error: (err) => {
         if (err.status !== 403) {
@@ -143,17 +157,18 @@ export class UserMaintenanceComponent implements OnInit {
 
   // -------------- DELETE --------------
   deleteUser(): void {
+    // The "Delete" button is only enabled if uiMode === 'editing'
     if (!this.selectedUser.UserID) {
       this.showWarning('No user selected to delete!');
       return;
     }
 
-    // Open the confirmation dialog with panelClass for scoping
+    // Open the confirmation dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         message: `Are you sure you wish to delete user "${this.selectedUser.UserName}"?`
       },
-      panelClass: 'orange-dialog' // <--- Here is the custom class
+      panelClass: 'orange-dialog'
     });
 
     dialogRef.afterClosed().subscribe(confirmed => {
@@ -163,6 +178,7 @@ export class UserMaintenanceComponent implements OnInit {
           next: () => {
             this.loadAllUsers();
             this.resetForm();
+            this.uiMode = 'view';
           },
           error: (err) => {
             if (err.status !== 403) {
@@ -178,6 +194,7 @@ export class UserMaintenanceComponent implements OnInit {
   // -------------- CANCEL --------------
   cancel(): void {
     this.resetForm();
+    this.uiMode = 'view';
   }
 
   // -------------- UTILITIES --------------
@@ -205,17 +222,17 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   private isValidForCreate(): boolean {
-    if (!this.selectedUser.UserName?.trim()) { return false; }
-    if (!this.selectedUser.UserEmail?.trim()) { return false; }
-    if (!this.selectedUser.UserRole?.trim()) { return false; }
-    if (!this.selectedUser.UserPassword?.trim()) { return false; }
+    if (!this.selectedUser.UserName?.trim()) return false;
+    if (!this.selectedUser.UserEmail?.trim()) return false;
+    if (!this.selectedUser.UserRole?.trim()) return false;
+    if (!this.selectedUser.UserPassword?.trim()) return false;
     return true;
   }
 
   private isValidForUpdate(): boolean {
-    if (!this.selectedUser.UserName?.trim()) { return false; }
-    if (!this.selectedUser.UserEmail?.trim()) { return false; }
-    if (!this.selectedUser.UserRole?.trim()) { return false; }
+    if (!this.selectedUser.UserName?.trim()) return false;
+    if (!this.selectedUser.UserEmail?.trim()) return false;
+    if (!this.selectedUser.UserRole?.trim()) return false;
     return true;
   }
 

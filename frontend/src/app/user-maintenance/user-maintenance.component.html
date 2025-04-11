@@ -53,10 +53,16 @@
 
     <!-- Buttons -->
     <div class="buttons">
-        <button (click)="addUser()">Add</button>
-        <button (click)="modifyUser()">Modify</button>
-        <button (click)="deleteUser()">Delete</button>
-        <button (click)="cancel()">Cancel</button>
+        <!-- 
+           UI mode usage:
+            - Add is disabled if uiMode === 'editing'
+            - Modify/Delete are disabled if uiMode !== 'editing'
+            - Cancel is disabled if uiMode === 'view'
+       -->
+        <button (click)="addUser()" [disabled]="uiMode === 'editing'">Add</button>
+        <button (click)="modifyUser()" [disabled]="uiMode !== 'editing'">Modify</button>
+        <button (click)="deleteUser()" [disabled]="uiMode !== 'editing'">Delete</button>
+        <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
     </div>
 
     <!-- Results Area: Grid-based, drag-and-drop columns -->
