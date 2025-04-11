@@ -49,10 +49,8 @@
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
       (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-
       <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
         (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
@@ -68,8 +66,8 @@
           {{ column.header }}
         </div>
 
-        <div class="grid-column-cell" *ngFor="let row of results">
-          {{ getCellValue(row, column) }}
+        <!-- Use [innerHTML] so <a> tags from getCellValue() are clickable links -->
+        <div class="grid-column-cell" *ngFor="let row of results" [innerHTML]="getCellValue(row, column)">
         </div>
       </div>
     </div>

@@ -2,9 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
+/**
+ * The Crusade interface references optional `diocese` and `parish` objects
+ * that can include `DioceseWebsite` and `ParishWebsite`.
+ */
 export interface Crusade {
   CrusadeID: number;
-  StateID: number;          // numeric foreign key
+  StateID: number;
   DioceseID: number;
   ParishID: number;
   ConfessionStartTime: string;
@@ -18,16 +22,17 @@ export interface Crusade {
   ContactEmail: string;
   Comments: string;
 
-  // Optional relationship objects from the back end
+  // Optional relationships if Laravel returns them via ->with('diocese','parish','state')
   diocese?: {
     DioceseID: number;
     DioceseName: string;
+    DioceseWebsite?: string; // NEW: so we can reference it in the front end
   };
   parish?: {
     ParishID: number;
     ParishName: string;
+    ParishWebsite?: string; // NEW: so we can reference it in the front end
   };
-  // NEW: 'state' property so we can access state?.StateAbbreviation in the front end
   state?: {
     StateID: number;
     StateName: string;
@@ -62,7 +67,7 @@ export class CrusadeService {
   }
 
   /**
-   * Optional filter method for searching by state_id, diocese_id, parish_id
+   * Filter method for searching by state_id, diocese_id, parish_id
    */
   searchCrusades(stateID?: number, dioceseID?: number, parishID?: number) {
     let params = new HttpParams();

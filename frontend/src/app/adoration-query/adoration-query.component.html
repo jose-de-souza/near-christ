@@ -72,9 +72,8 @@
           {{ column.header }}
         </div>
 
-        <!-- Column cells -->
-        <div class="grid-column-cell" *ngFor="let row of results">
-          {{ getCellValue(row, column) }}
+        <!-- THIS LINE CHANGED: [innerHTML]="getCellValue(row, column)" -->
+        <div class="grid-column-cell" *ngFor="let row of results" [innerHTML]="getCellValue(row, column)">
         </div>
       </div>
     </div>
