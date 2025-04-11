@@ -63,13 +63,16 @@ export class AdorationScheduleComponent implements OnInit {
     AdorationEnd: ''
   };
 
+  // === UI mode: 'view' or 'editing'
+  uiMode: 'view' | 'editing' = 'view';
+
   constructor(
     private adorationService: AdorationService,
     private dioceseService: DioceseService,
     private parishService: ParishService,
     private stateService: StateService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog // <-- needed to open the confirmation dialog
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -221,10 +224,13 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   /* ----------------------------------
-     SELECT ROW
+     SELECT ROW => editing mode
   ---------------------------------- */
   selectSchedule(schedule: Adoration): void {
     this.selectedAdoration = { ...schedule };
+
+    // Switch to editing mode
+    this.uiMode = 'editing';
 
     // 1) State
     if (schedule.StateID) {
@@ -246,6 +252,8 @@ export class AdorationScheduleComponent implements OnInit {
         this.showInfo('Adoration Schedule has been added');
         this.loadAllAdorations();
         this.resetForm();
+        // Return to view mode
+        this.uiMode = 'view';
       },
       error: (err) => {
         console.error('Failed to create adoration schedule:', err);
@@ -265,6 +273,8 @@ export class AdorationScheduleComponent implements OnInit {
         this.showInfo('Adoration Schedule modified');
         this.loadAllAdorations();
         this.resetForm();
+        // Return to view mode
+        this.uiMode = 'view';
       },
       error: (err) => {
         console.error('Failed to update adoration:', err);
@@ -295,6 +305,8 @@ export class AdorationScheduleComponent implements OnInit {
           next: () => {
             this.loadAllAdorations();
             this.resetForm();
+            // Return to view mode
+            this.uiMode = 'view';
           },
           error: (err) => {
             console.error('Failed to delete adoration:', err);
@@ -307,6 +319,7 @@ export class AdorationScheduleComponent implements OnInit {
 
   cancel(): void {
     this.resetForm();
+    this.uiMode = 'view';
   }
 
   private resetForm(): void {
