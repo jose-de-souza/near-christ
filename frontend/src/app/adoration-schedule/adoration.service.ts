@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { Diocese } from '../diocese-maintenance/diocese.service'; // ADDED import so we can reference Diocese
+import { Parish } from '../parish-maintenance/parish.service';   // ADDED import so we can reference Parish
 
-// If the backend returns diocese / parish objects, define them optionally:
+// If the backend returns diocese/parish objects, define them optionally:
 export interface Adoration {
   AdorationID: number;
   DioceseID: number;           // references a valid Diocese
   ParishID: number;            // references a valid Parish
-  StateID: number;             // numeric foreign key => references State table
+  StateID: number;             // numeric foreign key => references State
   AdorationType: string;       // 'Regular' or 'Perpetual'
   AdorationLocation: string;
   AdorationLocationType: string;
@@ -15,17 +17,9 @@ export interface Adoration {
   AdorationStart: string;      // e.g. '09:00:00'
   AdorationEnd: string;        // e.g. '17:00:00'
 
-  // (Optional) Relationship objects if Laravel returns them with ->with('diocese','parish','state')
-  diocese?: {
-    DioceseID: number;
-    DioceseName: string;
-    // ...
-  };
-  parish?: {
-    ParishID: number;
-    ParishName: string;
-    // ...
-  };
+  // NEW: if Laravel ->with('diocese','parish','state'), they include the full objects:
+  diocese?: Diocese; // so row.diocese?.DioceseWebsite is recognized
+  parish?: Parish;   // so row.parish?.ParishWebsite is recognized
   state?: {
     StateID: number;
     StateName: string;
@@ -65,7 +59,7 @@ export class AdorationService {
     return this.http.delete(`${this.baseUrl}/adorations/${id}`);
   }
 
-  // Optionally: search with filters (state_id, diocese_id, parish_id)
+  // SEARCH: optionally pass (stateID, dioceseID, parishID) as query params
   searchAdorations(stateID?: number, dioceseID?: number, parishID?: number) {
     let params = new HttpParams();
     if (stateID && stateID > 0) {
