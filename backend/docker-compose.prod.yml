@@ -1,0 +1,39 @@
+# Production-specific settings with Nginx
+services:
+  app:
+    env_file:
+      - .env.prod
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_HOST=postgres
+    restart: always
+
+  postgres:
+    env_file:
+      - .env.prod
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
+    ports:
+      # Expose HTTP and HTTPS ports to the outside world
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Mount the Nginx configuration from the host into the container
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      # NEW: Mount the built frontend files from the host into the container
+      # This path assumes you run docker-compose from the 'backend' directory.
+      - ../frontend/dist/near-christ/browser:/usr/share/nginx/html
+      # Mount the Let's Encrypt SSL certificates from the host into the container
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - app
+    networks:
+      - app-network
+    restart: always
+
+# The app-network is defined in the base docker-compose.yml
+networks:
+  app-network:

@@ -1,0 +1,6 @@
+# Main application configuration
+# Sets the default profile to 'dev'. This is used when running locally outside of Docker.
+# It will be overridden by the SPRING_PROFILES_ACTIVE environment variable in Docker or on the production server.
+spring:
+  profiles:
+    active: dev
