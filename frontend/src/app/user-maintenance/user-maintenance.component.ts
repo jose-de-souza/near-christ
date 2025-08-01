@@ -24,9 +24,9 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 export class UserMaintenanceComponent implements OnInit {
   // Columns for our grid
   columns = [
-    { header: 'Name', field: 'UserName' },
-    { header: 'Email', field: 'UserEmail' },
-    { header: 'Role', field: 'UserRole' },
+    { header: 'Name', field: 'userName' },
+    { header: 'Email', field: 'userEmail' },
+    { header: 'Role', field: 'userRole' },
   ];
 
   // The array of users from the backend
@@ -37,11 +37,11 @@ export class UserMaintenanceComponent implements OnInit {
 
   // The currently selected (or new) user
   selectedUser: Partial<User> = {
-    UserID: undefined,
-    UserName: '',
-    UserEmail: '',
-    UserRole: 'STANDARD',
-    UserPassword: ''
+    userID: undefined,
+    userName: '',
+    userEmail: '',
+    userRole: 'STANDARD',
+    userPassword: ''
   };
 
   // Possible user roles for the dropdown
@@ -92,7 +92,7 @@ export class UserMaintenanceComponent implements OnInit {
   // -------------- SELECT => editing mode --------------
   selectUser(u: User): void {
     // Copy the selected user and clear password
-    this.selectedUser = { ...u, UserPassword: '' };
+    this.selectedUser = { ...u, userPassword: '' };
     this.hasSubmitted = false;
     this.uiMode = 'editing';
   }
@@ -109,7 +109,7 @@ export class UserMaintenanceComponent implements OnInit {
 
     this.userService.createUser(this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedUser.UserName} has been added`);
+        this.showInfo(`${this.selectedUser.userName} has been added`);
         this.loadAllUsers();
         this.resetForm();
         // Return to view mode
@@ -127,7 +127,7 @@ export class UserMaintenanceComponent implements OnInit {
   // -------------- UPDATE --------------
   modifyUser(): void {
     // The "Modify" button is only enabled if uiMode === 'editing'
-    if (!this.selectedUser.UserID) {
+    if (!this.selectedUser.userID) {
       this.showWarning('No user selected to update!');
       return;
     }
@@ -137,10 +137,10 @@ export class UserMaintenanceComponent implements OnInit {
       this.showWarning('User Name, Email, and Role are required to update!');
       return;
     }
-    const id = this.selectedUser.UserID;
+    const id = this.selectedUser.userID;
     this.userService.updateUser(id, this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedUser.UserName} modified`);
+        this.showInfo(`${this.selectedUser.userName} modified`);
         this.loadAllUsers();
         this.resetForm();
         // Return to view mode
@@ -158,7 +158,7 @@ export class UserMaintenanceComponent implements OnInit {
   // -------------- DELETE --------------
   deleteUser(): void {
     // The "Delete" button is only enabled if uiMode === 'editing'
-    if (!this.selectedUser.UserID) {
+    if (!this.selectedUser.userID) {
       this.showWarning('No user selected to delete!');
       return;
     }
@@ -166,14 +166,14 @@ export class UserMaintenanceComponent implements OnInit {
     // Open the confirmation dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: `Are you sure you wish to delete user "${this.selectedUser.UserName}"?`
+        message: `Are you sure you wish to delete user "${this.selectedUser.userName}"?`
       },
       panelClass: 'orange-dialog'
     });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedUser.UserID!;
+        const id = this.selectedUser.userID!;
         this.userService.deleteUser(id).subscribe({
           next: () => {
             this.loadAllUsers();
@@ -203,7 +203,7 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   trackByUserID(index: number, item: User): number {
-    return item.UserID;
+    return item.userID;
   }
 
   trackByColumn(index: number, column: { header: string; field: string }): string {
@@ -212,27 +212,27 @@ export class UserMaintenanceComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedUser = {
-      UserID: undefined,
-      UserName: '',
-      UserEmail: '',
-      UserRole: 'STANDARD',
-      UserPassword: ''
+      userID: undefined,
+      userName: '',
+      userEmail: '',
+      userRole: 'STANDARD',
+      userPassword: ''
     };
     this.hasSubmitted = false;
   }
 
   private isValidForCreate(): boolean {
-    if (!this.selectedUser.UserName?.trim()) return false;
-    if (!this.selectedUser.UserEmail?.trim()) return false;
-    if (!this.selectedUser.UserRole?.trim()) return false;
-    if (!this.selectedUser.UserPassword?.trim()) return false;
+    if (!this.selectedUser.userName?.trim()) return false;
+    if (!this.selectedUser.userEmail?.trim()) return false;
+    if (!this.selectedUser.userRole?.trim()) return false;
+    if (!this.selectedUser.userPassword?.trim()) return false;
     return true;
   }
 
   private isValidForUpdate(): boolean {
-    if (!this.selectedUser.UserName?.trim()) return false;
-    if (!this.selectedUser.UserEmail?.trim()) return false;
-    if (!this.selectedUser.UserRole?.trim()) return false;
+    if (!this.selectedUser.userName?.trim()) return false;
+    if (!this.selectedUser.userEmail?.trim()) return false;
+    if (!this.selectedUser.userRole?.trim()) return false;
     return true;
   }
 

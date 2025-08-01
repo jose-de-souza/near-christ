@@ -22,16 +22,16 @@ export class CrusadeQueryComponent implements OnInit {
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
     { header: 'State', field: 'state' },
-    { header: 'Confession Start', field: 'ConfessionStartTime' },
-    { header: 'Confession End', field: 'ConfessionEndTime' },
-    { header: 'Mass Start', field: 'MassStartTime' },
-    { header: 'Mass End', field: 'MassEndTime' },
-    { header: 'Crusade Start', field: 'CrusadeStartTime' },
-    { header: 'Crusade End', field: 'CrusadeEndTime' },
-    { header: 'Contact Name', field: 'ContactName' },
-    { header: 'Contact Phone', field: 'ContactPhone' },
-    { header: 'Contact Email', field: 'ContactEmail' },
-    { header: 'Comments', field: 'Comments' },
+    { header: 'Confession Start', field: 'confessionStartTime' },
+    { header: 'Confession End', field: 'confessionEndTime' },
+    { header: 'Mass Start', field: 'massStartTime' },
+    { header: 'Mass End', field: 'massEndTime' },
+    { header: 'Crusade Start', field: 'crusadeStartTime' },
+    { header: 'Crusade End', field: 'crusadeEndTime' },
+    { header: 'Contact Name', field: 'contactName' },
+    { header: 'Contact Phone', field: 'contactPhone' },
+    { header: 'Contact Email', field: 'contactEmail' },
+    { header: 'comments', field: 'comments' },
   ];
 
   allStates: State[] = [];
@@ -119,7 +119,7 @@ export class CrusadeQueryComponent implements OnInit {
       this.filteredParishes = [];
     } else {
       const chosenStateID = Number(this.selectedStateID);
-      this.filteredDioceses = this.dioceseList.filter(d => d.StateID === chosenStateID);
+      this.filteredDioceses = this.dioceseList.filter(d => d.stateID === chosenStateID);
       if (this.filteredDioceses.length === 0) {
         this.dioceseDisabled = true;
         this.parishDisabled = true;
@@ -143,7 +143,7 @@ export class CrusadeQueryComponent implements OnInit {
       this.filteredParishes = [];
     } else {
       const chosenDioceseID = Number(this.selectedDioceseID);
-      const temp = this.parishList.filter(p => p.DioceseID === chosenDioceseID);
+      const temp = this.parishList.filter(p => p.dioceseID === chosenDioceseID);
       if (temp.length === 0) {
         this.parishDisabled = true;
         this.selectedParishID = null;
@@ -181,8 +181,8 @@ export class CrusadeQueryComponent implements OnInit {
   getCellValue(row: Crusade, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
       // If diocese has a website, build <a> link
-      const dName = row.diocese?.DioceseName || '';
-      const dWebsite = row.diocese?.DioceseWebsite || '';
+      const dName = row.diocese?.dioceseName || '';
+      const dWebsite = row.diocese?.dioceseWebsite || '';
       if (dWebsite.trim()) {
         return `<a href="${dWebsite}" target="_blank">${dName}</a>`;
       } else {
@@ -190,15 +190,15 @@ export class CrusadeQueryComponent implements OnInit {
       }
     } else if (column.field === 'parishName') {
       // If parish has a website, build <a> link
-      const pName = row.parish?.ParishName || '';
-      const pWebsite = row.parish?.ParishWebsite || '';
+      const pName = row.parish?.parishName || '';
+      const pWebsite = row.parish?.parishWebsite || '';
       if (pWebsite.trim()) {
         return `<a href="${pWebsite}" target="_blank">${pName}</a>`;
       } else {
         return pName;
       }
     } else if (column.field === 'state') {
-      return row.state?.StateAbbreviation || '';
+      return row.state?.stateAbbreviation || '';
     } else {
       return (row as any)[column.field] || '';
     }

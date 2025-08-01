@@ -6,24 +6,24 @@ import { Parish } from '../parish-maintenance/parish.service';   // ADDED import
 
 // If the backend returns diocese/parish objects, define them optionally:
 export interface Adoration {
-  AdorationID: number;
-  DioceseID: number;           // references a valid Diocese
-  ParishID: number;            // references a valid Parish
-  StateID: number;             // numeric foreign key => references State
-  AdorationType: string;       // 'Regular' or 'Perpetual'
-  AdorationLocation: string;
-  AdorationLocationType: string;
-  AdorationDay: string;        // e.g. 'Monday', or empty if Perpetual
-  AdorationStart: string;      // e.g. '09:00:00'
-  AdorationEnd: string;        // e.g. '17:00:00'
+  adorationID: number;
+  dioceseID: number;           // references a valid Diocese
+  parishID: number;            // references a valid Parish
+  stateID: number;             // numeric foreign key => references State
+  adorationType: string;       // 'Regular' or 'Perpetual'
+  adorationLocation: string;
+  adorationLocationType: string;
+  adorationDay: string;        // e.g. 'Monday', or empty if Perpetual
+  adorationStart: string;      // e.g. '09:00:00'
+  adorationEnd: string;        // e.g. '17:00:00'
 
   // NEW: if Laravel ->with('diocese','parish','state'), they include the full objects:
-  diocese?: Diocese; // so row.diocese?.DioceseWebsite is recognized
-  parish?: Parish;   // so row.parish?.ParishWebsite is recognized
+  diocese?: Diocese; // so row.diocese?.dioceseWebsite is recognized
+  parish?: Parish;   // so row.parish?.parishWebsite is recognized
   state?: {
-    StateID: number;
-    StateName: string;
-    StateAbbreviation: string;
+    stateID: number;
+    stateName: string;
+    stateAbbreviation: string;
   };
   [key: string]: any; // optional for expansion
 }

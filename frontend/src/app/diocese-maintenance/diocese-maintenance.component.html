@@ -10,25 +10,25 @@
         <!-- Diocese Name -->
         <div class="field-group dioceseName">
           <label>Diocese Name</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DioceseName" />
-          <div *ngIf="hasSubmitted && !selectedDiocese.DioceseName?.trim()" class="inline-error">
+          <input type="text" [(ngModel)]="selectedDiocese.dioceseName" />
+          <div *ngIf="hasSubmitted && !selectedDiocese.dioceseName?.trim()" class="inline-error">
             Diocese Name is required.
           </div>
         </div>
         <!-- Street No -->
         <div class="field-group streetNo">
           <label>Street No</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetNo" />
+          <input type="text" [(ngModel)]="selectedDiocese.dioceseStreetNo" />
         </div>
         <!-- Street Name -->
         <div class="field-group streetName">
           <label>Street Name</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DioceseStreetName" />
+          <input type="text" [(ngModel)]="selectedDiocese.dioceseStreetName" />
         </div>
         <!-- Suburb -->
         <div class="field-group suburb">
           <label>Suburb</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DioceseSuburb" />
+          <input type="text" [(ngModel)]="selectedDiocese.dioceseSuburb" />
         </div>
       </div>
     </div><!-- end .section.diocese -->
@@ -36,32 +36,32 @@
     <!-- SECTION #2: Location / Contact -->
     <div class="section location" data-title="Location / Contact">
       <div class="row-2">
-        <!-- Now we store the foreign key => selectedDiocese.StateID -->
+        <!-- Now we store the foreign key => selectedDiocese.stateID -->
         <div class="field-group state">
           <label>State</label>
-          <select [(ngModel)]="selectedDiocese.StateID">
+          <select [(ngModel)]="selectedDiocese.stateID">
             <option [value]="0">Select State</option>
-            <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateAbbreviation }}
+            <option *ngFor="let st of allStates" [value]="st.stateID">
+              {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>
 
         <div class="field-group postcode">
           <label>Postcode</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DiocesePostcode" />
+          <input type="text" [(ngModel)]="selectedDiocese.diocesePostcode" />
         </div>
         <div class="field-group phone">
           <label>Phone</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DiocesePhone" />
+          <input type="text" [(ngModel)]="selectedDiocese.diocesePhone" />
         </div>
         <div class="field-group email">
           <label>Email</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DioceseEmail" />
+          <input type="text" [(ngModel)]="selectedDiocese.dioceseEmail" />
         </div>
         <div class="field-group website">
           <label>Website</label>
-          <input type="text" [(ngModel)]="selectedDiocese.DioceseWebsite" />
+          <input type="text" [(ngModel)]="selectedDiocese.dioceseWebsite" />
         </div>
       </div>
     </div><!-- end .section.location -->
@@ -80,14 +80,14 @@
     <!-- SECTION #3: Filter => uses the same .section styling -->
     <div class="section filter" data-title="Filter">
       <div class="row-filter">
-        <!-- We store the user's chosen StateID in filterStateID (number).
+        <!-- We store the user's chosen stateID in filterStateID (number).
              0 => "All States" -->
         <div class="field-group state">
           <label>State</label>
           <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
             <option [value]="0">All States</option>
-            <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateAbbreviation }}
+            <option *ngFor="let st of allStates" [value]="st.stateID">
+              {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>

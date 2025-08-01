@@ -21,12 +21,12 @@ export class AdorationQueryComponent implements OnInit {
     { header: 'Parish Name', field: 'parishName' },
     { header: 'Diocese Name', field: 'dioceseName' },
     { header: 'State', field: 'state' },  // Show "State" in header
-    { header: 'End', field: 'AdorationEnd' },
-    { header: 'Type', field: 'AdorationType' },
-    { header: 'Day', field: 'AdorationDay' },
-    { header: 'Location', field: 'AdorationLocation' },
-    { header: 'Location Type', field: 'AdorationLocationType' },
-    { header: 'Start', field: 'AdorationStart' },
+    { header: 'End', field: 'adorationEnd' },
+    { header: 'Type', field: 'adorationType' },
+    { header: 'Day', field: 'adorationDay' },
+    { header: 'Location', field: 'adorationLocation' },
+    { header: 'Location Type', field: 'adorationLocationType' },
+    { header: 'Start', field: 'adorationStart' },
   ];
 
   // Real states from the back end
@@ -123,7 +123,7 @@ export class AdorationQueryComponent implements OnInit {
       this.filteredParishes = [];
     } else {
       const chosen = Number(this.selectedStateID);
-      this.filteredDioceses = this.dioceseList.filter(d => d.StateID === chosen);
+      this.filteredDioceses = this.dioceseList.filter(d => d.stateID === chosen);
 
       if (this.filteredDioceses.length === 0) {
         this.dioceseDisabled = true;
@@ -152,7 +152,7 @@ export class AdorationQueryComponent implements OnInit {
       this.filteredParishes = [];
     } else {
       const chosenID = Number(this.selectedDioceseID);
-      const temp = this.parishList.filter(p => p.DioceseID === chosenID);
+      const temp = this.parishList.filter(p => p.dioceseID === chosenID);
       if (temp.length === 0) {
         this.parishDisabled = true;
         this.selectedParishID = null;
@@ -191,8 +191,8 @@ export class AdorationQueryComponent implements OnInit {
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
       // If the diocese has a website, make name clickable
-      const dioceseName = row.diocese?.DioceseName || '';
-      const dioceseWebsite = row.diocese?.DioceseWebsite || '';
+      const dioceseName = row.diocese?.dioceseName || '';
+      const dioceseWebsite = row.diocese?.dioceseWebsite || '';
       if (dioceseWebsite.trim()) {
         return `<a href="${dioceseWebsite}" target="_blank">${dioceseName}</a>`;
       } else {
@@ -200,18 +200,18 @@ export class AdorationQueryComponent implements OnInit {
       }
     } else if (column.field === 'parishName') {
       // If the parish has a website, make name clickable
-      const parishName = row.parish?.ParishName || '';
-      const parishWebsite = row.parish?.ParishWebsite || '';
+      const parishName = row.parish?.parishName || '';
+      const parishWebsite = row.parish?.parishWebsite || '';
       if (parishWebsite.trim()) {
         return `<a href="${parishWebsite}" target="_blank">${parishName}</a>`;
       } else {
         return parishName;
       }
     } else if (column.field === 'state') {
-      // We changed to "State" => row.state?.StateAbbreviation
-      return row.state?.StateAbbreviation || '';
+      // We changed to "State" => row.state?.stateAbbreviation
+      return row.state?.stateAbbreviation || '';
     } else {
-      // e.g. AdorationEnd, AdorationType, etc.
+      // e.g. adorationEnd, adorationType, etc.
       return (row as any)[column.field] ?? '';
     }
   }

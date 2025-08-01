@@ -3,18 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
 export interface Parish {
-    ParishID: number;  // PK from the backend
-    DioceseID: number;
-    ParishName: string;
-    ParishStNumber: string;
-    ParishStName: string;
-    ParishSuburb: string;
+    parishID: number;  // PK from the backend
+    dioceseID: number;
+    parishName: string;
+    parishStNumber: string;
+    parishStName: string;
+    parishSuburb: string;
     // numeric foreign key => references "State" table
-    StateID: number;
-    ParishPostcode: string;
-    ParishPhone: string;
-    ParishEmail: string;
-    ParishWebsite: string;
+    stateID: number;
+    parishPostcode: string;
+    parishPhone: string;
+    parishEmail: string;
+    parishWebsite: string;
 }
 
 @Injectable({

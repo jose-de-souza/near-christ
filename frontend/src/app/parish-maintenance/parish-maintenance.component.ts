@@ -41,31 +41,31 @@ export class ParishMaintenanceComponent implements OnInit {
 
   // The parish being edited
   selectedParish: Partial<Parish> = {
-    ParishID: undefined,
-    ParishName: '',
-    ParishStNumber: '',
-    ParishStName: '',
-    ParishSuburb: '',
-    StateID: 0,
-    DioceseID: 0,
-    ParishPostcode: '',
-    ParishPhone: '',
-    ParishEmail: '',
-    ParishWebsite: ''
+    parishID: undefined,
+    parishName: '',
+    parishStNumber: '',
+    parishStName: '',
+    parishSuburb: '',
+    stateID: 0,
+    dioceseID: 0,
+    parishPostcode: '',
+    parishPhone: '',
+    parishEmail: '',
+    parishWebsite: ''
   };
 
   // Table columns – includes "State" & "Diocese"
   columns = [
-    { header: 'Parish Name', field: 'ParishName' },
-    { header: 'St No', field: 'ParishStNumber' },
-    { header: 'Street Name', field: 'ParishStName' },
-    { header: 'Suburb', field: 'ParishSuburb' },
+    { header: 'Parish Name', field: 'parishName' },
+    { header: 'St No', field: 'parishStNumber' },
+    { header: 'Street Name', field: 'parishStName' },
+    { header: 'Suburb', field: 'parishSuburb' },
     { header: 'State', field: 'state' },
     { header: 'Diocese', field: 'diocese' },
-    { header: 'PostCode', field: 'ParishPostcode' },
-    { header: 'Phone', field: 'ParishPhone' },
-    { header: 'Email', field: 'ParishEmail' },
-    { header: 'Website', field: 'ParishWebsite' }
+    { header: 'PostCode', field: 'parishPostcode' },
+    { header: 'Phone', field: 'parishPhone' },
+    { header: 'Email', field: 'parishEmail' },
+    { header: 'Website', field: 'parishWebsite' }
   ];
 
   // Master list of all dioceses
@@ -152,13 +152,13 @@ export class ParishMaintenanceComponent implements OnInit {
   --------------------------- */
   addParish(): void {
     this.hasSubmitted = true;
-    if (!this.selectedParish.ParishName?.trim() || !this.selectedParish.StateID || !this.selectedParish.DioceseID) {
+    if (!this.selectedParish.parishName?.trim() || !this.selectedParish.stateID || !this.selectedParish.dioceseID) {
       this.showWarning('Parish Name, State, and Diocese are required!');
       return;
     }
     this.parishService.createParish(this.selectedParish).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedParish.ParishName} has been added`);
+        this.showInfo(`${this.selectedParish.parishName} has been added`);
         this.loadAllParishes();
         this.resetForm();
         // Done adding => return to view mode
@@ -172,14 +172,14 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   modifyParish(): void {
-    if (!this.selectedParish.ParishID) {
+    if (!this.selectedParish.parishID) {
       this.showWarning('No parish selected to update!');
       return;
     }
-    const id = this.selectedParish.ParishID;
+    const id = this.selectedParish.parishID;
     this.parishService.updateParish(id, this.selectedParish).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedParish.ParishName} modified`);
+        this.showInfo(`${this.selectedParish.parishName} modified`);
         this.loadAllParishes();
         this.resetForm();
         // Done editing => return to view mode
@@ -193,7 +193,7 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   deleteParish(): void {
-    if (!this.selectedParish.ParishID) {
+    if (!this.selectedParish.parishID) {
       this.showWarning('No parish selected to delete!');
       return;
     }
@@ -201,14 +201,14 @@ export class ParishMaintenanceComponent implements OnInit {
     // Exactly like diocese-maintenance:
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: `Are you sure you wish to delete parish "${this.selectedParish.ParishName}"?`
+        message: `Are you sure you wish to delete parish "${this.selectedParish.parishName}"?`
       },
       panelClass: 'orange-dialog'
     });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedParish.ParishID!;
+        const id = this.selectedParish.parishID!;
         this.parishService.deleteParish(id).subscribe({
           next: () => {
             this.loadAllParishes();
@@ -232,17 +232,17 @@ export class ParishMaintenanceComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedParish = {
-      ParishID: undefined,
-      ParishName: '',
-      ParishStNumber: '',
-      ParishStName: '',
-      ParishSuburb: '',
-      StateID: 0,
-      DioceseID: 0,
-      ParishPostcode: '',
-      ParishPhone: '',
-      ParishEmail: '',
-      ParishWebsite: ''
+      parishID: undefined,
+      parishName: '',
+      parishStNumber: '',
+      parishStName: '',
+      parishSuburb: '',
+      stateID: 0,
+      dioceseID: 0,
+      parishPostcode: '',
+      parishPhone: '',
+      parishEmail: '',
+      parishWebsite: ''
     };
     this.hasSubmitted = false;
     // Also reset location diocese
@@ -265,18 +265,18 @@ export class ParishMaintenanceComponent implements OnInit {
      MAIN LOCATION/CONTACT LOGIC
   --------------------------- */
   onLocationStateChange(): void {
-    const stID = Number(this.selectedParish.StateID);
+    const stID = Number(this.selectedParish.stateID);
     if (!stID) {
       // No state => Clear and disable diocese
       this.locationDioceses = [];
-      this.selectedParish.DioceseID = 0;
+      this.selectedParish.dioceseID = 0;
       this.locationDioceseDisabled = true;
     } else {
-      const relevant = this.dioceseList.filter(d => d.StateID === stID);
+      const relevant = this.dioceseList.filter(d => d.stateID === stID);
       this.locationDioceses = relevant;
       this.locationDioceseDisabled = relevant.length === 0;
-      if (this.selectedParish.DioceseID && !relevant.some(d => d.DioceseID === this.selectedParish.DioceseID)) {
-        this.selectedParish.DioceseID = 0;
+      if (this.selectedParish.dioceseID && !relevant.some(d => d.dioceseID === this.selectedParish.dioceseID)) {
+        this.selectedParish.dioceseID = 0;
       }
     }
   }
@@ -293,7 +293,7 @@ export class ParishMaintenanceComponent implements OnInit {
       this.dioceseFilterDisabled = true;
       this.parishes = this.allParishes;
     } else {
-      this.filteredDiocesesForFilter = this.dioceseList.filter(d => d.StateID === stateID);
+      this.filteredDiocesesForFilter = this.dioceseList.filter(d => d.stateID === stateID);
       this.dioceseFilterDisabled = this.filteredDiocesesForFilter.length === 0;
       this.applyParishFilter();
     }
@@ -308,9 +308,9 @@ export class ParishMaintenanceComponent implements OnInit {
     if (!stateID) {
       this.parishes = this.allParishes;
     } else {
-      let filtered = this.allParishes.filter(p => p.StateID === stateID);
+      let filtered = this.allParishes.filter(p => p.stateID === stateID);
       if (this.filterDioceseID && this.filterDioceseID > 0) {
-        filtered = filtered.filter(p => p.DioceseID === Number(this.filterDioceseID));
+        filtered = filtered.filter(p => p.dioceseID === Number(this.filterDioceseID));
       }
       this.parishes = filtered;
     }
@@ -338,18 +338,18 @@ export class ParishMaintenanceComponent implements OnInit {
   // getCellValue for displaying State abbreviation / Diocese name
   getCellValue(row: Parish, column: { header: string; field: string }): any {
     if (column.field === 'state') {
-      const st = this.allStates.find(s => s.StateID === row.StateID);
-      return st ? st.StateAbbreviation : '';
+      const st = this.allStates.find(s => s.stateID === row.stateID);
+      return st ? st.stateAbbreviation : '';
     } else if (column.field === 'diocese') {
-      const d = this.dioceseList.find(di => di.DioceseID === row.DioceseID);
-      return d ? d.DioceseName : '';
+      const d = this.dioceseList.find(di => di.dioceseID === row.dioceseID);
+      return d ? d.dioceseName : '';
     } else {
       return (row as any)[column.field] || '';
     }
   }
 
   trackByParishID(index: number, item: Parish): number {
-    return item.ParishID;
+    return item.parishID;
   }
 
   trackByParishColumn(index: number, item: any) {

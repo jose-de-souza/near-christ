@@ -3,26 +3,26 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment'; // adjust if needed
 
 /**
- * The Diocese interface, now with a numeric `StateID` foreign key
+ * The Diocese interface, now with a numeric `stateID` foreign key
  * plus an optional `state` object if your backend returns the relationship.
  */
 export interface Diocese {
-  DioceseID: number;
-  DioceseName: string;
-  DioceseStreetNo: string;
-  DioceseStreetName: string;
-  DioceseSuburb: string;
-  StateID: number;  // Replaces the old DioceseState string
-  DiocesePostcode: string;
-  DiocesePhone: string;
-  DioceseEmail: string;
-  DioceseWebsite: string;
+  dioceseID: number;
+  dioceseName: string;
+  dioceseStreetNo: string;
+  dioceseStreetName: string;
+  dioceseSuburb: string;
+  stateID: number;  // Replaces the old DioceseState string
+  diocesePostcode: string;
+  diocesePhone: string;
+  dioceseEmail: string;
+  dioceseWebsite: string;
 
   // NEW: if Laravel returns state with ->with('state'):
   state?: {
-    StateID: number;
-    StateName: string;
-    StateAbbreviation: string;
+    stateID: number;
+    stateName: string;
+    stateAbbreviation: string;
   };
 }
 

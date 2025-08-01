@@ -4,39 +4,39 @@ import { environment } from '../../environments/environment';
 
 /**
  * The Crusade interface references optional `diocese` and `parish` objects
- * that can include `DioceseWebsite` and `ParishWebsite`.
+ * that can include `dioceseWebsite` and `parishWebsite`.
  */
 export interface Crusade {
-  CrusadeID: number;
-  StateID: number;
-  DioceseID: number;
-  ParishID: number;
-  ConfessionStartTime: string;
-  ConfessionEndTime: string;
-  MassStartTime: string;
-  MassEndTime: string;
-  CrusadeStartTime: string;
-  CrusadeEndTime: string;
-  ContactName: string;
-  ContactPhone: string;
-  ContactEmail: string;
-  Comments: string;
+  crusadeID: number;
+  stateID: number;
+  dioceseID: number;
+  parishID: number;
+  confessionStartTime: string;
+  confessionEndTime: string;
+  massStartTime: string;
+  massEndTime: string;
+  crusadeStartTime: string;
+  crusadeEndTime: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  comments: string;
 
   // Optional relationships if Laravel returns them via ->with('diocese','parish','state')
   diocese?: {
-    DioceseID: number;
-    DioceseName: string;
-    DioceseWebsite?: string; // NEW: so we can reference it in the front end
+    dioceseID: number;
+    dioceseName: string;
+    dioceseWebsite?: string; // NEW: so we can reference it in the front end
   };
   parish?: {
-    ParishID: number;
-    ParishName: string;
-    ParishWebsite?: string; // NEW: so we can reference it in the front end
+    parishID: number;
+    parishName: string;
+    parishWebsite?: string; // NEW: so we can reference it in the front end
   };
   state?: {
-    StateID: number;
-    StateName: string;
-    StateAbbreviation: string;
+    stateID: number;
+    stateName: string;
+    stateAbbreviation: string;
   };
 }
 

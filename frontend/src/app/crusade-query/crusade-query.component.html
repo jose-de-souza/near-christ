@@ -9,8 +9,8 @@
           <label>State</label>
           <select [(ngModel)]="selectedStateID" (change)="onStateChange()" [disabled]="allStates.length === 0">
             <option [value]="0">All States</option>
-            <option *ngFor="let st of allStates" [value]="st.StateID">
-              {{ st.StateAbbreviation }}
+            <option *ngFor="let st of allStates" [value]="st.stateID">
+              {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>
@@ -20,8 +20,8 @@
           <label>Diocese</label>
           <select [(ngModel)]="selectedDioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [ngValue]="null">All Dioceses</option>
-            <option *ngFor="let d of filteredDioceses" [ngValue]="d.DioceseID">
-              {{ d.DioceseName }}
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseID">
+              {{ d.dioceseName }}
             </option>
           </select>
         </div>
@@ -31,8 +31,8 @@
           <label>Parish</label>
           <select [(ngModel)]="selectedParishID" [disabled]="parishDisabled">
             <option [ngValue]="null">All Parishes</option>
-            <option *ngFor="let p of filteredParishes" [ngValue]="p.ParishID">
-              {{ p.ParishName }}
+            <option *ngFor="let p of filteredParishes" [ngValue]="p.parishID">
+              {{ p.parishName }}
             </option>
           </select>
         </div>

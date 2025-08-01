@@ -3,9 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../environments/environment';
 
 export interface State {
-    StateID: number;
-    StateName: string;
-    StateAbbreviation: string;
+    stateID: number;
+    stateName: string;
+    stateAbbreviation: string;
     // ... any other columns in your "State" table
 }
 

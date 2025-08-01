@@ -9,8 +9,8 @@
                 <!-- User Name -->
                 <div class="field-group user-name">
                     <label>User Name</label>
-                    <input type="text" [(ngModel)]="selectedUser.UserName" autocomplete="off" />
-                    <div *ngIf="hasSubmitted && !selectedUser.UserName?.trim()" class="inline-error">
+                    <input type="text" [(ngModel)]="selectedUser.userName" autocomplete="off" />
+                    <div *ngIf="hasSubmitted && !selectedUser.userName?.trim()" class="inline-error">
                         User Name is required.
                     </div>
                 </div>
@@ -18,8 +18,8 @@
                 <!-- Email -->
                 <div class="field-group user-email">
                     <label>Email</label>
-                    <input type="text" [(ngModel)]="selectedUser.UserEmail" autocomplete="off" />
-                    <div *ngIf="hasSubmitted && !selectedUser.UserEmail?.trim()" class="inline-error">
+                    <input type="text" [(ngModel)]="selectedUser.userEmail" autocomplete="off" />
+                    <div *ngIf="hasSubmitted && !selectedUser.userEmail?.trim()" class="inline-error">
                         Email is required.
                     </div>
                 </div>
@@ -27,11 +27,11 @@
                 <!-- Role -->
                 <div class="field-group user-role">
                     <label>Role</label>
-                    <select [(ngModel)]="selectedUser.UserRole">
+                    <select [(ngModel)]="selectedUser.userRole">
                         <option value="">-- Select Role --</option>
                         <option *ngFor="let r of userRoles" [value]="r">{{ r }}</option>
                     </select>
-                    <div *ngIf="hasSubmitted && !selectedUser.UserRole?.trim()" class="inline-error">
+                    <div *ngIf="hasSubmitted && !selectedUser.userRole?.trim()" class="inline-error">
                         Role is required.
                     </div>
                 </div>
@@ -39,9 +39,9 @@
                 <!-- Password -->
                 <div class="field-group user-password">
                     <label>Password</label>
-                    <input type="password" [(ngModel)]="selectedUser.UserPassword" autocomplete="new-password" />
-                    <!-- Required if adding a new user (no UserID) -->
-                    <div *ngIf="hasSubmitted && !selectedUser.UserID && !selectedUser.UserPassword?.trim()"
+                    <input type="password" [(ngModel)]="selectedUser.userPassword" autocomplete="new-password" />
+                    <!-- Required if adding a new user (no userID) -->
+                    <div *ngIf="hasSubmitted && !selectedUser.userID && !selectedUser.userPassword?.trim()"
                         class="inline-error">
                         Password is required for new users.
                     </div>
