@@ -200,6 +200,7 @@ export class ParishMaintenanceComponent implements OnInit {
 
     // Exactly like diocese-maintenance:
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      disableClose: true,
       data: {
         message: `Are you sure you wish to delete parish "${this.selectedParish.parishName}"?`
       },

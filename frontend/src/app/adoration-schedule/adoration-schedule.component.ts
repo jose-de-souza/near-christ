@@ -291,6 +291,7 @@ export class AdorationScheduleComponent implements OnInit {
 
     // 1) Show the ConfirmationDialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      disableClose: true,
       data: {
         message: `Are you sure you wish to delete this Adoration schedule?`
       },

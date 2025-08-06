@@ -195,6 +195,7 @@ export class DioceseMaintenanceComponent implements OnInit {
 
     // 1) Open the Confirmation Dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      disableClose: true,
       data: {
         message: `Are you sure you want to delete "${this.selectedDiocese.dioceseName}"?`
       },

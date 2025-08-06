@@ -304,6 +304,7 @@ export class RosaryCrusadeComponent implements OnInit {
 
     // Open the ConfirmationDialog exactly as in the other maintenance comps
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      disableClose: true,
       data: {
         message: `Are you sure you want to delete this Crusade?`
       },
