@@ -41,7 +41,7 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   // The diocese record being edited/created
   selectedDiocese: Partial<Diocese> = {
-    dioceseID: undefined,
+    dioceseId: undefined,
     dioceseName: '',
     dioceseStreetNo: '',
     dioceseStreetName: '',
@@ -165,12 +165,12 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   modifyDiocese(): void {
     // The "Modify" button is disabled unless uiMode === 'editing'
-    if (!this.selectedDiocese.dioceseID) {
+    if (!this.selectedDiocese.dioceseId) {
       this.showWarning('No diocese selected to update!');
       return;
     }
 
-    const id = this.selectedDiocese.dioceseID;
+    const id = this.selectedDiocese.dioceseId;
     this.dioceseService.updateDiocese(id, this.selectedDiocese).subscribe({
       next: () => {
         this.showInfo(`${this.selectedDiocese.dioceseName} modified`);
@@ -188,7 +188,7 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   deleteDiocese(): void {
     // The "Delete" button is disabled unless uiMode === 'editing'
-    if (!this.selectedDiocese.dioceseID) {
+    if (!this.selectedDiocese.dioceseId) {
       this.showWarning('No diocese selected to delete!');
       return;
     }
@@ -205,7 +205,7 @@ export class DioceseMaintenanceComponent implements OnInit {
     // 2) If user confirmed => proceed
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedDiocese.dioceseID!;
+        const id = this.selectedDiocese.dioceseId!;
         this.dioceseService.deleteDiocese(id).subscribe({
           next: () => {
             this.loadAllDioceses();
@@ -230,7 +230,7 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedDiocese = {
-      dioceseID: undefined,
+      dioceseId: undefined,
       dioceseName: '',
       dioceseStreetNo: '',
       dioceseStreetName: '',
@@ -279,7 +279,7 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   trackByDioceseID(index: number, item: Diocese): number {
-    return item.dioceseID;
+    return item.dioceseId;
   }
 
   /* ---------------------------

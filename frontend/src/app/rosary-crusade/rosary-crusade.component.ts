@@ -60,10 +60,10 @@ export class RosaryCrusadeComponent implements OnInit {
 
   // The crusade record currently being edited
   selectedCrusade: Partial<Crusade> = {
-    crusadeID: undefined,
+    crusadeId: undefined,
     stateID: 0,
-    dioceseID: 0,
-    parishID: 0,
+    dioceseId: 0,
+    parishId: 0,
     confessionStartTime: '',
     confessionEndTime: '',
     massStartTime: '',
@@ -161,8 +161,8 @@ export class RosaryCrusadeComponent implements OnInit {
     this.selectedCrusade = {
       ...c,
       stateID: Number(c.stateID),
-      dioceseID: Number(c.dioceseID),
-      parishID: Number(c.parishID)
+      dioceseId: Number(c.dioceseId),
+      parishId: Number(c.parishId)
     };
 
     this.uiMode = 'editing';
@@ -177,7 +177,7 @@ export class RosaryCrusadeComponent implements OnInit {
       this.filteredParishes = [];
     }
 
-    if (this.selectedCrusade.dioceseID && Number(this.selectedCrusade.dioceseID) > 0) {
+    if (this.selectedCrusade.dioceseId && Number(this.selectedCrusade.dioceseId) > 0) {
       this.onDioceseChange();
     } else {
       this.parishDisabled = true;
@@ -194,8 +194,8 @@ export class RosaryCrusadeComponent implements OnInit {
       // Clear
       this.dioceseDisabled = true;
       this.parishDisabled = true;
-      this.selectedCrusade.dioceseID = 0;
-      this.selectedCrusade.parishID = 0;
+      this.selectedCrusade.dioceseId = 0;
+      this.selectedCrusade.parishId = 0;
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
@@ -203,16 +203,16 @@ export class RosaryCrusadeComponent implements OnInit {
       if (this.filteredDioceses.length === 0) {
         this.dioceseDisabled = true;
         this.parishDisabled = true;
-        this.selectedCrusade.dioceseID = 0;
-        this.selectedCrusade.parishID = 0;
+        this.selectedCrusade.dioceseId = 0;
+        this.selectedCrusade.parishId = 0;
         this.filteredParishes = [];
       } else {
         this.dioceseDisabled = false;
-        const currentDioceseID = Number(this.selectedCrusade.dioceseID);
-        const found = this.filteredDioceses.find(d => d.dioceseID === currentDioceseID);
+        const currentDioceseID = Number(this.selectedCrusade.dioceseId);
+        const found = this.filteredDioceses.find(d => d.dioceseId === currentDioceseID);
         if (!found) {
-          this.selectedCrusade.dioceseID = 0;
-          this.selectedCrusade.parishID = 0;
+          this.selectedCrusade.dioceseId = 0;
+          this.selectedCrusade.parishId = 0;
           this.filteredParishes = [];
           this.parishDisabled = true;
         }
@@ -221,23 +221,23 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   onDioceseChange(): void {
-    const dioceseID = Number(this.selectedCrusade.dioceseID);
-    if (!dioceseID || dioceseID === 0) {
+    const dioceseId = Number(this.selectedCrusade.dioceseId);
+    if (!dioceseId || dioceseId === 0) {
       this.parishDisabled = true;
-      this.selectedCrusade.parishID = 0;
+      this.selectedCrusade.parishId = 0;
       this.filteredParishes = [];
     } else {
-      const temp = this.parishList.filter(p => p.dioceseID === dioceseID);
+      const temp = this.parishList.filter(p => p.dioceseId === dioceseId);
       if (temp.length === 0) {
         this.parishDisabled = true;
-        this.selectedCrusade.parishID = 0;
+        this.selectedCrusade.parishId = 0;
         this.filteredParishes = [];
       } else {
         this.parishDisabled = false;
-        const currentParishID = Number(this.selectedCrusade.parishID);
-        const found = temp.find(p => p.parishID === currentParishID);
+        const currentParishID = Number(this.selectedCrusade.parishId);
+        const found = temp.find(p => p.parishId === currentParishID);
         if (!found) {
-          this.selectedCrusade.parishID = 0;
+          this.selectedCrusade.parishId = 0;
         }
         this.filteredParishes = temp;
       }
@@ -271,7 +271,7 @@ export class RosaryCrusadeComponent implements OnInit {
 
   modifyCrusade(): void {
     // The button is disabled if uiMode !== 'editing'
-    if (!this.selectedCrusade.crusadeID) {
+    if (!this.selectedCrusade.crusadeId) {
       this.showWarning('No crusade selected to modify!');
       return;
     }
@@ -280,7 +280,7 @@ export class RosaryCrusadeComponent implements OnInit {
       this.showWarning('Some required fields are missing.');
       return;
     }
-    const id = this.selectedCrusade.crusadeID;
+    const id = this.selectedCrusade.crusadeId;
     this.crusadeService.updateCrusade(id, this.selectedCrusade).subscribe({
       next: () => {
         this.showInfo('Crusade modified');
@@ -297,7 +297,7 @@ export class RosaryCrusadeComponent implements OnInit {
 
   deleteCrusade(): void {
     // The button is disabled if uiMode !== 'editing'
-    if (!this.selectedCrusade.crusadeID) {
+    if (!this.selectedCrusade.crusadeId) {
       this.showWarning('No crusade selected to delete!');
       return;
     }
@@ -313,7 +313,7 @@ export class RosaryCrusadeComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedCrusade.crusadeID!;
+        const id = this.selectedCrusade.crusadeId!;
         this.crusadeService.deleteCrusade(id).subscribe({
           next: () => {
             this.loadAllCrusades();
@@ -338,10 +338,10 @@ export class RosaryCrusadeComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedCrusade = {
-      crusadeID: undefined,
+      crusadeId: undefined,
       stateID: 0,
-      dioceseID: 0,
-      parishID: 0,
+      dioceseId: 0,
+      parishId: 0,
       confessionStartTime: '',
       confessionEndTime: '',
       massStartTime: '',
@@ -362,8 +362,8 @@ export class RosaryCrusadeComponent implements OnInit {
 
   private isAllFieldsValid(): boolean {
     if (!this.selectedCrusade.stateID || Number(this.selectedCrusade.stateID) <= 0) return false;
-    if (!this.selectedCrusade.dioceseID || Number(this.selectedCrusade.dioceseID) <= 0) return false;
-    if (!this.selectedCrusade.parishID || Number(this.selectedCrusade.parishID) <= 0) return false;
+    if (!this.selectedCrusade.dioceseId || Number(this.selectedCrusade.dioceseId) <= 0) return false;
+    if (!this.selectedCrusade.parishId || Number(this.selectedCrusade.parishId) <= 0) return false;
     if (!this.selectedCrusade.crusadeStartTime?.trim()) return false;
     if (!this.selectedCrusade.crusadeEndTime?.trim()) return false;
     return true;

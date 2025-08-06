@@ -51,9 +51,9 @@ export class AdorationScheduleComponent implements OnInit {
   parishDisabled = true;
 
   selectedAdoration: Partial<Adoration> = {
-    adorationID: undefined,
-    dioceseID: 0,
-    parishID: 0,
+    adorationId: undefined,
+    dioceseId: 0,
+    parishId: 0,
     stateID: 0,
     adorationType: 'Regular',
     adorationLocationType: 'Other',
@@ -156,22 +156,22 @@ export class AdorationScheduleComponent implements OnInit {
     if (!sID) {
       this.filteredDioceses = [];
       this.filteredParishes = [];
-      this.selectedAdoration.dioceseID = 0;
-      this.selectedAdoration.parishID = 0;
+      this.selectedAdoration.dioceseId = 0;
+      this.selectedAdoration.parishId = 0;
       this.dioceseDisabled = true;
       this.parishDisabled = true;
     } else {
       this.filteredDioceses = this.dioceseList.filter(d => d.stateID === sID);
       if (this.filteredDioceses.length === 0) {
-        this.selectedAdoration.dioceseID = 0;
-        this.selectedAdoration.parishID = 0;
+        this.selectedAdoration.dioceseId = 0;
+        this.selectedAdoration.parishId = 0;
         this.filteredParishes = [];
         this.dioceseDisabled = true;
         this.parishDisabled = true;
       } else {
         this.dioceseDisabled = false;
-        this.selectedAdoration.dioceseID = 0;
-        this.selectedAdoration.parishID = 0;
+        this.selectedAdoration.dioceseId = 0;
+        this.selectedAdoration.parishId = 0;
         this.filteredParishes = [];
         this.parishDisabled = true;
       }
@@ -182,20 +182,20 @@ export class AdorationScheduleComponent implements OnInit {
      DIOCESE => Filter Parishes
   ---------------------------------- */
   onDioceseChange(): void {
-    const dID = Number(this.selectedAdoration.dioceseID || 0);
+    const dID = Number(this.selectedAdoration.dioceseId || 0);
     if (!dID) {
       this.filteredParishes = [];
-      this.selectedAdoration.parishID = 0;
+      this.selectedAdoration.parishId = 0;
       this.parishDisabled = true;
     } else {
-      const temp = this.parishList.filter(p => p.dioceseID === dID);
+      const temp = this.parishList.filter(p => p.dioceseId === dID);
       if (temp.length === 0) {
         this.parishDisabled = true;
-        this.selectedAdoration.parishID = 0;
+        this.selectedAdoration.parishId = 0;
         this.filteredParishes = [];
       } else {
         this.parishDisabled = false;
-        this.selectedAdoration.parishID = 0;
+        this.selectedAdoration.parishId = 0;
         this.filteredParishes = temp;
       }
     }
@@ -210,8 +210,8 @@ export class AdorationScheduleComponent implements OnInit {
 
   updateLocationFromParish(): void {
     if (this.isParishChurch()) {
-      const pID = Number(this.selectedAdoration.parishID || 0);
-      const p = this.parishList.find(par => par.parishID === pID);
+      const pID = Number(this.selectedAdoration.parishId || 0);
+      const p = this.parishList.find(par => par.parishId === pID);
       if (p) {
         const addr = `${p.parishStNumber} ${p.parishStName}, ${p.parishSuburb} ${p.parishPostcode}`.trim();
         this.selectedAdoration.adorationLocation = addr;
@@ -238,7 +238,7 @@ export class AdorationScheduleComponent implements OnInit {
     }
 
     // 2) Diocese
-    if (schedule.dioceseID) {
+    if (schedule.dioceseId) {
       this.onDioceseChange();
     }
   }
@@ -263,11 +263,11 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   modifySchedule(): void {
-    if (!this.selectedAdoration.adorationID) {
+    if (!this.selectedAdoration.adorationId) {
       this.showWarning('No adoration selected to update!');
       return;
     }
-    const id = this.selectedAdoration.adorationID;
+    const id = this.selectedAdoration.adorationId;
     this.adorationService.updateAdoration(id, this.selectedAdoration).subscribe({
       next: () => {
         this.showInfo('Adoration Schedule modified');
@@ -284,7 +284,7 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   deleteSchedule(): void {
-    if (!this.selectedAdoration.adorationID) {
+    if (!this.selectedAdoration.adorationId) {
       this.showWarning('No adoration selected to delete!');
       return;
     }
@@ -301,7 +301,7 @@ export class AdorationScheduleComponent implements OnInit {
     // 2) If confirmed => proceed with actual deletion
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedAdoration.adorationID!;
+        const id = this.selectedAdoration.adorationId!;
         this.adorationService.deleteAdoration(id).subscribe({
           next: () => {
             this.loadAllAdorations();
@@ -325,9 +325,9 @@ export class AdorationScheduleComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedAdoration = {
-      adorationID: undefined,
-      dioceseID: 0,
-      parishID: 0,
+      adorationId: undefined,
+      dioceseId: 0,
+      parishId: 0,
       stateID: 0,
       adorationType: 'Regular',
       adorationLocationType: 'Other',
@@ -358,7 +358,7 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   trackByAdorationID(index: number, item: Adoration): number {
-    return item.adorationID;
+    return item.adorationId;
   }
 
   /* ----------------------------------

@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment'; // adjust if neede
  * plus an optional `state` object if your backend returns the relationship.
  */
 export interface Diocese {
-  dioceseID: number;
+  dioceseId: number;
   dioceseName: string;
   dioceseStreetNo: string;
   dioceseStreetName: string;

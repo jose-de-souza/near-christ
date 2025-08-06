@@ -143,7 +143,7 @@ export class CrusadeQueryComponent implements OnInit {
       this.filteredParishes = [];
     } else {
       const chosenDioceseID = Number(this.selectedDioceseID);
-      const temp = this.parishList.filter(p => p.dioceseID === chosenDioceseID);
+      const temp = this.parishList.filter(p => p.dioceseId === chosenDioceseID);
       if (temp.length === 0) {
         this.parishDisabled = true;
         this.selectedParishID = null;
@@ -161,10 +161,10 @@ export class CrusadeQueryComponent implements OnInit {
   ----------------------------------- */
   searchCrusade(): void {
     const stateID = this.selectedStateID > 0 ? this.selectedStateID : undefined;
-    const dioceseID = this.selectedDioceseID != null ? this.selectedDioceseID : undefined;
-    const parishID = this.selectedParishID != null ? this.selectedParishID : undefined;
+    const dioceseId = this.selectedDioceseID != null ? this.selectedDioceseID : undefined;
+    const parishId = this.selectedParishID != null ? this.selectedParishID : undefined;
 
-    this.crusadeService.searchCrusades(stateID, dioceseID, parishID).subscribe({
+    this.crusadeService.searchCrusades(stateID, dioceseId, parishId).subscribe({
       next: (res: any) => {
         this.results = res.data;
       },

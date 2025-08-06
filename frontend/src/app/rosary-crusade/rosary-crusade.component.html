@@ -73,13 +73,13 @@
         <!-- Diocese Dropdown -->
         <div class="field-group crusade-diocese">
           <label>Diocese</label>
-          <select [(ngModel)]="selectedCrusade.dioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
+          <select [(ngModel)]="selectedCrusade.dioceseId" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [ngValue]="0">-- select diocese --</option>
-            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseID">
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseId">
               {{ d.dioceseName }}
             </option>
           </select>
-          <div *ngIf="hasSubmitted && (!selectedCrusade.dioceseID || selectedCrusade.dioceseID === 0)"
+          <div *ngIf="hasSubmitted && (!selectedCrusade.dioceseId || selectedCrusade.dioceseId === 0)"
             class="inline-error">
             Diocese is required.
           </div>
@@ -88,13 +88,13 @@
         <!-- Parish Dropdown -->
         <div class="field-group crusade-parish">
           <label>Parish</label>
-          <select [(ngModel)]="selectedCrusade.parishID" [disabled]="parishDisabled">
+          <select [(ngModel)]="selectedCrusade.parishId" [disabled]="parishDisabled">
             <option [ngValue]="0">-- select parish --</option>
-            <option *ngFor="let p of filteredParishes" [ngValue]="p.parishID">
+            <option *ngFor="let p of filteredParishes" [ngValue]="p.parishId">
               {{ p.parishName }}
             </option>
           </select>
-          <div *ngIf="hasSubmitted && (!selectedCrusade.parishID || selectedCrusade.parishID === 0)"
+          <div *ngIf="hasSubmitted && (!selectedCrusade.parishId || selectedCrusade.parishId === 0)"
             class="inline-error">
             Parish is required.
           </div>

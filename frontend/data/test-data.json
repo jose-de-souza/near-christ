@@ -1,7 +1,7 @@
 {
   "Diocese": [
     {
-      "dioceseID": 1,
+      "dioceseId": 1,
       "dioceseName": "Sydney Archdiocese",
       "dioceseStreetNo": "38",
       "dioceseStreetName": "Renwick St",
@@ -13,7 +13,7 @@
       "dioceseWebsite": "www.sydneycatholic.org.au"
     },
     {
-      "dioceseID": 2,
+      "dioceseId": 2,
       "dioceseName": "Test Diocese1",
       "dioceseStreetNo": "11",
       "dioceseStreetName": "Test St1",
@@ -25,7 +25,7 @@
       "dioceseWebsite": "www.test.com1"
     },
     {
-      "dioceseID": 3,
+      "dioceseId": 3,
       "dioceseName": "Wollongong Diocese",
       "dioceseStreetNo": "38",
       "dioceseStreetName": "Harbour St",
@@ -39,8 +39,8 @@
   ],
   "Parish": [
     {
-      "parishID": 1,
-      "dioceseID": 1,
+      "parishId": 1,
+      "dioceseId": 1,
       "parishName": "All Hallows",
       "parishStNumber": "2",
       "parishStName": "Hallow St",
@@ -52,8 +52,8 @@
       "parishWebsite": "allhallows.org.au"
     },
     {
-      "parishID": 2,
-      "dioceseID": 1,
+      "parishId": 2,
+      "dioceseId": 1,
       "parishName": "All Saints",
       "parishStNumber": "48",
       "parishStName": "George St",
@@ -67,9 +67,9 @@
   ],
   "Adoration": [
     {
-      "adorationID": 4,
-      "dioceseID": 1,
-      "parishID": 6,
+      "adorationId": 4,
+      "dioceseId": 1,
+      "parishId": 6,
       "State": "NSW",
       "adorationType": "Perpetual",
       "adorationLocation": "Adoration Chapel",
@@ -79,9 +79,9 @@
       "adorationEnd": ""
     },
     {
-      "adorationID": 6,
-      "dioceseID": 1,
-      "parishID": 6,
+      "adorationId": 6,
+      "dioceseId": 1,
+      "parishId": 6,
       "State": "NSW",
       "adorationType": "Regular",
       "adorationLocation": "Blessed Sacrament 59 Bradleys Head Rd Clifton Gardens",
@@ -93,9 +93,9 @@
   ],
   "Crusade": [
     {
-      "crusadeID": 1,
-      "dioceseID": 1,
-      "parishID": 1,
+      "crusadeId": 1,
+      "dioceseId": 1,
+      "parishId": 1,
       "State": "NSW",
       "confessionStartTime": "17:00:00",
       "confessionEndTime": "17:30:00",

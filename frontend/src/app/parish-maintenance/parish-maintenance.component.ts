@@ -41,13 +41,13 @@ export class ParishMaintenanceComponent implements OnInit {
 
   // The parish being edited
   selectedParish: Partial<Parish> = {
-    parishID: undefined,
+    parishId: undefined,
     parishName: '',
     parishStNumber: '',
     parishStName: '',
     parishSuburb: '',
     stateID: 0,
-    dioceseID: 0,
+    dioceseId: 0,
     parishPostcode: '',
     parishPhone: '',
     parishEmail: '',
@@ -152,7 +152,7 @@ export class ParishMaintenanceComponent implements OnInit {
   --------------------------- */
   addParish(): void {
     this.hasSubmitted = true;
-    if (!this.selectedParish.parishName?.trim() || !this.selectedParish.stateID || !this.selectedParish.dioceseID) {
+    if (!this.selectedParish.parishName?.trim() || !this.selectedParish.stateID || !this.selectedParish.dioceseId) {
       this.showWarning('Parish Name, State, and Diocese are required!');
       return;
     }
@@ -172,11 +172,11 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   modifyParish(): void {
-    if (!this.selectedParish.parishID) {
+    if (!this.selectedParish.parishId) {
       this.showWarning('No parish selected to update!');
       return;
     }
-    const id = this.selectedParish.parishID;
+    const id = this.selectedParish.parishId;
     this.parishService.updateParish(id, this.selectedParish).subscribe({
       next: () => {
         this.showInfo(`${this.selectedParish.parishName} modified`);
@@ -193,7 +193,7 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   deleteParish(): void {
-    if (!this.selectedParish.parishID) {
+    if (!this.selectedParish.parishId) {
       this.showWarning('No parish selected to delete!');
       return;
     }
@@ -209,7 +209,7 @@ export class ParishMaintenanceComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedParish.parishID!;
+        const id = this.selectedParish.parishId!;
         this.parishService.deleteParish(id).subscribe({
           next: () => {
             this.loadAllParishes();
@@ -233,13 +233,13 @@ export class ParishMaintenanceComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedParish = {
-      parishID: undefined,
+      parishId: undefined,
       parishName: '',
       parishStNumber: '',
       parishStName: '',
       parishSuburb: '',
       stateID: 0,
-      dioceseID: 0,
+      dioceseId: 0,
       parishPostcode: '',
       parishPhone: '',
       parishEmail: '',
@@ -270,14 +270,14 @@ export class ParishMaintenanceComponent implements OnInit {
     if (!stID) {
       // No state => Clear and disable diocese
       this.locationDioceses = [];
-      this.selectedParish.dioceseID = 0;
+      this.selectedParish.dioceseId = 0;
       this.locationDioceseDisabled = true;
     } else {
       const relevant = this.dioceseList.filter(d => d.stateID === stID);
       this.locationDioceses = relevant;
       this.locationDioceseDisabled = relevant.length === 0;
-      if (this.selectedParish.dioceseID && !relevant.some(d => d.dioceseID === this.selectedParish.dioceseID)) {
-        this.selectedParish.dioceseID = 0;
+      if (this.selectedParish.dioceseId && !relevant.some(d => d.dioceseId === this.selectedParish.dioceseId)) {
+        this.selectedParish.dioceseId = 0;
       }
     }
   }
@@ -311,7 +311,7 @@ export class ParishMaintenanceComponent implements OnInit {
     } else {
       let filtered = this.allParishes.filter(p => p.stateID === stateID);
       if (this.filterDioceseID && this.filterDioceseID > 0) {
-        filtered = filtered.filter(p => p.dioceseID === Number(this.filterDioceseID));
+        filtered = filtered.filter(p => p.dioceseId === Number(this.filterDioceseID));
       }
       this.parishes = filtered;
     }
@@ -342,7 +342,7 @@ export class ParishMaintenanceComponent implements OnInit {
       const st = this.allStates.find(s => s.stateID === row.stateID);
       return st ? st.stateAbbreviation : '';
     } else if (column.field === 'diocese') {
-      const d = this.dioceseList.find(di => di.dioceseID === row.dioceseID);
+      const d = this.dioceseList.find(di => di.dioceseId === row.dioceseId);
       return d ? d.dioceseName : '';
     } else {
       return (row as any)[column.field] || '';
@@ -350,7 +350,7 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   trackByParishID(index: number, item: Parish): number {
-    return item.parishID;
+    return item.parishId;
   }
 
   trackByParishColumn(index: number, item: any) {

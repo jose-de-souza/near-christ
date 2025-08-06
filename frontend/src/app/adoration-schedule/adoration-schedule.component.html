@@ -57,9 +57,9 @@
 
         <div>
           <label>Diocese Name</label>
-          <select [(ngModel)]="selectedAdoration.dioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
+          <select [(ngModel)]="selectedAdoration.dioceseId" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [value]="0">-- select diocese --</option>
-            <option *ngFor="let d of filteredDioceses" [value]="d.dioceseID">
+            <option *ngFor="let d of filteredDioceses" [value]="d.dioceseId">
               {{ d.dioceseName }}
             </option>
           </select>
@@ -67,10 +67,10 @@
 
         <div>
           <label>Parish Name</label>
-          <select [(ngModel)]="selectedAdoration.parishID" (change)="updateLocationFromParish()"
+          <select [(ngModel)]="selectedAdoration.parishId" (change)="updateLocationFromParish()"
             [disabled]="parishDisabled">
             <option [value]="0">-- select parish --</option>
-            <option *ngFor="let p of filteredParishes" [value]="p.parishID">
+            <option *ngFor="let p of filteredParishes" [value]="p.parishId">
               {{ p.parishName }}
             </option>
           </select>

@@ -40,8 +40,8 @@
                 <div class="field-group user-password">
                     <label>Password</label>
                     <input type="password" [(ngModel)]="selectedUser.userPassword" autocomplete="new-password" />
-                    <!-- Required if adding a new user (no userID) -->
-                    <div *ngIf="hasSubmitted && !selectedUser.userID && !selectedUser.userPassword?.trim()"
+                    <!-- Required if adding a new user (no userId) -->
+                    <div *ngIf="hasSubmitted && !selectedUser.userId && !selectedUser.userPassword?.trim()"
                         class="inline-error">
                         Password is required for new users.
                     </div>

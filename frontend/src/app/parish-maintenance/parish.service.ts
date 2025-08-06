@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
 export interface Parish {
-    parishID: number;  // PK from the backend
-    dioceseID: number;
+    parishId: number;  // PK from the backend
+    dioceseId: number;
     parishName: string;
     parishStNumber: string;
     parishStName: string;

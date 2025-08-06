@@ -7,10 +7,10 @@ import { environment } from '../../environments/environment';
  * that can include `dioceseWebsite` and `parishWebsite`.
  */
 export interface Crusade {
-  crusadeID: number;
+  crusadeId: number;
   stateID: number;
-  dioceseID: number;
-  parishID: number;
+  dioceseId: number;
+  parishId: number;
   confessionStartTime: string;
   confessionEndTime: string;
   massStartTime: string;
@@ -24,12 +24,12 @@ export interface Crusade {
 
   // Optional relationships if Laravel returns them via ->with('diocese','parish','state')
   diocese?: {
-    dioceseID: number;
+    dioceseId: number;
     dioceseName: string;
     dioceseWebsite?: string; // NEW: so we can reference it in the front end
   };
   parish?: {
-    parishID: number;
+    parishId: number;
     parishName: string;
     parishWebsite?: string; // NEW: so we can reference it in the front end
   };
@@ -69,16 +69,16 @@ export class CrusadeService {
   /**
    * Filter method for searching by state_id, diocese_id, parish_id
    */
-  searchCrusades(stateID?: number, dioceseID?: number, parishID?: number) {
+  searchCrusades(stateID?: number, dioceseId?: number, parishId?: number) {
     let params = new HttpParams();
     if (stateID && stateID > 0) {
       params = params.set('state_id', stateID.toString());
     }
-    if (dioceseID && dioceseID > 0) {
-      params = params.set('diocese_id', dioceseID.toString());
+    if (dioceseId && dioceseId > 0) {
+      params = params.set('diocese_id', dioceseId.toString());
     }
-    if (parishID && parishID > 0) {
-      params = params.set('parish_id', parishID.toString());
+    if (parishId && parishId > 0) {
+      params = params.set('parish_id', parishId.toString());
     }
     return this.http.get<Crusade[]>(`${this.baseUrl}/crusades`, { params });
   }
