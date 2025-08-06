@@ -1,10 +1,8 @@
-# NEAR CHRIST BACKEND
-
-The Near Christ Backend is a Spring Boot application providing RESTful APIs for managing dioceses, parishes, adorations, crusades, and users, with JWT-based authentication and role-based access control.
-
-## About The Project
+# NEAR CHRIST
 
 This is a full-stack web application called "Near Christ", which appears to be a service of the Australian Medjugorje Centre. The application is designed to manage and display information about Catholic dioceses, parishes, adoration schedules, and rosary crusades.
+
+## About The Project
 
 ### Project Architecture
 
@@ -49,10 +47,12 @@ The frontend provides the user interface for interacting with the backend API.
 
 ## Prerequisites
 
-  - **Java 21**: Ensure JDK 21 is installed.
-  - **Maven**: For building and dependency management.
-  - **PostgreSQL**: A running PostgreSQL database (version 12 or higher).
-  - **Docker** (optional): For containerized deployment.
+  * **Java 21**: Ensure JDK 21 is installed.
+  * **Maven**: For building and dependency management.
+  * **Node.js and npm**: For running the frontend application.
+  * **Angular CLI**: To manage the frontend project.
+  * **PostgreSQL**: A running PostgreSQL database (version 12 or higher).
+  * **Docker** (optional): For containerized deployment.
 
 ## Project Setup
 
@@ -60,20 +60,26 @@ The frontend provides the user interface for interacting with the backend API.
 
 ```bash
 git clone <repository-url>
-cd backend
+cd near-christ
 ```
 
-### Install Dependencies
-
-Run the following command to install dependencies:
+### Backend Setup
 
 ```bash
+cd backend
 mvn clean install
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
 ```
 
 ### Configure Environment Variables
 
-Create a `.env` file in the project root with the following content:
+Create a `.env` file in the `backend` directory with the following content:
 
 ```ini
 APP_ENV=development
@@ -94,7 +100,7 @@ openssl rand -hex 32
 
 ### Database Setup and Migrations
 
-The project uses Flyway for database migrations. Migrations are located in `src/main/resources/db/migration`.
+The project uses Flyway for database migrations. Migrations are located in `backend/src/main/resources/db/migration`.
 
 #### Connecting to PostgreSQL
 
@@ -111,78 +117,38 @@ Enter the password (default is `postgres` if not set).
 Migrations run automatically on application startup. To manually run Flyway:
 
 ```bash
+cd backend
 mvn flyway:migrate
-```
-
-#### Table Creation Order
-
-To avoid foreign key constraint issues, the migration scripts create tables in this order:
-
-1.  `users`
-2.  `states`
-3.  `dioceses`
-4.  `parishes`
-5.  `adorations`
-6.  `crusades`
-
-#### Dropping Tables
-
-If needed, drop tables in the reverse order to avoid foreign key errors.
-
-Spring Boot with JPA (`spring.jpa.hibernate.ddl-auto=validate`) validates the schema against entities after migrations.
-
-### Application Configuration
-
-The `application.yml` file is located in `src/main/resources`:
-
-```yaml
-spring:
-  application:
-    name: backend
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:nearchrist}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASS:postgres}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-jwt:
-  secret: ${JWT_SECRET_KEY:your_secret_key_here}
-  expiration: 3600000
-server:
-  port: 8080
 ```
 
 ## Running the Application
 
 ### Locally
 
-Build and run the application (migrations will run automatically):
+**Backend:**
 
 ```bash
+cd backend
 mvn spring-boot:run
 ```
 
 The application will start on `http://localhost:8080`.
 
-### Using Docker
-
-Build and run the application using Docker:
+**Frontend:**
 
 ```bash
-docker build -t nearchrist-backend .
-docker run -p 8080:8080 --env-file .env nearchrist-backend
+cd frontend
+ng serve --open
 ```
+
+Navigate to `http://localhost:4200/`.
+
+### Using Docker
 
 For a complete setup with PostgreSQL, use `docker-compose`:
 
 ```bash
+cd backend
 docker-compose up -d
 ```
 
@@ -190,24 +156,42 @@ This sets up a PostgreSQL container and the application container, linked approp
 
 ## Testing
 
+### Backend Testing
+
 The project uses Testcontainers for integration tests with PostgreSQL. Tests load `test-schema.sql` and `test-data.sql` using @Sql.
 
 Run unit and integration tests:
 
 ```bash
+cd backend
 mvn test
 ```
 
-Example test in `AdorationControllerTest.java` verifies endpoints with sample data.
+### Frontend Testing
 
-Add similar tests for other controllers as needed.
+To execute unit tests with Karma:
+
+```bash
+cd frontend
+ng test
+```
 
 ## Deployment
 
 ### Local Deployment
 
+**Backend:**
+
 ```bash
+cd backend
 java -jar target/backend-0.0.1-SNAPSHOT.jar
+```
+
+**Frontend:**
+
+```bash
+cd frontend
+ng build --configuration=production
 ```
 
 ### Docker Deployment
