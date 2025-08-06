@@ -46,7 +46,7 @@ export class DioceseMaintenanceComponent implements OnInit {
     dioceseStreetNo: '',
     dioceseStreetName: '',
     dioceseSuburb: '',
-    stateID: 0,
+    stateId: 0,
     diocesePostcode: '',
     diocesePhone: '',
     dioceseEmail: '',
@@ -124,7 +124,7 @@ export class DioceseMaintenanceComponent implements OnInit {
       // "All States": show all
       this.dioceses = this.allDioceses;
     } else {
-      this.dioceses = this.allDioceses.filter(d => d.stateID === chosenID);
+      this.dioceses = this.allDioceses.filter(d => d.state?.stateId === chosenID);
     }
   }
 
@@ -133,7 +133,10 @@ export class DioceseMaintenanceComponent implements OnInit {
      => switch to editing mode
   --------------------------- */
   selectDiocese(d: Diocese): void {
-    this.selectedDiocese = { ...d };
+    this.selectedDiocese = {
+      ...d,
+      stateId: d.state?.stateId, // Flatten nested object for the form
+    };
     this.hasSubmitted = false;
     this.uiMode = 'editing';
   }
@@ -235,7 +238,7 @@ export class DioceseMaintenanceComponent implements OnInit {
       dioceseStreetNo: '',
       dioceseStreetName: '',
       dioceseSuburb: '',
-      stateID: 0,
+      stateId: 0,
       diocesePostcode: '',
       diocesePhone: '',
       dioceseEmail: '',

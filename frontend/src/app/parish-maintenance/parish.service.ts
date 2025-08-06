@@ -10,7 +10,7 @@ export interface Parish {
     parishStName: string;
     parishSuburb: string;
     // numeric foreign key => references "State" table
-    stateID: number;
+    stateId: number;
     parishPostcode: string;
     parishPhone: string;
     parishEmail: string;
@@ -34,12 +34,22 @@ export class ParishService {
     }
 
     createParish(parish: Partial<Parish>) {
-        return this.http.post<Parish>(`${this.baseUrl}/parishes`, parish);
-    }
+    const payload: any = { ...parish };
+    if (payload.stateId) payload.state = { stateId: payload.stateId };
+    if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
+    delete payload.stateId;
+    delete payload.dioceseId;
+    return this.http.post<Parish>(`${this.baseUrl}/parishes`, payload);
+  }
 
     updateParish(id: number, parish: Partial<Parish>) {
-        return this.http.put<Parish>(`${this.baseUrl}/parishes/${id}`, parish);
-    }
+    const payload: any = { ...parish };
+    if (payload.stateId) payload.state = { stateId: payload.stateId };
+    if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
+    delete payload.stateId;
+    delete payload.dioceseId;
+    return this.http.put<Parish>(`${this.baseUrl}/parishes/${id}`, payload);
+  }
 
     deleteParish(id: number) {
         return this.http.delete(`${this.baseUrl}/parishes/${id}`);

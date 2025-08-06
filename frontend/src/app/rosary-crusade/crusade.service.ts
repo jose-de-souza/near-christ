@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
  */
 export interface Crusade {
   crusadeId: number;
-  stateID: number;
+  stateId: number;
   dioceseId: number;
   parishId: number;
   confessionStartTime: string;
@@ -34,7 +34,7 @@ export interface Crusade {
     parishWebsite?: string; // NEW: so we can reference it in the front end
   };
   state?: {
-    stateID: number;
+    stateId: number;
     stateName: string;
     stateAbbreviation: string;
   };
@@ -69,10 +69,10 @@ export class CrusadeService {
   /**
    * Filter method for searching by state_id, diocese_id, parish_id
    */
-  searchCrusades(stateID?: number, dioceseId?: number, parishId?: number) {
+  searchCrusades(stateId?: number, dioceseId?: number, parishId?: number) {
     let params = new HttpParams();
-    if (stateID && stateID > 0) {
-      params = params.set('state_id', stateID.toString());
+    if (stateId && stateId > 0) {
+      params = params.set('state_id', stateId.toString());
     }
     if (dioceseId && dioceseId > 0) {
       params = params.set('diocese_id', dioceseId.toString());

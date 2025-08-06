@@ -34,19 +34,19 @@ public class Parish {
 
     @ManyToOne
     @JoinColumn(name = "diocese_id")
-    @JsonBackReference
+    @JsonBackReference("diocese-parishes")
     private Diocese diocese;
 
     @ManyToOne
     @JoinColumn(name = "state_id")
-    @JsonBackReference
+    @JsonBackReference("state-parishes")
     private State state;
 
     @OneToMany(mappedBy = "parish", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("parish-adorations")
     private List<Adoration> adorations;
 
     @OneToMany(mappedBy = "parish", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("parish-crusades")
     private List<Crusade> crusades;
 }

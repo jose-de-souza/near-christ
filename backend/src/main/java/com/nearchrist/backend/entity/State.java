@@ -20,18 +20,18 @@ public class State {
     private String stateAbbreviation;
 
     @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("state-dioceses")
     private List<Diocese> dioceses;
 
     @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("state-parishes")
     private List<Parish> parishes;
 
     @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("state-adorations")
     private List<Adoration> adorations;
 
     @OneToMany(mappedBy = "state", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("state-crusades")
     private List<Crusade> crusades;
 }

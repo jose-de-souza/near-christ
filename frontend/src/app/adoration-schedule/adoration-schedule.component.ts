@@ -54,7 +54,7 @@ export class AdorationScheduleComponent implements OnInit {
     adorationId: undefined,
     dioceseId: 0,
     parishId: 0,
-    stateID: 0,
+    stateId: 0,
     adorationType: 'Regular',
     adorationLocationType: 'Other',
     adorationLocation: '',
@@ -152,7 +152,7 @@ export class AdorationScheduleComponent implements OnInit {
      STATE => Filter Dioceses
   ---------------------------------- */
   onStateChange(): void {
-    const sID = Number(this.selectedAdoration.stateID || 0);
+    const sID = Number(this.selectedAdoration.stateId || 0);
     if (!sID) {
       this.filteredDioceses = [];
       this.filteredParishes = [];
@@ -161,7 +161,7 @@ export class AdorationScheduleComponent implements OnInit {
       this.dioceseDisabled = true;
       this.parishDisabled = true;
     } else {
-      this.filteredDioceses = this.dioceseList.filter(d => d.stateID === sID);
+      this.filteredDioceses = this.dioceseList.filter(d => d.stateId === sID);
       if (this.filteredDioceses.length === 0) {
         this.selectedAdoration.dioceseId = 0;
         this.selectedAdoration.parishId = 0;
@@ -233,7 +233,7 @@ export class AdorationScheduleComponent implements OnInit {
     this.uiMode = 'editing';
 
     // 1) State
-    if (schedule.stateID) {
+    if (schedule.stateId) {
       this.onStateChange();
     }
 
@@ -328,7 +328,7 @@ export class AdorationScheduleComponent implements OnInit {
       adorationId: undefined,
       dioceseId: 0,
       parishId: 0,
-      stateID: 0,
+      stateId: 0,
       adorationType: 'Regular',
       adorationLocationType: 'Other',
       adorationLocation: '',

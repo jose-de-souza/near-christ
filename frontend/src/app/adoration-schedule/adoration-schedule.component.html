@@ -46,10 +46,10 @@
       <div class="section diocese-parish-names" data-title="Diocese/Parish">
         <div>
           <label>State</label>
-          <select [(ngModel)]="selectedAdoration.stateID" (change)="onStateChange()"
+          <select [(ngModel)]="selectedAdoration.stateId" (change)="onStateChange()"
             [disabled]="allStates.length === 0">
             <option [value]="0">Select State</option>
-            <option *ngFor="let st of allStates" [value]="st.stateID">
+            <option *ngFor="let st of allStates" [value]="st.stateId">
               {{ st.stateAbbreviation }}
             </option>
           </select>

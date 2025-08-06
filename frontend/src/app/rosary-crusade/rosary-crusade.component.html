@@ -58,14 +58,14 @@
         <!-- State Dropdown -->
         <div class="field-group crusade-state">
           <label>State</label>
-          <select [(ngModel)]="selectedCrusade.stateID" (change)="onStateChange()"
+          <select [(ngModel)]="selectedCrusade.stateId" (change)="onStateChange()"
             [disabled]="!allStates || allStates.length === 0">
             <option [ngValue]="0">-- select state --</option>
-            <option *ngFor="let st of allStates" [ngValue]="st.stateID">
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId">
               {{ st.stateAbbreviation }}
             </option>
           </select>
-          <div *ngIf="hasSubmitted && (!selectedCrusade.stateID || selectedCrusade.stateID === 0)" class="inline-error">
+          <div *ngIf="hasSubmitted && (!selectedCrusade.stateId || selectedCrusade.stateId === 0)" class="inline-error">
             State is required.
           </div>
         </div>

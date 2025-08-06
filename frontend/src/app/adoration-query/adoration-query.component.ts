@@ -123,7 +123,7 @@ export class AdorationQueryComponent implements OnInit {
       this.filteredParishes = [];
     } else {
       const chosen = Number(this.selectedStateID);
-      this.filteredDioceses = this.dioceseList.filter(d => d.stateID === chosen);
+      this.filteredDioceses = this.dioceseList.filter(d => d.stateId === chosen);
 
       if (this.filteredDioceses.length === 0) {
         this.dioceseDisabled = true;
@@ -170,11 +170,11 @@ export class AdorationQueryComponent implements OnInit {
   --------------------------- */
   searchAdoration(): void {
     // Convert 0 => undefined for state, null => undefined for diocese/parish
-    const stateID = (this.selectedStateID && this.selectedStateID > 0) ? this.selectedStateID : undefined;
+    const stateId = (this.selectedStateID && this.selectedStateID > 0) ? this.selectedStateID : undefined;
     const dioceseId = (this.selectedDioceseID != null) ? this.selectedDioceseID : undefined;
     const parishId = (this.selectedParishID != null) ? this.selectedParishID : undefined;
 
-    this.adorationService.searchAdorations(stateID, dioceseId, parishId).subscribe({
+    this.adorationService.searchAdorations(stateId, dioceseId, parishId).subscribe({
       next: (res: any) => {
         // Usually {success, status, message, data: [... adorations ...]}
         this.results = res.data;

@@ -11,7 +11,7 @@
           <select [(ngModel)]="selectedStateID" (change)="onStateChange()" [disabled]="allStates.length === 0">
             <!-- 0 => "All States" -->
             <option [value]="0">All States</option>
-            <option *ngFor="let st of allStates" [value]="st.stateID">
+            <option *ngFor="let st of allStates" [value]="st.stateId">
               {{ st.stateAbbreviation }}
             </option>
           </select>

@@ -15,17 +15,17 @@ public class Adoration {
 
     @ManyToOne
     @JoinColumn(name = "state_id")
-    @JsonBackReference
+    @JsonBackReference("state-adorations")
     private State state;
 
     @ManyToOne
     @JoinColumn(name = "diocese_id")
-    @JsonBackReference
+    @JsonBackReference("diocese-adorations")
     private Diocese diocese;
 
     @ManyToOne
     @JoinColumn(name = "parish_id")
-    @JsonBackReference
+    @JsonBackReference("parish-adorations")
     private Parish parish;
 
     @Column(nullable = false)

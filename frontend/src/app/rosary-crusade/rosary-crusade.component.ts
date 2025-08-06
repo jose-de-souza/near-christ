@@ -61,7 +61,7 @@ export class RosaryCrusadeComponent implements OnInit {
   // The crusade record currently being edited
   selectedCrusade: Partial<Crusade> = {
     crusadeId: undefined,
-    stateID: 0,
+    stateId: 0,
     dioceseId: 0,
     parishId: 0,
     confessionStartTime: '',
@@ -160,7 +160,7 @@ export class RosaryCrusadeComponent implements OnInit {
     // Copy the record
     this.selectedCrusade = {
       ...c,
-      stateID: Number(c.stateID),
+      stateId: Number(c.stateId),
       dioceseId: Number(c.dioceseId),
       parishId: Number(c.parishId)
     };
@@ -168,7 +168,7 @@ export class RosaryCrusadeComponent implements OnInit {
     this.uiMode = 'editing';
 
     // Refresh filters
-    if (this.selectedCrusade.stateID && Number(this.selectedCrusade.stateID) > 0) {
+    if (this.selectedCrusade.stateId && Number(this.selectedCrusade.stateId) > 0) {
       this.onStateChange();
     } else {
       this.dioceseDisabled = true;
@@ -189,8 +189,8 @@ export class RosaryCrusadeComponent implements OnInit {
   // FILTER / DROPDOWN LOGIC
   // ---------------------------
   onStateChange(): void {
-    const stateID = Number(this.selectedCrusade.stateID);
-    if (!stateID || stateID === 0) {
+    const stateId = Number(this.selectedCrusade.stateId);
+    if (!stateId || stateId === 0) {
       // Clear
       this.dioceseDisabled = true;
       this.parishDisabled = true;
@@ -199,7 +199,7 @@ export class RosaryCrusadeComponent implements OnInit {
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
-      this.filteredDioceses = this.dioceseList.filter(d => d.stateID === stateID);
+      this.filteredDioceses = this.dioceseList.filter(d => d.stateId === stateId);
       if (this.filteredDioceses.length === 0) {
         this.dioceseDisabled = true;
         this.parishDisabled = true;
@@ -339,7 +339,7 @@ export class RosaryCrusadeComponent implements OnInit {
   private resetForm(): void {
     this.selectedCrusade = {
       crusadeId: undefined,
-      stateID: 0,
+      stateId: 0,
       dioceseId: 0,
       parishId: 0,
       confessionStartTime: '',
@@ -361,7 +361,7 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   private isAllFieldsValid(): boolean {
-    if (!this.selectedCrusade.stateID || Number(this.selectedCrusade.stateID) <= 0) return false;
+    if (!this.selectedCrusade.stateId || Number(this.selectedCrusade.stateId) <= 0) return false;
     if (!this.selectedCrusade.dioceseId || Number(this.selectedCrusade.dioceseId) <= 0) return false;
     if (!this.selectedCrusade.parishId || Number(this.selectedCrusade.parishId) <= 0) return false;
     if (!this.selectedCrusade.crusadeStartTime?.trim()) return false;
