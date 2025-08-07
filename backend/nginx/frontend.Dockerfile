@@ -21,7 +21,7 @@ RUN npm run build -- --configuration production
 FROM nginx:stable-alpine
 
 # Copy the compiled Angular app from the 'builder' stage to Nginx's public HTML directory.
-COPY --from=builder /app/dist/near-christ /usr/share/nginx/html
+COPY --from=builder /app/dist/near-christ/browser /usr/share/nginx/html
 
 # Copy the custom Nginx configuration file into the container.
 COPY backend/nginx/nginx.conf /etc/nginx/conf.d/default.conf
