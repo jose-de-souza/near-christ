@@ -17,7 +17,7 @@ services:
     # Automate the frontend build
     build:
       context: .. # The build context is the project root
-      dockerfile: nginx/frontend.Dockerfile # Point to the frontend Dockerfile
+      dockerfile: backend/nginx/frontend.Dockerfile # Point to the frontend Dockerfile
     container_name: nginx-proxy
     ports:
       # Expose HTTP and HTTPS ports to the outside world

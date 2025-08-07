@@ -6,11 +6,11 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files and install dependencies. This is done first to leverage Docker's layer caching.
-COPY ../frontend/package.json ../frontend/package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
 
 # Copy the rest of the frontend source code
-COPY ../frontend .
+COPY frontend .
 
 # Build the Angular app for production. The output will be in /app/dist/near-christ
 RUN npm run build -- --configuration production
