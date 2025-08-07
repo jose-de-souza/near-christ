@@ -23,8 +23,8 @@ FROM nginx:stable-alpine
 # Copy the compiled Angular app from the 'builder' stage to Nginx's public HTML directory.
 COPY --from=builder /app/dist/near-christ /usr/share/nginx/html
 
-# Copy your custom Nginx configuration.
-COPY ./nginx.conf /etc/nginx/nginx.conf
+# Copy the custom Nginx configuration file into the container.
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose ports 80 and 443.
 EXPOSE 80
