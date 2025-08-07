@@ -24,7 +24,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 export class UserMaintenanceComponent implements OnInit {
   // Columns for our grid
   columns = [
-    { header: 'Name', field: 'userName' },
+    { header: 'Name', field: 'username' },
     { header: 'Email', field: 'userEmail' },
     { header: 'Role', field: 'userRole' },
   ];
@@ -38,7 +38,7 @@ export class UserMaintenanceComponent implements OnInit {
   // The currently selected (or new) user
   selectedUser: Partial<User> = {
     userId: undefined,
-    userName: '',
+    username: '',
     userEmail: '',
     userRole: 'STANDARD',
     userPassword: ''
@@ -109,7 +109,7 @@ export class UserMaintenanceComponent implements OnInit {
 
     this.userService.createUser(this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedUser.userName} has been added`);
+        this.showInfo(`${this.selectedUser.username} has been added`);
         this.loadAllUsers();
         this.resetForm();
         // Return to view mode
@@ -140,7 +140,7 @@ export class UserMaintenanceComponent implements OnInit {
     const id = this.selectedUser.userId;
     this.userService.updateUser(id, this.selectedUser).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedUser.userName} modified`);
+        this.showInfo(`${this.selectedUser.username} modified`);
         this.loadAllUsers();
         this.resetForm();
         // Return to view mode
@@ -167,7 +167,7 @@ export class UserMaintenanceComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       disableClose: true,
       data: {
-        message: `Are you sure you wish to delete user "${this.selectedUser.userName}"?`
+        message: `Are you sure you wish to delete user "${this.selectedUser.username}"?`
       },
       panelClass: 'orange-dialog'
     });
@@ -214,7 +214,7 @@ export class UserMaintenanceComponent implements OnInit {
   private resetForm(): void {
     this.selectedUser = {
       userId: undefined,
-      userName: '',
+      username: '',
       userEmail: '',
       userRole: 'STANDARD',
       userPassword: ''
@@ -223,7 +223,7 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   private isValidForCreate(): boolean {
-    if (!this.selectedUser.userName?.trim()) return false;
+    if (!this.selectedUser.username?.trim()) return false;
     if (!this.selectedUser.userEmail?.trim()) return false;
     if (!this.selectedUser.userRole?.trim()) return false;
     if (!this.selectedUser.userPassword?.trim()) return false;
@@ -231,7 +231,7 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   private isValidForUpdate(): boolean {
-    if (!this.selectedUser.userName?.trim()) return false;
+    if (!this.selectedUser.username?.trim()) return false;
     if (!this.selectedUser.userEmail?.trim()) return false;
     if (!this.selectedUser.userRole?.trim()) return false;
     return true;

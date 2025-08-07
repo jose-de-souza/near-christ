@@ -9,8 +9,8 @@
                 <!-- User Name -->
                 <div class="field-group user-name">
                     <label>User Name</label>
-                    <input type="text" [(ngModel)]="selectedUser.userName" autocomplete="off" />
-                    <div *ngIf="hasSubmitted && !selectedUser.userName?.trim()" class="inline-error">
+                    <input type="text" [(ngModel)]="selectedUser.username" autocomplete="off" />
+                    <div *ngIf="hasSubmitted && !selectedUser.username?.trim()" class="inline-error">
                         User Name is required.
                     </div>
                 </div>

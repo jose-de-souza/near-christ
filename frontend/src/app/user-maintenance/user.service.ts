@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 // Define the shape of a User as returned by your API
 export interface User {
     userId: number;
-    userName: string;
+    username: string;
     userEmail: string;
     userRole: 'ADMIN' | 'SUPERVISOR' | 'STANDARD';
     userPassword?: string; // Only needed for creation/updates
