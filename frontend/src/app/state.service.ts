@@ -6,7 +6,6 @@ export interface State {
     stateId: number;
     stateName: string;
     stateAbbreviation: string;
-    // ... any other columns in your "State" table
 }
 
 @Injectable({

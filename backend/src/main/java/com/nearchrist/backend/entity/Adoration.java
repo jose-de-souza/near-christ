@@ -15,7 +15,7 @@ public class Adoration {
 
     @ManyToOne
     @JoinColumn(name = "state_id")
-    @JsonBackReference("state-adorations")
+    @JsonBackReference
     private State state;
 
     @ManyToOne

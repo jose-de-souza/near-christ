@@ -40,8 +40,8 @@
         <div class="field-group state">
           <label>State</label>
           <select [(ngModel)]="selectedDiocese.stateId">
-            <option [value]="0">Select State</option>
-            <option *ngFor="let st of allStates" [value]="st.stateId"> {{ st.stateAbbreviation }}
+            <option [ngValue]="0">Select State</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId"> {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>
@@ -84,8 +84,8 @@
         <div class="field-group state">
           <label>State</label>
           <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
-            <option [value]="0">All States</option>
-            <option *ngFor="let st of allStates" [value]="st.stateId"> {{ st.stateAbbreviation }}
+            <option [ngValue]="0">All States</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId"> {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>

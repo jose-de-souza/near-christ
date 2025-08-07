@@ -15,7 +15,7 @@ public class Crusade {
 
     @ManyToOne
     @JoinColumn(name = "state_id")
-    @JsonBackReference("state-crusades")
+    @JsonBackReference
     private State state;
 
     @ManyToOne

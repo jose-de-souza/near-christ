@@ -29,7 +29,7 @@
                     <label>Role</label>
                     <select [(ngModel)]="selectedUser.userRole">
                         <option value="">-- Select Role --</option>
-                        <option *ngFor="let r of userRoles" [value]="r">{{ r }}</option>
+                        <option *ngFor="let r of userRoles" [ngValue]="r">{{ r }}</option>
                     </select>
                     <div *ngIf="hasSubmitted && !selectedUser.userRole?.trim()" class="inline-error">
                         Role is required.
