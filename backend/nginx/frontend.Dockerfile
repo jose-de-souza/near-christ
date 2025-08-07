@@ -24,7 +24,7 @@ FROM nginx:stable-alpine
 COPY --from=builder /app/dist/near-christ /usr/share/nginx/html
 
 # Copy the custom Nginx configuration file into the container.
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY backend/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose ports 80 and 443.
 EXPOSE 80
