@@ -1,24 +1,72 @@
-# NearChrist
+# Near Christ Frontend
+
+This project is the Angular frontend for the Near Christ application, a service of the Australian Medjugorje Centre. It provides a user interface for querying and managing Catholic dioceses, parishes, adoration schedules, and rosary crusades.
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.0.
 
-## Development server
+## Core Technologies
 
-To start a local development server and open in the browser, run:
+  * **Angular:** A component-based framework for building the user interface.
+  * **TypeScript:** The primary language for the frontend code.
+  * **Angular Material:** A UI component library for a consistent and modern look and feel.
+  * **SCSS:** For styling the application.
+  * **RxJS:** For reactive programming and managing asynchronous operations.
 
-```bash
-ng serve --open
-```
+## Features
 
-Once the server is running, open the browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever  modify any of the source files.
+### Public Views
 
-## Build for production
+  * **Adoration Query:** Allows users to search for adoration schedules based on state, diocese, and parish.
+  * **Crusade Query:** Allows users to search for rosary crusades based on state, diocese, and parish.
+
+### Authenticated Views
+
+These views require users to be logged in and have the appropriate permissions:
+
+  * **Adoration Schedule Management:** Create, update, and delete adoration schedules.
+  * **Diocese Maintenance:** Manage diocesan information.
+  * **Parish Maintenance:** Manage parish information.
+  * **Rosary Crusade Management:** Manage rosary crusade events.
+  * **User Maintenance:** (ADMIN only) Manage application users and their roles.
+
+### UI Features
+
+  * **Drag-and-Drop Tables:** Users can reorder columns in the data tables.
+  * **Snackbar Notifications:** The application uses Angular Material's Snackbar to provide feedback to the user (e.g., success, warning, and error messages).
+  * **Confirmation Dialogs:** A confirmation dialog is used for destructive actions like deleting a record.
+
+## Prerequisites
+
+  * Node.js and npm
+  * Angular CLI
+
+## Getting Started
+
+1.  **Install Dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+2.  **Run the Development Server:**
+
+    ```bash
+    ng serve --open
+    ```
+
+    Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+
+## Building for Production
+
+To build the project for production, run:
 
 ```sh
 ng build --configuration=production
 ```
 
-## Code scaffolding
+The build artifacts will be stored in the `dist/` directory.
+
+## Code Scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
@@ -32,36 +80,19 @@ For a complete list of available schematics (such as `components`, `directives`,
 ng generate --help
 ```
 
-## Building
+## Testing
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile the project and store the build artifacts in the `dist/` directory. By default, the production build optimizes the application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+To execute the unit tests via [Karma](https://karma-runner.github.io), run:
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+## Environment Configuration
 
-For end-to-end (e2e) testing, run:
+The application's environment configuration is managed in the `src/environments/` directory.
 
-```bash
-ng e2e
-```
+  * `environment.ts`: Used for development.
+  * `environment.prod.ts`: Used for production builds.
 
-Angular CLI does not come with an end-to-end testing framework by default. Choose one that suits the needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-
+The `apiUrl` property in these files should be configured to point to the backend API.

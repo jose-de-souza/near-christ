@@ -41,12 +41,12 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   // The diocese record being edited/created
   selectedDiocese: Partial<Diocese> = {
-    dioceseID: undefined,
+    dioceseId: undefined,
     dioceseName: '',
     dioceseStreetNo: '',
     dioceseStreetName: '',
     dioceseSuburb: '',
-    stateID: 0,
+    stateId: 0,
     diocesePostcode: '',
     diocesePhone: '',
     dioceseEmail: '',
@@ -124,7 +124,7 @@ export class DioceseMaintenanceComponent implements OnInit {
       // "All States": show all
       this.dioceses = this.allDioceses;
     } else {
-      this.dioceses = this.allDioceses.filter(d => d.stateID === chosenID);
+      this.dioceses = this.allDioceses.filter(d => d.state?.stateId === chosenID);
     }
   }
 
@@ -133,7 +133,10 @@ export class DioceseMaintenanceComponent implements OnInit {
      => switch to editing mode
   --------------------------- */
   selectDiocese(d: Diocese): void {
-    this.selectedDiocese = { ...d };
+    this.selectedDiocese = {
+      ...d,
+      stateId: d.state?.stateId, // Flatten nested object for the form
+    };
     this.hasSubmitted = false;
     this.uiMode = 'editing';
   }
@@ -165,12 +168,12 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   modifyDiocese(): void {
     // The "Modify" button is disabled unless uiMode === 'editing'
-    if (!this.selectedDiocese.dioceseID) {
+    if (!this.selectedDiocese.dioceseId) {
       this.showWarning('No diocese selected to update!');
       return;
     }
 
-    const id = this.selectedDiocese.dioceseID;
+    const id = this.selectedDiocese.dioceseId;
     this.dioceseService.updateDiocese(id, this.selectedDiocese).subscribe({
       next: () => {
         this.showInfo(`${this.selectedDiocese.dioceseName} modified`);
@@ -188,13 +191,14 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   deleteDiocese(): void {
     // The "Delete" button is disabled unless uiMode === 'editing'
-    if (!this.selectedDiocese.dioceseID) {
+    if (!this.selectedDiocese.dioceseId) {
       this.showWarning('No diocese selected to delete!');
       return;
     }
 
     // 1) Open the Confirmation Dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      disableClose: true,
       data: {
         message: `Are you sure you want to delete "${this.selectedDiocese.dioceseName}"?`
       },
@@ -204,7 +208,7 @@ export class DioceseMaintenanceComponent implements OnInit {
     // 2) If user confirmed => proceed
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedDiocese.dioceseID!;
+        const id = this.selectedDiocese.dioceseId!;
         this.dioceseService.deleteDiocese(id).subscribe({
           next: () => {
             this.loadAllDioceses();
@@ -229,12 +233,12 @@ export class DioceseMaintenanceComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedDiocese = {
-      dioceseID: undefined,
+      dioceseId: undefined,
       dioceseName: '',
       dioceseStreetNo: '',
       dioceseStreetName: '',
       dioceseSuburb: '',
-      stateID: 0,
+      stateId: 0,
       diocesePostcode: '',
       diocesePhone: '',
       dioceseEmail: '',
@@ -278,7 +282,7 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   trackByDioceseID(index: number, item: Diocese): number {
-    return item.dioceseID;
+    return item.dioceseId;
   }
 
   /* ---------------------------

@@ -1,7 +1,8 @@
 package com.nearchrist.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -34,18 +35,19 @@ public class Diocese {
 
     @ManyToOne
     @JoinColumn(name = "state_id")
-    @JsonBackReference
     private State state;
 
     @OneToMany(mappedBy = "diocese", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("diocese-parishes")
+    @JsonIgnoreProperties("diocese")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Parish> parishes;
 
     @OneToMany(mappedBy = "diocese", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("diocese-adorations")
     private List<Adoration> adorations;
 
     @OneToMany(mappedBy = "diocese", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("diocese-crusades")
     private List<Crusade> crusades;
 }

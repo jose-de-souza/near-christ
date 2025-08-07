@@ -20,12 +20,12 @@ public class Crusade {
 
     @ManyToOne
     @JoinColumn(name = "diocese_id")
-    @JsonBackReference
+    @JsonBackReference("diocese-crusades")
     private Diocese diocese;
 
     @ManyToOne
     @JoinColumn(name = "parish_id")
-    @JsonBackReference
+    @JsonBackReference("parish-crusades")
     private Parish parish;
 
     private LocalTime confessionStartTime;

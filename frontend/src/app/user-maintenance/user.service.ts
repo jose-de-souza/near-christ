@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 
 // Define the shape of a User as returned by your API
 export interface User {
-    userID: number;
+    userId: number;
     userName: string;
     userEmail: string;
     userRole: 'ADMIN' | 'SUPERVISOR' | 'STANDARD';
@@ -37,8 +37,8 @@ export class UserService {
     createUser(user: Partial<User>): Observable<GetUsersResponse> {
         // Create a shallow copy of user
         const payload = { ...user };
-        // Remove userID if it exists, so it's not sent on creation.
-        delete payload.userID;
+        // Remove userId if it exists, so it's not sent on creation.
+        delete payload.userId;
         return this.http.post<GetUsersResponse>(`${this.baseUrl}/users`, payload);
     }
 

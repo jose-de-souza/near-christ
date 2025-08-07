@@ -46,10 +46,10 @@
       <div class="section diocese-parish-names" data-title="Diocese/Parish">
         <div>
           <label>State</label>
-          <select [(ngModel)]="selectedAdoration.stateID" (change)="onStateChange()"
+          <select [(ngModel)]="selectedAdoration.stateId" (change)="onStateChange()"
             [disabled]="allStates.length === 0">
-            <option [value]="0">Select State</option>
-            <option *ngFor="let st of allStates" [value]="st.stateID">
+            <option [ngValue]="0">Select State</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId">
               {{ st.stateAbbreviation }}
             </option>
           </select>
@@ -57,9 +57,9 @@
 
         <div>
           <label>Diocese Name</label>
-          <select [(ngModel)]="selectedAdoration.dioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
-            <option [value]="0">-- select diocese --</option>
-            <option *ngFor="let d of filteredDioceses" [value]="d.dioceseID">
+          <select [(ngModel)]="selectedAdoration.dioceseId" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
+            <option [ngValue]="0">-- select diocese --</option>
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseId">
               {{ d.dioceseName }}
             </option>
           </select>
@@ -67,10 +67,10 @@
 
         <div>
           <label>Parish Name</label>
-          <select [(ngModel)]="selectedAdoration.parishID" (change)="updateLocationFromParish()"
+          <select [(ngModel)]="selectedAdoration.parishId" (change)="updateLocationFromParish()"
             [disabled]="parishDisabled">
-            <option [value]="0">-- select parish --</option>
-            <option *ngFor="let p of filteredParishes" [value]="p.parishID">
+            <option [ngValue]="0">-- select parish --</option>
+            <option *ngFor="let p of filteredParishes" [ngValue]="p.parishId">
               {{ p.parishName }}
             </option>
           </select>

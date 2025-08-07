@@ -36,13 +36,12 @@
     <!-- SECTION #2: Location / Contact -->
     <div class="section location" data-title="Location / Contact">
       <div class="row-2">
-        <!-- Now we store the foreign key => selectedDiocese.stateID -->
+        <!-- Now we store the foreign key => selectedDiocese.stateId -->
         <div class="field-group state">
           <label>State</label>
-          <select [(ngModel)]="selectedDiocese.stateID">
-            <option [value]="0">Select State</option>
-            <option *ngFor="let st of allStates" [value]="st.stateID">
-              {{ st.stateAbbreviation }}
+          <select [(ngModel)]="selectedDiocese.stateId">
+            <option [ngValue]="0">Select State</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId"> {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>
@@ -80,14 +79,13 @@
     <!-- SECTION #3: Filter => uses the same .section styling -->
     <div class="section filter" data-title="Filter">
       <div class="row-filter">
-        <!-- We store the user's chosen stateID in filterStateID (number).
+        <!-- We store the user's chosen stateId in filterStateID (number).
              0 => "All States" -->
         <div class="field-group state">
           <label>State</label>
           <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
-            <option [value]="0">All States</option>
-            <option *ngFor="let st of allStates" [value]="st.stateID">
-              {{ st.stateAbbreviation }}
+            <option [ngValue]="0">All States</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId"> {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>

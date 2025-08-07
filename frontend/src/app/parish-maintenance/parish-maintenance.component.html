@@ -38,23 +38,23 @@
             <div class="row-1">
                 <div class="field-group state">
                     <label>State</label>
-                    <select [(ngModel)]="selectedParish.stateID" (change)="onLocationStateChange()"
+                    <select [(ngModel)]="selectedParish.stateId" (change)="onLocationStateChange()"
                         [disabled]="stateDropdownDisabled">
-                        <option [value]="0">Select State</option>
-                        <option *ngFor="let st of allStates" [value]="st.stateID">
+                        <option [ngValue]="0">Select State</option>
+                        <option *ngFor="let st of allStates" [ngValue]="st.stateId">
                             {{ st.stateAbbreviation }}
                         </option>
                     </select>
                 </div>
                 <div class="field-group diocese">
                     <label>Diocese</label>
-                    <select [(ngModel)]="selectedParish.dioceseID" [disabled]="locationDioceseDisabled">
-                        <option [value]="0">Select Diocese</option>
-                        <option *ngFor="let d of locationDioceses" [value]="d.dioceseID">
+                    <select [(ngModel)]="selectedParish.dioceseId" [disabled]="locationDioceseDisabled">
+                        <option [ngValue]="0">Select Diocese</option>
+                        <option *ngFor="let d of locationDioceses" [ngValue]="d.dioceseId">
                             {{ d.dioceseName }}
                         </option>
                     </select>
-                    <div *ngIf="hasSubmitted && !selectedParish.dioceseID" class="inline-error">
+                    <div *ngIf="hasSubmitted && !selectedParish.dioceseId" class="inline-error">
                         Diocese is required.
                     </div>
                 </div>
@@ -87,8 +87,8 @@
                 <div class="field-group state">
                     <label>State</label>
                     <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
-                        <option [value]="0">All States</option>
-                        <option *ngFor="let st of allStates" [value]="st.stateID">
+                        <option [ngValue]="0">All States</option>
+                        <option *ngFor="let st of allStates" [ngValue]="st.stateId">
                             {{ st.stateAbbreviation }}
                         </option>
                     </select>
@@ -98,8 +98,8 @@
                     <label>Diocese</label>
                     <select [(ngModel)]="filterDioceseID" (change)="onFilterDioceseChange()"
                         [disabled]="dioceseFilterDisabled">
-                        <option [value]="0">All Dioceses</option>
-                        <option *ngFor="let d of filteredDiocesesForFilter" [ngValue]="d.dioceseID">
+                        <option [ngValue]="0">All Dioceses</option>
+                        <option *ngFor="let d of filteredDiocesesForFilter" [ngValue]="d.dioceseId">
                             {{ d.dioceseName }}
                         </option>
                     </select>

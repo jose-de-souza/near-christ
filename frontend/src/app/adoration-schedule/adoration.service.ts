@@ -6,10 +6,10 @@ import { Parish } from '../parish-maintenance/parish.service';   // ADDED import
 
 // If the backend returns diocese/parish objects, define them optionally:
 export interface Adoration {
-  adorationID: number;
-  dioceseID: number;           // references a valid Diocese
-  parishID: number;            // references a valid Parish
-  stateID: number;             // numeric foreign key => references State
+  adorationId: number;
+  dioceseId: number;           // references a valid Diocese
+  parishId: number;            // references a valid Parish
+  stateId: number;             // numeric foreign key => references State
   adorationType: string;       // 'Regular' or 'Perpetual'
   adorationLocation: string;
   adorationLocationType: string;
@@ -21,7 +21,7 @@ export interface Adoration {
   diocese?: Diocese; // so row.diocese?.dioceseWebsite is recognized
   parish?: Parish;   // so row.parish?.parishWebsite is recognized
   state?: {
-    stateID: number;
+    stateId: number;
     stateName: string;
     stateAbbreviation: string;
   };
@@ -59,17 +59,17 @@ export class AdorationService {
     return this.http.delete(`${this.baseUrl}/adorations/${id}`);
   }
 
-  // SEARCH: optionally pass (stateID, dioceseID, parishID) as query params
-  searchAdorations(stateID?: number, dioceseID?: number, parishID?: number) {
+  // SEARCH: optionally pass (stateId, dioceseId, parishId) as query params
+  searchAdorations(stateId?: number, dioceseId?: number, parishId?: number) {
     let params = new HttpParams();
-    if (stateID && stateID > 0) {
-      params = params.set('state_id', stateID.toString());
+    if (stateId && stateId > 0) {
+      params = params.set('state_id', stateId.toString());
     }
-    if (dioceseID && dioceseID > 0) {
-      params = params.set('diocese_id', dioceseID.toString());
+    if (dioceseId && dioceseId > 0) {
+      params = params.set('diocese_id', dioceseId.toString());
     }
-    if (parishID && parishID > 0) {
-      params = params.set('parish_id', parishID.toString());
+    if (parishId && parishId > 0) {
+      params = params.set('parish_id', parishId.toString());
     }
     return this.http.get<Adoration[]>(`${this.baseUrl}/adorations`, { params });
   }

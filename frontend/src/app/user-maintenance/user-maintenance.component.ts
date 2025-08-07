@@ -37,7 +37,7 @@ export class UserMaintenanceComponent implements OnInit {
 
   // The currently selected (or new) user
   selectedUser: Partial<User> = {
-    userID: undefined,
+    userId: undefined,
     userName: '',
     userEmail: '',
     userRole: 'STANDARD',
@@ -127,7 +127,7 @@ export class UserMaintenanceComponent implements OnInit {
   // -------------- UPDATE --------------
   modifyUser(): void {
     // The "Modify" button is only enabled if uiMode === 'editing'
-    if (!this.selectedUser.userID) {
+    if (!this.selectedUser.userId) {
       this.showWarning('No user selected to update!');
       return;
     }
@@ -137,7 +137,7 @@ export class UserMaintenanceComponent implements OnInit {
       this.showWarning('User Name, Email, and Role are required to update!');
       return;
     }
-    const id = this.selectedUser.userID;
+    const id = this.selectedUser.userId;
     this.userService.updateUser(id, this.selectedUser).subscribe({
       next: () => {
         this.showInfo(`${this.selectedUser.userName} modified`);
@@ -158,13 +158,14 @@ export class UserMaintenanceComponent implements OnInit {
   // -------------- DELETE --------------
   deleteUser(): void {
     // The "Delete" button is only enabled if uiMode === 'editing'
-    if (!this.selectedUser.userID) {
+    if (!this.selectedUser.userId) {
       this.showWarning('No user selected to delete!');
       return;
     }
 
     // Open the confirmation dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      disableClose: true,
       data: {
         message: `Are you sure you wish to delete user "${this.selectedUser.userName}"?`
       },
@@ -173,7 +174,7 @@ export class UserMaintenanceComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedUser.userID!;
+        const id = this.selectedUser.userId!;
         this.userService.deleteUser(id).subscribe({
           next: () => {
             this.loadAllUsers();
@@ -203,7 +204,7 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   trackByUserID(index: number, item: User): number {
-    return item.userID;
+    return item.userId;
   }
 
   trackByColumn(index: number, column: { header: string; field: string }): string {
@@ -212,7 +213,7 @@ export class UserMaintenanceComponent implements OnInit {
 
   private resetForm(): void {
     this.selectedUser = {
-      userID: undefined,
+      userId: undefined,
       userName: '',
       userEmail: '',
       userRole: 'STANDARD',
