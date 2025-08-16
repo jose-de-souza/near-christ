@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
 
 import { UserService } from './user.service';
 import { UserDto, UserUpsertDto } from './user.dto';
@@ -19,28 +20,32 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
     DragDropModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatButtonModule
   ],
   templateUrl: './user-maintenance.component.html',
   styleUrls: ['./user-maintenance.component.scss']
 })
 export class UserMaintenanceComponent implements OnInit {
-  columns = [
-    { header: 'User Name', field: 'userName' },
+  columns: { header: string; field: string }[] = [
+    { header: 'Full Name', field: 'userFullName' },
     { header: 'Email', field: 'userEmail' },
-    { header: 'Roles', field: 'roles' },
+    { header: 'Roles', field: 'roles' }
   ];
 
   users: UserDto[] = [];
-  hasSubmitted = false;
-  selectedUser: Partial<UserDto> & { password?: string } = {};
+  hasSubmitted: boolean = false;
+  selectedUser: Partial<UserDto> & { password?: string } = {
+    userFullName: '',
+    userEmail: '',
+    roles: [],
+    password: ''
+  };
   
-  selectedRoles = new Map<string, boolean>();
-  allRoles = ['ADMIN', 'SUPERVISOR', 'STANDARD'];
+  selectedRoles: Map<string, boolean> = new Map<string, boolean>();
+  allRoles: string[] = ['ADMIN', 'SUPERVISOR', 'STANDARD'];
   uiMode: 'view' | 'editing' = 'view';
 
-  // --- ADD THIS GETTER ---
-  // This public getter allows the template to safely check the number of selected roles.
   public get selectedRolesCount(): number {
     return Array.from(this.selectedRoles.values()).filter(isSelected => isSelected).length;
   }
@@ -56,8 +61,18 @@ export class UserMaintenanceComponent implements OnInit {
     this.resetForm();
   }
 
-  onDrop(event: CdkDragDrop<any[]>): void {
+  onDrop(event: CdkDragDrop<{ header: string; field: string }[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
+  }
+
+  onDragEntered(event: CdkDragEnter): void {
+    const element = event.container.element.nativeElement;
+    element.classList.add('cdk-drag-over');
+  }
+
+  onDragExited(event: CdkDragExit): void {
+    const element = event.container.element.nativeElement;
+    element.classList.remove('cdk-drag-over');
   }
 
   get gridTemplateColumns(): string {
@@ -66,14 +81,19 @@ export class UserMaintenanceComponent implements OnInit {
 
   loadAllUsers(): void {
     this.userService.getAllUsers().subscribe({
-      next: (users) => { this.users = users; },
-      error: (err) => { console.error('Failed to load users:', err); }
+      next: (users: UserDto[]) => {
+        this.users = users;
+      },
+      error: (err: any) => {
+        console.error('Failed to load users:', err);
+        this.showError('Failed to load users. Please try again.');
+      }
     });
   }
 
   selectUser(user: UserDto): void {
     this.selectedUser = { ...user, password: '' };
-    this.updateSelectedRoles(user.roles);
+    this.updateSelectedRoles(user.roles || []);
     this.hasSubmitted = false;
     this.uiMode = 'editing';
   }
@@ -82,47 +102,54 @@ export class UserMaintenanceComponent implements OnInit {
     this.hasSubmitted = true;
     const payload = this.preparePayload();
     if (!this.isValidForCreate(payload)) {
-      this.showWarning('User Name, Email, Roles, and Password are required.');
+      this.showWarning('Full Name, Email, Roles, and Password are required.');
       return;
     }
 
     this.userService.createUser(payload).subscribe({
-      next: () => {
-        this.showInfo(`${payload.userName} has been added`);
+      next: (user: UserDto) => {
+        this.showInfo(`${payload.userFullName} has been added`);
         this.loadAllUsers();
         this.resetFormAndMode();
       },
-      error: (err) => this.handleError(err, 'creating')
+      error: (err: any) => this.handleError(err, 'creating')
     });
   }
 
   modifyUser(): void {
-    if (!this.selectedUser.id) return;
+    if (!this.selectedUser.id) {
+      this.showWarning('No user selected for modification.');
+      return;
+    }
     this.hasSubmitted = true;
     const payload = this.preparePayload();
     if (!this.isValidForUpdate(payload)) {
-      this.showWarning('User Name, Email, and Roles are required.');
+      this.showWarning('Full Name, Email, and Roles are required.');
       return;
     }
 
     this.userService.updateUser(this.selectedUser.id, payload).subscribe({
-      next: () => {
-        this.showInfo(`${payload.userName} modified`);
+      next: (user: UserDto) => {
+        this.showInfo(`${payload.userFullName} modified`);
         this.loadAllUsers();
         this.resetFormAndMode();
       },
-      error: (err) => this.handleError(err, 'updating')
+      error: (err: any) => this.handleError(err, 'updating')
     });
   }
 
   deleteUser(): void {
-    if (!this.selectedUser.id || !this.selectedUser.userName) return;
+    if (!this.selectedUser.id || !this.selectedUser.userFullName) {
+      this.showWarning('No user selected for deletion.');
+      return;
+    }
 
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: { message: `Are you sure you wish to delete user "${this.selectedUser.userName}"?` }
+      data: { message: `Are you sure you wish to delete user "${this.selectedUser.userFullName}"?` },
+      panelClass: 'orange-dialog'
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
         this.userService.deleteUser(this.selectedUser.id!).subscribe({
           next: () => {
@@ -130,7 +157,7 @@ export class UserMaintenanceComponent implements OnInit {
             this.loadAllUsers();
             this.resetFormAndMode();
           },
-          error: (err) => this.handleError(err, 'deleting')
+          error: (err: any) => this.handleError(err, 'deleting')
         });
       }
     });
@@ -146,9 +173,9 @@ export class UserMaintenanceComponent implements OnInit {
       .map(([roleName, _]) => roleName);
 
     const payload: UserUpsertDto = {
-      userName: this.selectedUser.userName || '',
+      userFullName: this.selectedUser.userFullName || '',
       userEmail: this.selectedUser.userEmail || '',
-      roles: roles
+      roles
     };
 
     if (this.selectedUser.password) {
@@ -158,7 +185,12 @@ export class UserMaintenanceComponent implements OnInit {
   }
 
   private resetForm(): void {
-    this.selectedUser = { userName: '', userEmail: '', password: '' };
+    this.selectedUser = {
+      userFullName: '',
+      userEmail: '',
+      roles: [],
+      password: ''
+    };
     this.updateSelectedRoles(['STANDARD']);
     this.hasSubmitted = false;
   }
@@ -167,7 +199,7 @@ export class UserMaintenanceComponent implements OnInit {
     this.resetForm();
     this.uiMode = 'view';
   }
-  
+
   private updateSelectedRoles(roles: string[]): void {
     this.selectedRoles.clear();
     this.allRoles.forEach(role => {
@@ -175,20 +207,34 @@ export class UserMaintenanceComponent implements OnInit {
     });
   }
 
-  getCellValue(row: UserDto, column: { field: string }): any {
+  getCellValue(row: UserDto, column: { field: string }): string {
     const value = (row as any)[column.field];
-    return Array.isArray(value) ? value.join(', ') : value;
+    return Array.isArray(value) ? value.join(', ') : (value || '');
   }
-  
-  trackByUserID(index: number, item: UserDto): number { return item.id; }
-  trackByColumn(index: number, column: { field: string }): string { return column.field; }
+
+  trackByUserID(_index: number, item: UserDto): number {
+    return item.id;
+  }
+
+  trackByColumn(_index: number, column: { field: string }): string {
+    return column.field;
+  }
 
   private isValidForCreate(payload: UserUpsertDto): boolean {
-    return !!(payload.userName?.trim() && payload.userEmail?.trim() && payload.roles.length > 0 && payload.password?.trim());
+    return !!(
+      payload.userFullName?.trim() &&
+      payload.userEmail?.trim() &&
+      payload.roles.length > 0 &&
+      payload.password?.trim()
+    );
   }
 
   private isValidForUpdate(payload: UserUpsertDto): boolean {
-    return !!(payload.userName?.trim() && payload.userEmail?.trim() && payload.roles.length > 0);
+    return !!(
+      payload.userFullName?.trim() &&
+      payload.userEmail?.trim() &&
+      payload.roles.length > 0
+    );
   }
 
   private handleError(err: any, action: string): void {
@@ -196,7 +242,15 @@ export class UserMaintenanceComponent implements OnInit {
     this.showError(`Fatal error ${action} user! Please contact support.`);
   }
 
-  private showInfo(message: string): void { this.snackBar.open(message, 'Close', { duration: 3000 }); }
-  private showWarning(message: string): void { this.snackBar.open(message, 'Close', { duration: 3000 }); }
-  private showError(message: string): void { this.snackBar.open(message, 'Close', { duration: 7000 }); }
+  private showInfo(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3000 });
+  }
+
+  private showWarning(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3000 });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 7000 });
+  }
 }

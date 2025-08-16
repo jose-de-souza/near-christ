@@ -20,8 +20,9 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_name", nullable = false)
-    private String username;
+    // --- FIX: Renamed to userFullName ---
+    @Column(name = "user_full_name", nullable = false)
+    private String userFullName;
 
     @Column(unique = true, nullable = false)
     private String userEmail;
@@ -53,36 +54,23 @@ public class User implements UserDetails {
         return password;
     }
 
+    /**
+     * Required by Spring Security. Returns the field used for authentication (email).
+     */
     @Override
     public String getUsername() {
-        // This now correctly returns the user's email for login purposes.
-        return userEmail;
-    }
-
-    // This is the standard getter for our 'username' field, which Lombok will generate.
-    // MapStruct will now correctly find and use this.
-    public String getUsernameField() {
-        return username;
-    }
-
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
+        return this.userEmail;
     }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public boolean isAccountNonLocked() { return true; }
 
     @Override
-    public boolean isEnabled() {
-        return this.enabled;
-    }
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return this.enabled; }
 }

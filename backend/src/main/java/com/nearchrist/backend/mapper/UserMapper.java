@@ -13,11 +13,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(source = "id", target = "id")
-    // The source property in the User entity is "username" (lowercase n).
-    @Mapping(source = "username", target = "userName")
-    @Mapping(source = "userEmail", target = "userEmail")
-    @Mapping(source = "enabled", target = "enabled")
+    @Mapping(source = "userFullName", target = "userFullName")
     @Mapping(source = "roles", target = "roles", qualifiedByName = "rolesToRoleNames")
     UserDto toDto(User user);
 

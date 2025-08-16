@@ -2,13 +2,9 @@ package com.nearchrist.backend.dto;
 
 import java.util.Set;
 
-/**
- * DTO for creating and updating users (Upsert).
- * The password is optional for updates where it's not being changed.
- */
 public record UserUpsertDto(
-        String userName,
+        String userFullName, // <-- Renamed
         String userEmail,
-        String password, // Can be null on update
+        String password,
         Set<String> roles
 ) {}

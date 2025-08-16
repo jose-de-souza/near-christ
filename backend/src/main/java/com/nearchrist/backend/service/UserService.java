@@ -38,6 +38,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    // --- FIX: This method has been restored ---
     @Transactional(readOnly = true)
     public Optional<UserDto> getUserById(Long id) {
         return userRepository.findById(id).map(userMapper::toDto);
@@ -46,9 +47,7 @@ public class UserService {
     @Transactional
     public UserDto createUser(UserUpsertDto userDto) {
         User user = new User();
-        // --- THIS IS THE FIX ---
-        // Use the correct setter 'setUsername' to match the 'username' field in the User entity.
-        user.setUsername(userDto.userName());
+        user.setUserFullName(userDto.userFullName());
         user.setUserEmail(userDto.userEmail());
         user.setPassword(passwordEncoder.encode(userDto.password()));
 
@@ -66,12 +65,9 @@ public class UserService {
     public Optional<UserDto> updateUser(Long id, UserUpsertDto userDto) {
         return userRepository.findById(id)
                 .map(existingUser -> {
-                    // --- THIS IS THE FIX ---
-                    // Use the correct setter 'setUsername' here as well.
-                    existingUser.setUsername(userDto.userName());
+                    existingUser.setUserFullName(userDto.userFullName());
                     existingUser.setUserEmail(userDto.userEmail());
 
-                    // Only update password if a new one is provided
                     if (userDto.password() != null && !userDto.password().isEmpty()) {
                         existingUser.setPassword(passwordEncoder.encode(userDto.password()));
                     }
