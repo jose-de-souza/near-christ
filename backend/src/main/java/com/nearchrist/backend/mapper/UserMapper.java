@@ -13,10 +13,12 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(source = "roles", target = "roles", qualifiedByName = "rolesToRoleNames")
-    // --- THIS IS THE FIX ---
-    // The source property in the User entity is "userEmail", not "email".
+    @Mapping(source = "id", target = "id")
+    // The source property in the User entity is "username" (lowercase n).
+    @Mapping(source = "username", target = "userName")
     @Mapping(source = "userEmail", target = "userEmail")
+    @Mapping(source = "enabled", target = "enabled")
+    @Mapping(source = "roles", target = "roles", qualifiedByName = "rolesToRoleNames")
     UserDto toDto(User user);
 
     @Named("rolesToRoleNames")

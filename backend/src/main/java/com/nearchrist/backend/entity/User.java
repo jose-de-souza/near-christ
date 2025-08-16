@@ -20,8 +20,8 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String userName;
+    @Column(name = "user_name", nullable = false)
+    private String username;
 
     @Column(unique = true, nullable = false)
     private String userEmail;
@@ -29,10 +29,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
     private boolean enabled = true;
 
-    // A user can have many roles, and a role can be assigned to many users.
-    // Eager fetching is used here because roles are fundamental to a user's identity and are almost always needed.
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "user_roles",
@@ -44,7 +43,6 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Convert the Set<Role> into a collection of Spring Security's GrantedAuthority.
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
@@ -57,10 +55,16 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        // This remains the same for authentication purposes.
-        // Spring Security will use the unique email as the "username" for login.
+        // This now correctly returns the user's email for login purposes.
         return userEmail;
     }
+
+    // This is the standard getter for our 'username' field, which Lombok will generate.
+    // MapStruct will now correctly find and use this.
+    public String getUsernameField() {
+        return username;
+    }
+
 
     @Override
     public boolean isAccountNonExpired() {
