@@ -1,27 +1,23 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
-  private authService = inject(AuthService);
-  private router = inject(Router);
+
+  constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(): boolean {
-    // console.log('Checking authentication in AuthGuard...');
-
-    if (this.authService._isAuthenticated()) {
-    //   console.log(' Access granted! Token is valid.');
+    // FIX: Call the public isAuthenticated() method
+    if (this.authService.isAuthenticated()) {
       return true;
     } else {
-    //   console.log('❌ Token expired or removed! Redirecting to /login');
-
-      if (!this.authService.isNavigating) { //  Avoid duplicate redirects
-        this.authService.logout();
+      // Redirect to login page if not authenticated
+      if (!this.authService.isNavigating) { // Avoid duplicate navigation
+        this.router.navigate(['/login']);
       }
-
       return false;
     }
   }

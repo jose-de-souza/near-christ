@@ -17,23 +17,27 @@
 
     <!-- Only show these links if user is logged in -->
     @if (auth.isAuthenticated()) {
-    <li><a routerLink="/adoration-schedule">Adoration Schedule</a></li>
-    <li><a routerLink="/diocese-maintenance">Diocese Maintenance</a></li>
-    <li><a routerLink="/parish-maintenance">Parish Maintenance</a></li>
-    <li><a routerLink="/rosary-crusade">Rosary Crusade</a></li>
-    <li *ngIf="auth.userRole === 'ADMIN'">
-      <a routerLink="/user-maintenance">User Maintenance</a>
-    </li>
+      <li><a routerLink="/adoration-schedule">Adoration Schedule</a></li>
+      <li><a routerLink="/diocese-maintenance">Diocese Maintenance</a></li>
+      <li><a routerLink="/parish-maintenance">Parish Maintenance</a></li>
+      <li><a routerLink="/rosary-crusade">Rosary Crusade</a></li>
+      
+      <!-- FIX: Use the hasRole('ADMIN') method to check for role -->
+      @if (auth.hasRole('ADMIN')) {
+        <li>
+          <a routerLink="/user-maintenance">User Maintenance</a>
+        </li>
+      }
     }
   </ul>
 
   <!-- Auth Buttons -->
   <div class="auth-buttons">
     @if (!auth.isAuthenticated()) {
-    <a routerLink="/login"><button>Admin Login</button></a>
+      <a routerLink="/login"><button>Admin Login</button></a>
     }
     @else {
-    <button (click)="auth.logout()">Logout</button>
+      <button (click)="auth.logout()">Logout</button>
     }
   </div>
 </nav>

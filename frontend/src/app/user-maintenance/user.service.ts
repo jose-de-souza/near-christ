@@ -1,54 +1,49 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { UserDto, UserUpsertDto } from './user.dto';
 
-// Define the shape of a User as returned by your API
-export interface User {
-    userId: number;
-    username: string;
-    userEmail: string;
-    userRole: 'ADMIN' | 'SUPERVISOR' | 'STANDARD';
-    userPassword?: string; // Only needed for creation/updates
-}
-
-// Define the shape of the entire server response:
-// { success, status, message, data: ... }
-export interface GetUsersResponse {
-    success: boolean;
-    status: number;
-    message: string;
-    data: User[];
+// Defines the generic API response structure from the backend
+export interface ApiResponse<T> {
+  success: boolean;
+  status: number;
+  message: string;
+  data: T;
 }
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-    // Typically you’d pull this from environment.ts. For now, local dev:
-    private baseUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl;
 
-    constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
-    // GET /users
-    getAllUsers(): Observable<GetUsersResponse> {
-        return this.http.get<GetUsersResponse>(`${this.baseUrl}/users`);
-    }
+  // GET /users - Fetches all users and extracts the data array from the response
+  getAllUsers(): Observable<UserDto[]> {
+    return this.http.get<ApiResponse<UserDto[]>>(`${this.baseUrl}/users`).pipe(
+      map(response => response.data)
+    );
+  }
 
-    // POST /users
-    createUser(user: Partial<User>): Observable<GetUsersResponse> {
-        // Create a shallow copy of user
-        const payload = { ...user };
-        // Remove userId if it exists, so it's not sent on creation.
-        delete payload.userId;
-        return this.http.post<GetUsersResponse>(`${this.baseUrl}/users`, payload);
-    }
+  // POST /users - Creates a new user
+  createUser(user: UserUpsertDto): Observable<UserDto> {
+    return this.http.post<ApiResponse<UserDto>>(`${this.baseUrl}/users`, user).pipe(
+      map(response => response.data)
+    );
+  }
 
-    // PUT /users/{id}
-    updateUser(id: number, user: Partial<User>): Observable<GetUsersResponse> {
-        return this.http.put<GetUsersResponse>(`${this.baseUrl}/users/${id}`, user);
-    }
+  // PUT /users/{id} - Updates an existing user
+  updateUser(id: number, user: UserUpsertDto): Observable<UserDto> {
+    return this.http.put<ApiResponse<UserDto>>(`${this.baseUrl}/users/${id}`, user).pipe(
+      map(response => response.data)
+    );
+  }
 
-    // DELETE /users/{id}
-    deleteUser(id: number): Observable<GetUsersResponse> {
-        return this.http.delete<GetUsersResponse>(`${this.baseUrl}/users/${id}`);
-    }
+  // DELETE /users/{id} - Deletes a user
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/users/${id}`).pipe(
+      map(response => response.data)
+    );
+  }
 }

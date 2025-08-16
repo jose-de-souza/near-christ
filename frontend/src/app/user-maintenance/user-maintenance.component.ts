@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
-import { UserService, User } from './user.service';
+import { UserService } from './user.service';
+import { UserDto, UserUpsertDto } from './user.dto';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -16,39 +18,32 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
     FormsModule,
     DragDropModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
+    MatCheckboxModule
   ],
   templateUrl: './user-maintenance.component.html',
   styleUrls: ['./user-maintenance.component.scss']
 })
 export class UserMaintenanceComponent implements OnInit {
-  // Columns for our grid
   columns = [
-    { header: 'Name', field: 'username' },
+    { header: 'User Name', field: 'userName' },
     { header: 'Email', field: 'userEmail' },
-    { header: 'Role', field: 'userRole' },
+    { header: 'Roles', field: 'roles' },
   ];
 
-  // The array of users from the backend
-  users: User[] = [];
-
-  // Track whether the user has tried to create/update (for inline validation)
+  users: UserDto[] = [];
   hasSubmitted = false;
-
-  // The currently selected (or new) user
-  selectedUser: Partial<User> = {
-    userId: undefined,
-    username: '',
-    userEmail: '',
-    userRole: 'STANDARD',
-    userPassword: ''
-  };
-
-  // Possible user roles for the dropdown
-  userRoles = ['ADMIN', 'SUPERVISOR', 'STANDARD'];
-
-  // === UI MODE: 'view' or 'editing' ===
+  selectedUser: Partial<UserDto> & { password?: string } = {};
+  
+  selectedRoles = new Map<string, boolean>();
+  allRoles = ['ADMIN', 'SUPERVISOR', 'STANDARD'];
   uiMode: 'view' | 'editing' = 'view';
+
+  // --- ADD THIS GETTER ---
+  // This public getter allows the template to safely check the number of selected roles.
+  public get selectedRolesCount(): number {
+    return Array.from(this.selectedRoles.values()).filter(isSelected => isSelected).length;
+  }
 
   constructor(
     private userService: UserService,
@@ -58,210 +53,150 @@ export class UserMaintenanceComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAllUsers();
+    this.resetForm();
   }
 
-  // -------------- DRAG & DROP --------------
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
-  }
-
-  onDragEntered(event: any): void {
-    event.container.element.nativeElement.classList.add('cdk-drag-over');
-  }
-
-  onDragExited(event: any): void {
-    event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
 
-  // -------------- LOAD --------------
   loadAllUsers(): void {
     this.userService.getAllUsers().subscribe({
-      next: (response) => {
-        this.users = response.data;
-      },
-      error: (err) => {
-        console.error('Failed to load users:', err);
-      }
+      next: (users) => { this.users = users; },
+      error: (err) => { console.error('Failed to load users:', err); }
     });
   }
 
-  // -------------- SELECT => editing mode --------------
-  selectUser(u: User): void {
-    // Copy the selected user and clear password
-    this.selectedUser = { ...u, userPassword: '' };
+  selectUser(user: UserDto): void {
+    this.selectedUser = { ...user, password: '' };
+    this.updateSelectedRoles(user.roles);
     this.hasSubmitted = false;
     this.uiMode = 'editing';
   }
 
-  // -------------- CREATE --------------
   addUser(): void {
-    // If currently editing, user must cancel or save changes first (button is disabled in the template).
     this.hasSubmitted = true;
-
-    if (!this.isValidForCreate()) {
-      this.showWarning('User Name, Email, Role, and Password are required to create a new user.');
+    const payload = this.preparePayload();
+    if (!this.isValidForCreate(payload)) {
+      this.showWarning('User Name, Email, Roles, and Password are required.');
       return;
     }
 
-    this.userService.createUser(this.selectedUser).subscribe({
+    this.userService.createUser(payload).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedUser.username} has been added`);
+        this.showInfo(`${payload.userName} has been added`);
         this.loadAllUsers();
-        this.resetForm();
-        // Return to view mode
-        this.uiMode = 'view';
+        this.resetFormAndMode();
       },
-      error: (err) => {
-        if (err.status !== 403) {
-          console.error('Failed to create user:', err);
-          this.showError('Fatal error creating user! Please contact support.');
-        }
-      }
+      error: (err) => this.handleError(err, 'creating')
     });
   }
 
-  // -------------- UPDATE --------------
   modifyUser(): void {
-    // The "Modify" button is only enabled if uiMode === 'editing'
-    if (!this.selectedUser.userId) {
-      this.showWarning('No user selected to update!');
-      return;
-    }
+    if (!this.selectedUser.id) return;
     this.hasSubmitted = true;
-
-    if (!this.isValidForUpdate()) {
-      this.showWarning('User Name, Email, and Role are required to update!');
+    const payload = this.preparePayload();
+    if (!this.isValidForUpdate(payload)) {
+      this.showWarning('User Name, Email, and Roles are required.');
       return;
     }
-    const id = this.selectedUser.userId;
-    this.userService.updateUser(id, this.selectedUser).subscribe({
+
+    this.userService.updateUser(this.selectedUser.id, payload).subscribe({
       next: () => {
-        this.showInfo(`${this.selectedUser.username} modified`);
+        this.showInfo(`${payload.userName} modified`);
         this.loadAllUsers();
-        this.resetForm();
-        // Return to view mode
-        this.uiMode = 'view';
+        this.resetFormAndMode();
       },
-      error: (err) => {
-        if (err.status !== 403) {
-          console.error('Failed to update user:', err);
-          this.showError('Fatal error updating user! Please contact support.');
-        }
-      }
+      error: (err) => this.handleError(err, 'updating')
     });
   }
 
-  // -------------- DELETE --------------
   deleteUser(): void {
-    // The "Delete" button is only enabled if uiMode === 'editing'
-    if (!this.selectedUser.userId) {
-      this.showWarning('No user selected to delete!');
-      return;
-    }
+    if (!this.selectedUser.id || !this.selectedUser.userName) return;
 
-    // Open the confirmation dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      disableClose: true,
-      data: {
-        message: `Are you sure you wish to delete user "${this.selectedUser.username}"?`
-      },
-      panelClass: 'orange-dialog'
+      data: { message: `Are you sure you wish to delete user "${this.selectedUser.userName}"?` }
     });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        const id = this.selectedUser.userId!;
-        this.userService.deleteUser(id).subscribe({
+        this.userService.deleteUser(this.selectedUser.id!).subscribe({
           next: () => {
+            this.showInfo('User deleted');
             this.loadAllUsers();
-            this.resetForm();
-            this.uiMode = 'view';
+            this.resetFormAndMode();
           },
-          error: (err) => {
-            if (err.status !== 403) {
-              console.error('Failed to delete user:', err);
-              this.showError('Fatal error deleting user! Please contact support.');
-            }
-          }
+          error: (err) => this.handleError(err, 'deleting')
         });
       }
     });
   }
 
-  // -------------- CANCEL --------------
   cancel(): void {
-    this.resetForm();
-    this.uiMode = 'view';
+    this.resetFormAndMode();
   }
 
-  // -------------- UTILITIES --------------
-  getCellValue(row: User, column: { header: string; field: string }): any {
-    return (row as any)[column.field] || '';
-  }
+  private preparePayload(): UserUpsertDto {
+    const roles = Array.from(this.selectedRoles.entries())
+      .filter(([_, isSelected]) => isSelected)
+      .map(([roleName, _]) => roleName);
 
-  trackByUserID(index: number, item: User): number {
-    return item.userId;
-  }
+    const payload: UserUpsertDto = {
+      userName: this.selectedUser.userName || '',
+      userEmail: this.selectedUser.userEmail || '',
+      roles: roles
+    };
 
-  trackByColumn(index: number, column: { header: string; field: string }): string {
-    return column.field;
+    if (this.selectedUser.password) {
+      payload.password = this.selectedUser.password;
+    }
+    return payload;
   }
 
   private resetForm(): void {
-    this.selectedUser = {
-      userId: undefined,
-      username: '',
-      userEmail: '',
-      userRole: 'STANDARD',
-      userPassword: ''
-    };
+    this.selectedUser = { userName: '', userEmail: '', password: '' };
+    this.updateSelectedRoles(['STANDARD']);
     this.hasSubmitted = false;
   }
 
-  private isValidForCreate(): boolean {
-    if (!this.selectedUser.username?.trim()) return false;
-    if (!this.selectedUser.userEmail?.trim()) return false;
-    if (!this.selectedUser.userRole?.trim()) return false;
-    if (!this.selectedUser.userPassword?.trim()) return false;
-    return true;
+  private resetFormAndMode(): void {
+    this.resetForm();
+    this.uiMode = 'view';
   }
-
-  private isValidForUpdate(): boolean {
-    if (!this.selectedUser.username?.trim()) return false;
-    if (!this.selectedUser.userEmail?.trim()) return false;
-    if (!this.selectedUser.userRole?.trim()) return false;
-    return true;
-  }
-
-  // -------------- SNACK BAR HELPERS --------------
-  private showInfo(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['snackbar-info']
+  
+  private updateSelectedRoles(roles: string[]): void {
+    this.selectedRoles.clear();
+    this.allRoles.forEach(role => {
+      this.selectedRoles.set(role, roles.includes(role));
     });
   }
 
-  private showWarning(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['snackbar-warning']
-    });
+  getCellValue(row: UserDto, column: { field: string }): any {
+    const value = (row as any)[column.field];
+    return Array.isArray(value) ? value.join(', ') : value;
+  }
+  
+  trackByUserID(index: number, item: UserDto): number { return item.id; }
+  trackByColumn(index: number, column: { field: string }): string { return column.field; }
+
+  private isValidForCreate(payload: UserUpsertDto): boolean {
+    return !!(payload.userName?.trim() && payload.userEmail?.trim() && payload.roles.length > 0 && payload.password?.trim());
   }
 
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 7000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['snackbar-error']
-    });
+  private isValidForUpdate(payload: UserUpsertDto): boolean {
+    return !!(payload.userName?.trim() && payload.userEmail?.trim() && payload.roles.length > 0);
   }
+
+  private handleError(err: any, action: string): void {
+    console.error(`Failed to ${action} user:`, err);
+    this.showError(`Fatal error ${action} user! Please contact support.`);
+  }
+
+  private showInfo(message: string): void { this.snackBar.open(message, 'Close', { duration: 3000 }); }
+  private showWarning(message: string): void { this.snackBar.open(message, 'Close', { duration: 3000 }); }
+  private showError(message: string): void { this.snackBar.open(message, 'Close', { duration: 7000 }); }
 }

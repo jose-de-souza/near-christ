@@ -8,7 +8,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const authService = inject(AuthService);
     const snackBar = inject(MatSnackBar);
 
-    // Attach token if present
+    // Attach token if present by calling the correct public method
     const token = authService.getToken();
     if (token) {
         req = req.clone({
@@ -18,24 +18,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         });
     }
 
-    // Send request, handle errors
+    // Send request and handle errors
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
-            // If the server returns a 403 (forbidden) with JSON body
+            // If the server returns a 403 (forbidden)
             if (error.status === 403) {
-                // The server’s JSON typically includes { message: "...some text..." }
-                const serverMessage = error.error?.message || 'Forbidden';
+                const serverMessage = error.error?.message || 'Forbidden: You do not have permission to perform this action.';
 
-                // Show a Material snackbar at the top-right
+                // Show a Material snackbar
                 snackBar.open(serverMessage, 'Close', {
-                    duration: 3000,
+                    duration: 5000, // Increased duration for better readability
                     horizontalPosition: 'end',
                     verticalPosition: 'top',
-                    panelClass: ['snackbar-error'] // optional custom styling
+                    panelClass: ['snackbar-error']
                 });
             }
 
-            // re-throw so calling code can handle if needed
+            // Re-throw the error so calling code can handle it if needed
             return throwError(() => error);
         })
     );

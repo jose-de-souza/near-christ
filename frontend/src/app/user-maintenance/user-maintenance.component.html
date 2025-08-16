@@ -3,14 +3,15 @@
 
     <!-- Form container -->
     <div class="form-container">
-        <!-- Single Row: User Details -->
+        <!-- User Details Section -->
         <div class="section user" data-title="User Details">
             <div class="row-user">
                 <!-- User Name -->
                 <div class="field-group user-name">
                     <label>User Name</label>
-                    <input type="text" [(ngModel)]="selectedUser.username" autocomplete="off" />
-                    <div *ngIf="hasSubmitted && !selectedUser.username?.trim()" class="inline-error">
+                    <!-- CORRECTED: Use userName -->
+                    <input type="text" [(ngModel)]="selectedUser.userName" autocomplete="off" />
+                    <div *ngIf="hasSubmitted && !selectedUser.userName?.trim()" class="inline-error">
                         User Name is required.
                     </div>
                 </div>
@@ -18,33 +19,39 @@
                 <!-- Email -->
                 <div class="field-group user-email">
                     <label>Email</label>
-                    <input type="text" [(ngModel)]="selectedUser.userEmail" autocomplete="off" />
+                    <input type="email" [(ngModel)]="selectedUser.userEmail" autocomplete="off" />
                     <div *ngIf="hasSubmitted && !selectedUser.userEmail?.trim()" class="inline-error">
                         Email is required.
-                    </div>
-                </div>
-
-                <!-- Role -->
-                <div class="field-group user-role">
-                    <label>Role</label>
-                    <select [(ngModel)]="selectedUser.userRole">
-                        <option value="">-- Select Role --</option>
-                        <option *ngFor="let r of userRoles" [ngValue]="r">{{ r }}</option>
-                    </select>
-                    <div *ngIf="hasSubmitted && !selectedUser.userRole?.trim()" class="inline-error">
-                        Role is required.
                     </div>
                 </div>
 
                 <!-- Password -->
                 <div class="field-group user-password">
                     <label>Password</label>
-                    <input type="password" [(ngModel)]="selectedUser.userPassword" autocomplete="new-password" />
-                    <!-- Required if adding a new user (no userId) -->
-                    <div *ngIf="hasSubmitted && !selectedUser.userId && !selectedUser.userPassword?.trim()"
+                    <input type="password" [(ngModel)]="selectedUser.password" placeholder="Leave blank to keep unchanged" autocomplete="new-password" />
+                    <!-- CORRECTED: Use selectedUser.id -->
+                    <div *ngIf="hasSubmitted && !selectedUser.id && !selectedUser.password?.trim()"
                         class="inline-error">
                         Password is required for new users.
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Roles Section -->
+        <div class="section roles" data-title="Roles">
+             <div class="field-group user-roles">
+                <label>Roles</label>
+                <!-- REPLACED: Dropdown is now a checkbox group for multiple roles -->
+                <div class="checkbox-group">
+                    <mat-checkbox *ngFor="let role of allRoles"
+                                  [checked]="selectedRoles.get(role)"
+                                  (change)="selectedRoles.set(role, $event.checked)">
+                        {{ role }}
+                    </mat-checkbox>
+                </div>
+                 <div *ngIf="hasSubmitted && selectedRolesCount === 0" class="inline-error">
+                    At least one role is required.
                 </div>
             </div>
         </div>
@@ -53,46 +60,21 @@
 
     <!-- Buttons -->
     <div class="buttons">
-        <!-- 
-           UI mode usage:
-            - Add is disabled if uiMode === 'editing'
-            - Modify/Delete are disabled if uiMode !== 'editing'
-            - Cancel is disabled if uiMode === 'view'
-       -->
         <button (click)="addUser()" [disabled]="uiMode === 'editing'">Add</button>
         <button (click)="modifyUser()" [disabled]="uiMode !== 'editing'">Modify</button>
         <button (click)="deleteUser()" [disabled]="uiMode !== 'editing'">Delete</button>
         <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
     </div>
 
-    <!-- Results Area: Grid-based, drag-and-drop columns -->
+    <!-- Results Area: Grid -->
     <div class="results-area">
         <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
             (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-            <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
-                [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-                <!-- Column Header -->
+            <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag>
                 <div class="grid-column-header">
                     <span class="drag-handle" cdkDragHandle>☰</span>
-
-                    <!-- Custom Drag Preview -->
-                    <ng-template cdkDragPreview>
-                        <div class="custom-drag-preview">
-                            {{ column.header }}
-                        </div>
-                    </ng-template>
-
-                    <!-- Custom Drag Placeholder -->
-                    <ng-template cdkDragPlaceholder>
-                        <div class="custom-drag-placeholder">
-                            Dropping {{ column.header }} here
-                        </div>
-                    </ng-template>
-
                     {{ column.header }}
                 </div>
-
-                <!-- Column Cells -->
                 <div class="grid-column-cell" *ngFor="let row of users; trackBy: trackByUserID"
                     (click)="selectUser(row)">
                     {{ getCellValue(row, column) }}

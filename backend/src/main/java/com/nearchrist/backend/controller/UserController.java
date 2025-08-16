@@ -1,7 +1,8 @@
 package com.nearchrist.backend.controller;
 
 import com.nearchrist.backend.dto.ApiResponse;
-import com.nearchrist.backend.entity.User;
+import com.nearchrist.backend.dto.UserDto;
+import com.nearchrist.backend.dto.UserUpsertDto; // A new DTO for create/update operations
 import com.nearchrist.backend.service.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/users") // It's good practice to have a base path for the controller
 public class UserController {
 
     private final UserService userService;
@@ -19,10 +21,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<User>>> getAll() {
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<UserDto>>> getAll() {
         try {
-            List<User> users = userService.getAll();
+            // The service now returns a list of UserDto
+            List<UserDto> users = userService.getAllUsers();
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "All users retrieved successfully", users));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -30,11 +33,12 @@ public class UserController {
         }
     }
 
-    @GetMapping("/users/{id}")
-    public ResponseEntity<ApiResponse<User>> getById(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDto>> getById(@PathVariable Long id) {
         try {
-            return userService.getById(id)
-                    .map(user -> ResponseEntity.ok(new ApiResponse<>(true, 200, "User retrieved successfully", user)))
+            // The service now returns an Optional of UserDto
+            return userService.getUserById(id)
+                    .map(userDto -> ResponseEntity.ok(new ApiResponse<>(true, 200, "User retrieved successfully", userDto)))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(new ApiResponse<>(false, 404, "User not found", null)));
         } catch (Exception e) {
@@ -43,14 +47,15 @@ public class UserController {
         }
     }
 
-    @PostMapping("/users")
-    public ResponseEntity<ApiResponse<User>> create(@RequestBody User user) {
+    @PostMapping
+    public ResponseEntity<ApiResponse<UserDto>> create(@RequestBody UserUpsertDto userDto) {
         try {
-            if (user.getUserEmail() == null || user.getUserPassword() == null) {
+            if (userDto.userEmail() == null || userDto.password() == null) {
                 return ResponseEntity.badRequest()
                         .body(new ApiResponse<>(false, 400, "Missing email or password", null));
             }
-            User savedUser = userService.create(user);
+            // The service now accepts a DTO for user creation
+            UserDto savedUser = userService.createUser(userDto);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(true, 201, "User created successfully", savedUser));
         } catch (Exception e) {
@@ -59,10 +64,11 @@ public class UserController {
         }
     }
 
-    @PutMapping("/users/{id}")
-    public ResponseEntity<ApiResponse<User>> update(@PathVariable Long id, @RequestBody User user) {
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDto>> update(@PathVariable Long id, @RequestBody UserUpsertDto userDto) {
         try {
-            return userService.update(id, user)
+            // The service now accepts a DTO for user updates
+            return userService.updateUser(id, userDto)
                     .map(updatedUser -> ResponseEntity.ok(new ApiResponse<>(true, 200, "User updated successfully", updatedUser)))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(new ApiResponse<>(false, 404, "User not found", null)));
@@ -72,10 +78,10 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         try {
-            if (!userService.delete(id)) {
+            if (!userService.deleteUser(id)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new ApiResponse<>(false, 404, "User not found", null));
             }
