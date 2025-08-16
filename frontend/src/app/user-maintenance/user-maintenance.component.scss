@@ -126,8 +126,9 @@
 
                     .checkbox-group {
                         display: flex;
-                        flex-direction: column;
-                        gap: 8px;
+                        flex-direction: row;
+                        gap: 20px;
+                        align-items: center;
                     }
 
                     .inline-error {
@@ -280,55 +281,48 @@
     }
 
     /* Dialog styling */
-    :host ::ng-deep .custom-dialog {
-        .mat-dialog-container {
-            border-radius: 8px;
+    :host ::ng-deep .orange-dialog {
+        .mat-mdc-dialog-surface {
+            background-color: #ff9800 !important;
+            color: #000 !important;
             padding: 20px;
-            background: white;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            max-width: 500px;
         }
 
         .mat-dialog-title {
-            color: palette.$primary-color;
+            color: #000;
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 20px;
         }
 
         .mat-dialog-content {
-            color: #333;
+            color: #000;
             font-size: 16px;
-            margin-bottom: 20px;
+            margin: 1rem 0;
         }
 
         .mat-dialog-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 1rem;
 
             button {
-                padding: 8px 16px;
-                border-radius: 4px;
+                min-width: 70px;
                 border: none;
+                border-radius: 4px;
+                padding: 8px 12px;
                 cursor: pointer;
+                background-color: rgba(255, 255, 255, 0.2);
             }
 
-            button[mat-dialog-close="true"] {
-                background-color: palette.$delete-button-bg;
-                color: white;
-
-                &:hover {
-                    background-color: palette.$delete-button-hover-bg;
-                }
+            button.button-yes {
+                color: red;
             }
 
-            button[mat-dialog-close] {
-                background-color: palette.$neutral-color;
-                color: white;
-
-                &:hover {
-                    background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
-                }
+            button.button-no {
+                color: grey;
             }
         }
     }
