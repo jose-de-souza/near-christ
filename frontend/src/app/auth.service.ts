@@ -1,21 +1,30 @@
-import { Injectable, signal, computed, inject, effect, NgZone } from '@angular/core';
+import { Injectable, signal, computed, inject, NgZone, WritableSignal, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { map, Observable, tap } from 'rxjs';
 import { environment } from '../environments/environment';
+
+// Define the shape of the user info returned on login
+interface UserLoginInfo {
+  id: number;
+  userName: string;
+  email: string;
+  roles: string[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private API_URL = environment.apiUrl + '/auth/login';  // Backend JWT authentication API
-  private _token = signal<string | null>(null);
-  public _isAuthenticated = signal<boolean>(false);
-  public isNavigating = false;
+  private API_URL = environment.apiUrl + '/auth/login';
+  private _token: WritableSignal<string | null> = signal(null);
+  private _userRoles: WritableSignal<string[]> = signal([]);
 
-  // NEW: Store the user role from JWT (ADMIN, SUPERVISOR, STANDARD, etc.)
-  private _userRole = signal<string | null>(null);
+  public isAuthenticatedSignal: Signal<boolean> = computed(() => !!this._token());
+  
+  // --- FIX: Added this public property back for the AuthGuard ---
+  public isNavigating = false;
 
   private router = inject(Router);
   private ngZone = inject(NgZone);
@@ -24,73 +33,50 @@ export class AuthService {
     const storedToken = localStorage.getItem('jwt_token');
     if (storedToken && this.isValidToken(storedToken)) {
       this._token.set(storedToken);
-      this._isAuthenticated.set(true);
-      // On init, parse the token to get role
-      this._userRole.set(this.decodeUserRole(storedToken));
+      this._userRoles.set(this.decodeUserRoles(storedToken));
     } else {
-      this._token.set(null);
-      this._isAuthenticated.set(false);
-      localStorage.removeItem('jwt_token');
+      this.clearAuthState();
     }
 
-    // Whenever _token changes, re-check validity & decode role
-    effect(() => {
-      const token = this._token();
-      const valid = this.isValidToken(token);
-      this._isAuthenticated.set(valid);
-
-      if (valid && token) {
-        this._userRole.set(this.decodeUserRole(token));
-      } else {
-        this._userRole.set(null);
-      }
-    });
-
-    // Listen for storage changes (token removed in another tab, etc.)
-    window.addEventListener('storage', () => {
-      const newToken = localStorage.getItem('jwt_token');
-
-      if (!newToken || !this.isValidToken(newToken)) {
-        this.logout();
-        this.ngZone.run(() => {
-          this.router.navigate(['/login']);
-        });
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'jwt_token') {
+        const newToken = localStorage.getItem('jwt_token');
+        if (!newToken || !this.isValidToken(newToken)) {
+          this.logout();
+        }
       }
     });
   }
 
-  // ---------- PUBLIC GETTERS ----------
-
-  getToken(): string | null {
+  public getToken(): string | null {
     return this._token();
   }
-
-  isAuthenticated(): boolean {
-    return this._isAuthenticated();
+  
+  public isAuthenticated(): boolean {
+    return this.isAuthenticatedSignal();
   }
 
-  // Let components do `auth.userRole === 'ADMIN'` or whatever
-  get userRole(): string | null {
-    return this._userRole();
+  public get userRoles(): string[] {
+    return this._userRoles();
   }
 
-  // ---------- TOKEN VALIDATION & DECODING ----------
+  public hasRole(role: string): boolean {
+    return this._userRoles().includes(role);
+  }
 
-  private decodeUserRole(token: string): string | null {
+  private decodeUserRoles(token: string): string[] {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role ?? null;  // e.g. "ADMIN", "SUPERVISOR", etc.
+      return payload.roles ?? []; 
     } catch {
-      return null;
+      return [];
     }
   }
 
-  isValidToken(token: string | null): boolean {
-    if (!token) {
-      return false;
-    }
+  private isValidToken(token: string | null): boolean {
+    if (!token) return false;
     try {
-      const payload = JSON.parse(atob(token.split('.')[1])); // decode
+      const payload = JSON.parse(atob(token.split('.')[1]));
       const expiry = payload.exp;
       if (!expiry || Date.now() >= expiry * 1000) {
         this.logout();
@@ -103,28 +89,20 @@ export class AuthService {
     }
   }
 
-  // ---------- LOGIN / LOGOUT ----------
-
-  login(email: string, password: string): Observable<{ accessToken: string }> {
-    return this.http.post<{ data: { accessToken: string } }>(this.API_URL, { email, password })
+  login(email: string, password: string): Observable<{ accessToken: string, user: UserLoginInfo }> {
+    return this.http.post<{ data: { accessToken: string, user: UserLoginInfo } }>(this.API_URL, { email, password })
       .pipe(
-        map((res) => {
-          return { accessToken: res.data?.accessToken };
-        }),
-        tap((response) => {
-          if (!response.accessToken || response.accessToken === 'undefined') {
+        map(res => res.data),
+        tap(response => {
+          if (!response?.accessToken) {
             console.error('Login failed: No valid token received!');
             return;
           }
-          // Store token
           this._token.set(response.accessToken);
-          this._isAuthenticated.set(true);
+          this._userRoles.set(response.user.roles); 
           localStorage.setItem('jwt_token', response.accessToken);
 
-          // Optional small delay before navigation
-          setTimeout(() => {
-            this.router.navigate(['/adoration-schedule']);
-          }, 200);
+          setTimeout(() => this.router.navigate(['/adoration-schedule']), 200);
         })
       );
   }
@@ -138,18 +116,15 @@ export class AuthService {
     this.isNavigating = true;
 
     this.ngZone.run(() => {
-      this.router.navigateByUrl('/').then(() => {
-        this.router.navigate(['/adoration-query']).finally(() => {
-          this.isNavigating = false;
+        this.router.navigate(['/login']).finally(() => {
+            this.isNavigating = false;
         });
-      });
     });
   }
 
   private clearAuthState() {
     this._token.set(null);
-    this._isAuthenticated.set(false);
-    this._userRole.set(null);
+    this._userRoles.set([]);
     localStorage.removeItem('jwt_token');
   }
 }

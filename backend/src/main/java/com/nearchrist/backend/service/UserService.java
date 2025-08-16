@@ -1,55 +1,92 @@
 package com.nearchrist.backend.service;
 
+import com.nearchrist.backend.dto.UserDto;
+import com.nearchrist.backend.dto.UserUpsertDto;
+import com.nearchrist.backend.entity.Role;
 import com.nearchrist.backend.entity.User;
+import com.nearchrist.backend.mapper.UserMapper;
+import com.nearchrist.backend.repository.RoleRepository;
 import com.nearchrist.backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
-    public List<User> getAll() {
-        return userRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Optional<User> getById(Long id) {
-        return userRepository.findById(id);
+    // --- FIX: This method has been restored ---
+    @Transactional(readOnly = true)
+    public Optional<UserDto> getUserById(Long id) {
+        return userRepository.findById(id).map(userMapper::toDto);
     }
 
-    public User create(User user) {
-        if (user.getUserPassword() != null && !user.getUserPassword().startsWith("$2a$") && !user.getUserPassword().startsWith("$2y$")) {
-            user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
-        }
-        return userRepository.save(user);
+    @Transactional
+    public UserDto createUser(UserUpsertDto userDto) {
+        User user = new User();
+        user.setUserFullName(userDto.userFullName());
+        user.setUserEmail(userDto.userEmail());
+        user.setPassword(passwordEncoder.encode(userDto.password()));
+
+        Set<Role> roles = userDto.roles().stream()
+                .map(roleName -> roleRepository.findByName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
+                .collect(Collectors.toSet());
+        user.setRoles(roles);
+
+        User savedUser = userRepository.save(user);
+        return userMapper.toDto(savedUser);
     }
 
-    public Optional<User> update(Long id, User updatedUser) {
-        Optional<User> existingUser = userRepository.findById(id);
-        if (existingUser.isPresent()) {
-            User user = existingUser.get();
-            user.setUserName(updatedUser.getUsername());
-            user.setUserEmail(updatedUser.getUserEmail());
-            user.setUserRole(updatedUser.getUserRole());
-            if (updatedUser.getUserPassword() != null && !updatedUser.getUserPassword().startsWith("$2a$") && !updatedUser.getUserPassword().startsWith("$2y$")) {
-                user.setUserPassword(passwordEncoder.encode(updatedUser.getUserPassword()));
-            }
-            return Optional.of(userRepository.save(user));
-        }
-        return Optional.empty();
+    @Transactional
+    public Optional<UserDto> updateUser(Long id, UserUpsertDto userDto) {
+        return userRepository.findById(id)
+                .map(existingUser -> {
+                    existingUser.setUserFullName(userDto.userFullName());
+                    existingUser.setUserEmail(userDto.userEmail());
+
+                    if (userDto.password() != null && !userDto.password().isEmpty()) {
+                        existingUser.setPassword(passwordEncoder.encode(userDto.password()));
+                    }
+
+                    if (userDto.roles() != null) {
+                        Set<Role> roles = userDto.roles().stream()
+                                .map(roleName -> roleRepository.findByName(roleName)
+                                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
+                                .collect(Collectors.toSet());
+                        existingUser.setRoles(roles);
+                    }
+
+                    User updatedUser = userRepository.save(existingUser);
+                    return userMapper.toDto(updatedUser);
+                });
     }
 
-    public boolean delete(Long id) {
+    @Transactional
+    public boolean deleteUser(Long id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
             return true;

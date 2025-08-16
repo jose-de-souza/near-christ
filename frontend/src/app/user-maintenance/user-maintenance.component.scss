@@ -47,7 +47,7 @@
                 color: palette.$primary-color;
             }
 
-            /* Single row with 4 fields => 24% each => 96% total, 4% leftover */
+            /* Single row with 3 fields => 32% each => 96% total, 4% leftover */
             .row-user {
                 display: flex;
                 flex-wrap: nowrap;
@@ -62,10 +62,9 @@
 
                 .user-name,
                 .user-email,
-                .user-role,
                 .user-password {
-                    flex: 0 0 24%;
-                    max-width: 24%;
+                    flex: 0 0 32%;
+                    max-width: 32%;
                 }
 
                 label {
@@ -88,6 +87,54 @@
                     color: red;
                     font-size: 0.8em;
                     margin-top: 2px;
+                }
+            }
+        }
+
+        .section.roles {
+            position: relative;
+            border: 1px solid palette.$secondary-color;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            &::before {
+                content: attr(data-title);
+                /* "Roles" */
+                position: absolute;
+                top: -10px;
+                left: 10px;
+                background: palette.$background-color;
+                padding: 0 5px;
+                font-size: 0.9em;
+                font-weight: bold;
+                color: palette.$primary-color;
+            }
+
+            .row-roles {
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 15px;
+
+                .field-group.user-roles {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3px;
+                    flex: 1;
+
+                    .checkbox-group {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+
+                    .inline-error {
+                        color: red;
+                        font-size: 0.8em;
+                        margin-top: 2px;
+                    }
                 }
             }
         }
@@ -146,7 +193,7 @@
         /* 
         NEW: explicitly style disabled buttons 
         so they appear clearly inactive 
-    */
+        */
         button:disabled {
             background-color: color.scale(palette.$neutral-color, $lightness: 80%);
             cursor: not-allowed;
@@ -230,5 +277,59 @@
         padding: 10px;
         font-style: italic;
         color: #555;
+    }
+
+    /* Dialog styling */
+    :host ::ng-deep .custom-dialog {
+        .mat-dialog-container {
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .mat-dialog-title {
+            color: palette.$primary-color;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .mat-dialog-content {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .mat-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+
+            button {
+                padding: 8px 16px;
+                border-radius: 4px;
+                border: none;
+                cursor: pointer;
+            }
+
+            button[mat-dialog-close="true"] {
+                background-color: palette.$delete-button-bg;
+                color: white;
+
+                &:hover {
+                    background-color: palette.$delete-button-hover-bg;
+                }
+            }
+
+            button[mat-dialog-close] {
+                background-color: palette.$neutral-color;
+                color: white;
+
+                &:hover {
+                    background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.nearchrist.backend.controller;
 
 import com.nearchrist.backend.dto.ApiResponse;
 import com.nearchrist.backend.dto.LoginRequest;
+import com.nearchrist.backend.entity.Role;
 import com.nearchrist.backend.entity.User;
 import com.nearchrist.backend.security.JwtUtil;
 import org.springframework.http.HttpStatus;
@@ -11,12 +12,15 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class AuthController {
@@ -36,16 +40,27 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtil.generateToken((User) authentication.getPrincipal());
 
+            // --- UPDATED ---
+            // generateToken now correctly accepts the UserDetails principal
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String jwt = jwtUtil.generateToken(userDetails);
+
+            // --- UPDATED ---
+            // Build the response payload with the correct fields from the User entity
             User user = (User) authentication.getPrincipal();
+            List<String> roles = user.getRoles().stream()
+                    .map(Role::getName)
+                    .collect(Collectors.toList());
+
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", user.getId()); // Use getId()
+            userInfo.put("name", user.getUsername()); // Use getUserName() for the display name
+            userInfo.put("email", user.getUserEmail());
+            userInfo.put("roles", roles); // Pass the list of role names
+
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("accessToken", jwt);
-            Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("id", user.getUserId());
-            userInfo.put("name", user.getUsername());
-            userInfo.put("email", user.getUserEmail());
-            userInfo.put("role", user.getUserRole());
             responseData.put("user", userInfo);
 
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "Login successful", responseData));
@@ -54,7 +69,7 @@ public class AuthController {
                     .body(new ApiResponse<>(false, 401, "Invalid credentials", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, 500, "Login failed", null));
+                    .body(new ApiResponse<>(false, 500, "Login failed: " + e.getMessage(), null));
         }
     }
 }
