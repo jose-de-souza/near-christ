@@ -15,38 +15,23 @@ public class Diocese {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dioceseId;
-
     @Column(nullable = false)
     private String dioceseName;
-
     private String dioceseStreetNo;
-
     private String dioceseStreetName;
-
     private String dioceseSuburb;
-
     private String diocesePostcode;
-
     private String diocesePhone;
-
     private String dioceseEmail;
-
     private String dioceseWebsite;
-
-    @ManyToOne
-    @JoinColumn(name = "state_id")
-    private State state;
-
     @OneToMany(mappedBy = "diocese", cascade = CascadeType.ALL)
     @JsonManagedReference("diocese-parishes")
     @JsonIgnoreProperties("diocese")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Parish> parishes;
-
     @OneToMany(mappedBy = "diocese", cascade = CascadeType.ALL)
     @JsonManagedReference("diocese-adorations")
     private List<Adoration> adorations;
-
     @OneToMany(mappedBy = "diocese", cascade = CascadeType.ALL)
     @JsonManagedReference("diocese-crusades")
     private List<Crusade> crusades;

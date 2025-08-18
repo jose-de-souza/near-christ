@@ -7,17 +7,17 @@
     <div class="row-1">
       <div class="section adoration" data-title="Adoration">
         <!-- Four fields: Type, Day, Start, End -->
-        <div>
+        <div class="field-group adorationType">
           <label>Adoration Type</label>
           <select [(ngModel)]="selectedAdoration.adorationType" (change)="onAdorationTypeChange()">
             <option value="Perpetual">Perpetual</option>
             <option value="Regular">Regular</option>
           </select>
         </div>
-
-        <div>
+        <div class="field-group adorationDay">
           <label>Day</label>
           <select [(ngModel)]="selectedAdoration.adorationDay" [disabled]="isPerpetual()">
+            <option value="">-- select day --</option>
             <option value="Sunday">Sunday</option>
             <option value="Monday">Monday</option>
             <option value="Tuesday">Tuesday</option>
@@ -26,16 +26,23 @@
             <option value="Friday">Friday</option>
             <option value="Saturday">Saturday</option>
           </select>
+          <div *ngIf="hasSubmitted && !selectedAdoration.adorationDay && selectedAdoration.adorationType === 'Regular'" class="inline-error">
+            Day is required for Regular Adoration.
+          </div>
         </div>
-
-        <div>
+        <div class="field-group startTime">
           <label>Start Time</label>
           <input type="time" [(ngModel)]="selectedAdoration.adorationStart" [disabled]="isPerpetual()" />
+          <div *ngIf="hasSubmitted && !selectedAdoration.adorationStart?.trim() && selectedAdoration.adorationType === 'Regular'" class="inline-error">
+            Start Time is required for Regular Adoration.
+          </div>
         </div>
-
-        <div>
+        <div class="field-group endTime">
           <label>End Time</label>
           <input type="time" [(ngModel)]="selectedAdoration.adorationEnd" [disabled]="isPerpetual()" />
+          <div *ngIf="hasSubmitted && !selectedAdoration.adorationEnd?.trim() && selectedAdoration.adorationType === 'Regular'" class="inline-error">
+            End Time is required for Regular Adoration.
+          </div>
         </div>
       </div>
     </div>
@@ -44,18 +51,20 @@
     <!-- Row 2: State / Diocese / Parish -->
     <div class="row-2">
       <div class="section diocese-parish-names" data-title="Diocese/Parish">
-        <div>
+        <div class="field-group state">
           <label>State</label>
           <select [(ngModel)]="selectedAdoration.stateId" (change)="onStateChange()"
-            [disabled]="allStates.length === 0">
+                  [disabled]="allStates.length === 0">
             <option [ngValue]="0">Select State</option>
             <option *ngFor="let st of allStates" [ngValue]="st.stateId">
               {{ st.stateAbbreviation }}
             </option>
           </select>
+          <div *ngIf="hasSubmitted && !selectedAdoration.stateId" class="inline-error">
+            State is required.
+          </div>
         </div>
-
-        <div>
+        <div class="field-group diocese">
           <label>Diocese Name</label>
           <select [(ngModel)]="selectedAdoration.dioceseId" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [ngValue]="0">-- select diocese --</option>
@@ -63,17 +72,22 @@
               {{ d.dioceseName }}
             </option>
           </select>
+          <div *ngIf="hasSubmitted && !selectedAdoration.dioceseId" class="inline-error">
+            Diocese is required.
+          </div>
         </div>
-
-        <div>
+        <div class="field-group parish">
           <label>Parish Name</label>
           <select [(ngModel)]="selectedAdoration.parishId" (change)="updateLocationFromParish()"
-            [disabled]="parishDisabled">
+                  [disabled]="parishDisabled">
             <option [ngValue]="0">-- select parish --</option>
             <option *ngFor="let p of filteredParishes" [ngValue]="p.parishId">
               {{ p.parishName }}
             </option>
           </select>
+          <div *ngIf="hasSubmitted && !selectedAdoration.parishId" class="inline-error">
+            Parish is required.
+          </div>
         </div>
       </div>
     </div>
@@ -82,14 +96,14 @@
     <!-- Row 3: Location -->
     <div class="row-3">
       <div class="section location" data-title="Location">
-        <div>
+        <div class="field-group locationType">
           <label>Location Type</label>
           <select [(ngModel)]="selectedAdoration.adorationLocationType" (change)="updateLocationFromParish()">
             <option value="Parish Church">Parish Church</option>
             <option value="Other">Other</option>
           </select>
         </div>
-        <div>
+        <div class="field-group location">
           <label>Location</label>
           <input type="text" [(ngModel)]="selectedAdoration.adorationLocation" [disabled]="isParishChurch()" />
         </div>
@@ -101,12 +115,6 @@
 
   <!-- Action Buttons -->
   <div class="buttons">
-    <!-- 
-      Using UI mode approach:
-       - Add is disabled if uiMode === 'editing'
-       - Modify/Delete are disabled if uiMode !== 'editing'
-       - Cancel is disabled if uiMode === 'view'
-    -->
     <button (click)="addSchedule()" [disabled]="uiMode === 'editing'">Add</button>
     <button (click)="modifySchedule()" [disabled]="uiMode !== 'editing'">Modify</button>
     <button (click)="deleteSchedule()" [disabled]="uiMode !== 'editing'">Delete</button>
@@ -116,9 +124,9 @@
   <!-- Results Area -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-      (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-      <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
-        (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+      <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
+           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
@@ -131,9 +139,10 @@
           </ng-template>
           {{ column.header }}
         </div>
-
         <div class="grid-column-cell" *ngFor="let row of schedules; trackBy: trackByAdorationID"
-          (click)="selectSchedule(row)">
+             (click)="selectSchedule(row)"
+             [ngClass]="column.field === 'state' ? getCellClass(row, column) : ''"
+             [matTooltip]="column.field === 'state' && !row.state?.stateAbbreviation ? 'This Adoration has no State registered.' : ''">
           {{ getCellValue(row, column) }}
         </div>
       </div>

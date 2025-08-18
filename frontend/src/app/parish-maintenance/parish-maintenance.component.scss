@@ -313,7 +313,6 @@
 /* ONLY these rules apply for the Location / Contact row widths */
 .section.location {
     .row-1 {
-
         /* State => 14%, Diocese => 86% */
         .state {
             flex: 1 1 14%;
@@ -327,7 +326,6 @@
     }
 
     .row-2 {
-
         /* Postcode => 14%, Phone/Email/Website => 28% each */
         .postcode {
             flex: 1 1 14%;

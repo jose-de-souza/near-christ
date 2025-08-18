@@ -39,12 +39,15 @@
                 <div class="field-group state">
                     <label>State</label>
                     <select [(ngModel)]="selectedParish.stateId" (change)="onLocationStateChange()"
-                        [disabled]="stateDropdownDisabled">
+                            [disabled]="stateDropdownDisabled">
                         <option [ngValue]="0">Select State</option>
                         <option *ngFor="let st of allStates" [ngValue]="st.stateId">
                             {{ st.stateAbbreviation }}
                         </option>
                     </select>
+                    <div *ngIf="hasSubmitted && !selectedParish.stateId" class="inline-error">
+                        State is required.
+                    </div>
                 </div>
                 <div class="field-group diocese">
                     <label>Diocese</label>
@@ -97,7 +100,7 @@
                 <div class="field-group diocese">
                     <label>Diocese</label>
                     <select [(ngModel)]="filterDioceseID" (change)="onFilterDioceseChange()"
-                        [disabled]="dioceseFilterDisabled">
+                            [disabled]="dioceseFilterDisabled">
                         <option [ngValue]="0">All Dioceses</option>
                         <option *ngFor="let d of filteredDiocesesForFilter" [ngValue]="d.dioceseId">
                             {{ d.dioceseName }}
@@ -110,12 +113,6 @@
 
     <!-- Buttons -->
     <div class="buttons">
-        <!--
-          UI mode approach:
-            - Add is disabled if uiMode === 'editing'
-            - Modify/Delete disabled if uiMode !== 'editing'
-            - Cancel disabled if uiMode === 'view'
-      -->
         <button (click)="addParish()" [disabled]="uiMode === 'editing'">Add</button>
         <button (click)="modifyParish()" [disabled]="uiMode !== 'editing'">Modify</button>
         <button (click)="deleteParish()" [disabled]="uiMode !== 'editing'">Delete</button>
@@ -125,9 +122,9 @@
     <!-- Results area -->
     <div class="results-area">
         <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-            (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+             (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
             <div class="grid-column" *ngFor="let column of columns; trackBy: trackByParishColumn" cdkDrag
-                [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+                 [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
                 <div class="grid-column-header">
                     <span class="drag-handle" cdkDragHandle>☰</span>
                     <ng-template cdkDragPreview>
@@ -141,7 +138,7 @@
                     {{ column.header }}
                 </div>
                 <div class="grid-column-cell" *ngFor="let row of parishes; trackBy: trackByParishID"
-                    (click)="selectParish(row)">
+                     (click)="selectParish(row)">
                     {{ getCellValue(row, column) }}
                 </div>
             </div>

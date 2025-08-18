@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, DragDropModule, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { DioceseService, Diocese } from './diocese.service';
 import { StateService, State } from '../state.service';
-
-// Import your ConfirmationDialog
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -21,59 +20,48 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
     FormsModule,
     DragDropModule,
     MatSnackBarModule,
-    MatDialogModule           // Needed for the dialog
+    MatDialogModule,
+    MatTooltipModule
   ]
 })
 export class DioceseMaintenanceComponent implements OnInit {
-
-  // Full list of dioceses from back end
   allDioceses: Diocese[] = [];
-  // Filtered subset displayed in the table
   dioceses: Diocese[] = [];
-
-  // All states from back end
   allStates: State[] = [];
-
   hasSubmitted = false;
-
-  // UI mode: 'view' => no record selected, 'editing' => a record is selected
   uiMode: 'view' | 'editing' = 'view';
 
-  // The diocese record being edited/created
   selectedDiocese: Partial<Diocese> = {
     dioceseId: undefined,
     dioceseName: '',
     dioceseStreetNo: '',
     dioceseStreetName: '',
     dioceseSuburb: '',
-    stateId: 0,
     diocesePostcode: '',
     diocesePhone: '',
     dioceseEmail: '',
     dioceseWebsite: ''
   };
 
-  // Table columns
   columns = [
     { header: 'Diocese Name', field: 'dioceseName' },
     { header: 'Street No', field: 'dioceseStreetNo' },
     { header: 'Street Name', field: 'dioceseStreetName' },
     { header: 'Suburb', field: 'dioceseSuburb' },
-    { header: 'State', field: 'state' },
+    { header: 'State(s)', field: 'associatedStateAbbreviations' },
     { header: 'Post Code', field: 'diocesePostcode' },
     { header: 'Phone', field: 'diocesePhone' },
     { header: 'Email', field: 'dioceseEmail' },
     { header: 'Website', field: 'dioceseWebsite' },
   ];
 
-  // Filter property for the dropdown in the filter section
-  filterStateID: number = 0; // 0 => "All States"
+  filterStateID: number = 0;
 
   constructor(
     private dioceseService: DioceseService,
     private stateService: StateService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog // <-- inject MatDialog
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -81,9 +69,6 @@ export class DioceseMaintenanceComponent implements OnInit {
     this.loadAllDioceses();
   }
 
-  /* ---------------------------
-     Load States
-  --------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
@@ -96,14 +81,10 @@ export class DioceseMaintenanceComponent implements OnInit {
     });
   }
 
-  /* ---------------------------
-     Load Dioceses
-  --------------------------- */
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
         this.allDioceses = res.data;
-        // By default, show all
         this.dioceses = res.data;
       },
       error: (err) => {
@@ -115,48 +96,41 @@ export class DioceseMaintenanceComponent implements OnInit {
     });
   }
 
-  /* ---------------------------
-     Filter by State
-  --------------------------- */
   onFilterStateChange(): void {
     const chosenID = Number(this.filterStateID);
     if (chosenID === 0) {
-      // "All States": show all
-      this.dioceses = this.allDioceses;
+      this.dioceses = this.allDioceses; // Show all dioceses, including those with no states
     } else {
-      this.dioceses = this.allDioceses.filter(d => d.state?.stateId === chosenID);
+      const selectedState = this.allStates.find(s => s.stateId === chosenID);
+      if (selectedState) {
+        const abbrev = selectedState.stateAbbreviation;
+        this.dioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      } else {
+        this.dioceses = [];
+      }
     }
   }
 
-  /* ---------------------------
-     Selecting a Diocese Row
-     => switch to editing mode
-  --------------------------- */
-  selectDiocese(d: Diocese): void {
+  selectDiocese(diocese: Diocese): void {
     this.selectedDiocese = {
-      ...d,
-      stateId: d.state?.stateId, // Flatten nested object for the form
+      ...diocese,
+      associatedStateAbbreviations: undefined // Exclude read-only field
     };
     this.hasSubmitted = false;
     this.uiMode = 'editing';
   }
 
-  /* ---------------------------
-     CRUD METHODS
-  --------------------------- */
   addDiocese(): void {
     this.hasSubmitted = true;
     if (!this.selectedDiocese.dioceseName?.trim()) {
       this.showWarning('Diocese Name is required!');
       return;
     }
-
     this.dioceseService.createDiocese(this.selectedDiocese).subscribe({
       next: () => {
         this.showInfo(`${this.selectedDiocese.dioceseName} has been added`);
         this.loadAllDioceses();
         this.resetForm();
-        // Return to view mode
         this.uiMode = 'view';
       },
       error: (err) => {
@@ -167,19 +141,21 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   modifyDiocese(): void {
-    // The "Modify" button is disabled unless uiMode === 'editing'
     if (!this.selectedDiocese.dioceseId) {
       this.showWarning('No diocese selected to update!');
       return;
     }
-
+    this.hasSubmitted = true;
+    if (!this.selectedDiocese.dioceseName?.trim()) {
+      this.showWarning('Diocese Name is required!');
+      return;
+    }
     const id = this.selectedDiocese.dioceseId;
     this.dioceseService.updateDiocese(id, this.selectedDiocese).subscribe({
       next: () => {
         this.showInfo(`${this.selectedDiocese.dioceseName} modified`);
         this.loadAllDioceses();
         this.resetForm();
-        // Return to view mode
         this.uiMode = 'view';
       },
       error: (err) => {
@@ -190,22 +166,18 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   deleteDiocese(): void {
-    // The "Delete" button is disabled unless uiMode === 'editing'
     if (!this.selectedDiocese.dioceseId) {
       this.showWarning('No diocese selected to delete!');
       return;
     }
-
-    // 1) Open the Confirmation Dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       disableClose: true,
       data: {
-        message: `Are you sure you want to delete "${this.selectedDiocese.dioceseName}"?`
+        message: `Are you sure you want to delete "${this.selectedDiocese.dioceseName}" AND ALL ITS PARISHES?`
       },
       panelClass: 'orange-dialog'
     });
 
-    // 2) If user confirmed => proceed
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
         const id = this.selectedDiocese.dioceseId!;
@@ -213,7 +185,6 @@ export class DioceseMaintenanceComponent implements OnInit {
           next: () => {
             this.loadAllDioceses();
             this.resetForm();
-            // Return to view mode
             this.uiMode = 'view';
           },
           error: (err) => {
@@ -226,7 +197,6 @@ export class DioceseMaintenanceComponent implements OnInit {
   }
 
   cancel(): void {
-    // Cancel any pending edits and return to 'view' mode
     this.resetForm();
     this.uiMode = 'view';
   }
@@ -238,7 +208,6 @@ export class DioceseMaintenanceComponent implements OnInit {
       dioceseStreetNo: '',
       dioceseStreetName: '',
       dioceseSuburb: '',
-      stateId: 0,
       diocesePostcode: '',
       diocesePhone: '',
       dioceseEmail: '',
@@ -247,9 +216,6 @@ export class DioceseMaintenanceComponent implements OnInit {
     this.hasSubmitted = false;
   }
 
-  /* ---------------------------
-     DRAG & DROP FOR THE TABLE
-  --------------------------- */
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -258,36 +224,37 @@ export class DioceseMaintenanceComponent implements OnInit {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
 
-  trackColumn(index: number, item: any) {
-    return item.field;
-  }
-
-  onDragEntered(event: any): void {
+  onDragEntered(event: CdkDragEnter): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
 
-  onDragExited(event: any): void {
+  onDragExited(event: CdkDragExit): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  /* ---------------------------
-     Return cell value for each table cell
-  --------------------------- */
   getCellValue(row: Diocese, column: { header: string; field: string }): any {
-    if (column.field === 'state') {
-      return row.state?.stateAbbreviation || '';
+    if (column.field === 'associatedStateAbbreviations') {
+      return row.associatedStateAbbreviations?.length ? row.associatedStateAbbreviations.join(', ') : '';
     } else {
       return (row as any)[column.field] ?? '';
     }
+  }
+
+  getCellClass(row: Diocese, column: { header: string; field: string }): string {
+    if (column.field === 'associatedStateAbbreviations' && !row.associatedStateAbbreviations?.length) {
+      return 'no-states';
+    }
+    return '';
   }
 
   trackByDioceseID(index: number, item: Diocese): number {
     return item.dioceseId;
   }
 
-  /* ---------------------------
-     SNACK BAR HELPERS
-  --------------------------- */
+  trackColumn(index: number, item: any): string {
+    return item.field;
+  }
+
   private showInfo(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

@@ -15,6 +15,18 @@ export interface Parish {
     parishPhone: string;
     parishEmail: string;
     parishWebsite: string;
+
+    // Optional nested objects if backend returns them (e.g., via joins)
+    diocese?: {
+        dioceseId: number;
+        dioceseName: string;
+        associatedStateAbbreviations: string[]; // Added for multi-state support
+    };
+    state?: {
+        stateId: number;
+        stateName: string;
+        stateAbbreviation: string;
+    };
 }
 
 @Injectable({
@@ -34,22 +46,22 @@ export class ParishService {
     }
 
     createParish(parish: Partial<Parish>) {
-    const payload: any = { ...parish };
-    if (payload.stateId) payload.state = { stateId: payload.stateId };
-    if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
-    delete payload.stateId;
-    delete payload.dioceseId;
-    return this.http.post<Parish>(`${this.baseUrl}/parishes`, payload);
-  }
+        const payload: any = { ...parish };
+        if (payload.stateId) payload.state = { stateId: payload.stateId };
+        if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
+        delete payload.stateId;
+        delete payload.dioceseId;
+        return this.http.post<Parish>(`${this.baseUrl}/parishes`, payload);
+    }
 
     updateParish(id: number, parish: Partial<Parish>) {
-    const payload: any = { ...parish };
-    if (payload.stateId) payload.state = { stateId: payload.stateId };
-    if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
-    delete payload.stateId;
-    delete payload.dioceseId;
-    return this.http.put<Parish>(`${this.baseUrl}/parishes/${id}`, payload);
-  }
+        const payload: any = { ...parish };
+        if (payload.stateId) payload.state = { stateId: payload.stateId };
+        if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
+        delete payload.stateId;
+        delete payload.dioceseId;
+        return this.http.put<Parish>(`${this.baseUrl}/parishes/${id}`, payload);
+    }
 
     deleteParish(id: number) {
         return this.http.delete(`${this.baseUrl}/parishes/${id}`);

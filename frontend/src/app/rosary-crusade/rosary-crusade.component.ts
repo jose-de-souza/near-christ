@@ -1,16 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CrusadeService, Crusade } from './crusade.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
 import { StateService, State } from '../state.service';
-
-// Import the Confirmation Dialog, but do NOT add it to the component's "imports" array.
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -23,15 +22,15 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
     FormsModule,
     DragDropModule,
     MatSnackBarModule,
-    MatDialogModule // Needed for the confirmation dialog
+    MatDialogModule,
+    MatTooltipModule
   ]
 })
 export class RosaryCrusadeComponent implements OnInit {
-  // Columns for the results grid
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
-    { header: 'State', field: 'stateName' },
+    { header: 'State', field: 'state' },
     { header: 'Confession Start', field: 'confessionStartTime' },
     { header: 'Confession End', field: 'confessionEndTime' },
     { header: 'Mass Start', field: 'massStartTime' },
@@ -41,24 +40,20 @@ export class RosaryCrusadeComponent implements OnInit {
     { header: 'Contact Name', field: 'contactName' },
     { header: 'Contact Phone', field: 'contactPhone' },
     { header: 'Contact Email', field: 'contactEmail' },
-    { header: 'comments', field: 'comments' },
+    { header: 'Comments', field: 'comments' },
   ];
 
-  // Data arrays
   allStates: State[] = [];
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
   crusades: Crusade[] = [];
-
-  // Filtered lists
   filteredDioceses: Diocese[] = [];
   filteredParishes: Parish[] = [];
-
-  // Flags for enabling/disabling dropdowns
   dioceseDisabled = true;
   parishDisabled = true;
+  hasSubmitted = false;
+  uiMode: 'view' | 'editing' = 'view';
 
-  // The crusade record currently being edited
   selectedCrusade: Partial<Crusade> = {
     crusadeId: undefined,
     stateId: 0,
@@ -76,22 +71,13 @@ export class RosaryCrusadeComponent implements OnInit {
     comments: ''
   };
 
-  hasSubmitted = false;
-
-  // === UI Mode: 'view' or 'editing' ===
-  uiMode: 'view' | 'editing' = 'view';
-
-  get gridTemplateColumns(): string {
-    return this.columns.map(() => 'auto').join(' ');
-  }
-
   constructor(
     private crusadeService: CrusadeService,
     private dioceseService: DioceseService,
     private parishService: ParishService,
     private stateService: StateService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog // for the confirmation dialog
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -101,9 +87,6 @@ export class RosaryCrusadeComponent implements OnInit {
     this.loadAllCrusades();
   }
 
-  // ---------------------------
-  // Load Data
-  // ---------------------------
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
@@ -152,22 +135,15 @@ export class RosaryCrusadeComponent implements OnInit {
     });
   }
 
-  // ---------------------------
-  // SELECT / EDIT => switch to editing
-  // ---------------------------
   selectCrusade(c: Crusade): void {
     this.hasSubmitted = false;
-    // Copy the record
     this.selectedCrusade = {
       ...c,
       stateId: Number(c.stateId),
       dioceseId: Number(c.dioceseId),
       parishId: Number(c.parishId)
     };
-
     this.uiMode = 'editing';
-
-    // Refresh filters
     if (this.selectedCrusade.stateId && Number(this.selectedCrusade.stateId) > 0) {
       this.onStateChange();
     } else {
@@ -176,7 +152,6 @@ export class RosaryCrusadeComponent implements OnInit {
       this.filteredDioceses = [];
       this.filteredParishes = [];
     }
-
     if (this.selectedCrusade.dioceseId && Number(this.selectedCrusade.dioceseId) > 0) {
       this.onDioceseChange();
     } else {
@@ -185,13 +160,9 @@ export class RosaryCrusadeComponent implements OnInit {
     }
   }
 
-  // ---------------------------
-  // FILTER / DROPDOWN LOGIC
-  // ---------------------------
   onStateChange(): void {
     const stateId = Number(this.selectedCrusade.stateId);
     if (!stateId || stateId === 0) {
-      // Clear
       this.dioceseDisabled = true;
       this.parishDisabled = true;
       this.selectedCrusade.dioceseId = 0;
@@ -199,24 +170,14 @@ export class RosaryCrusadeComponent implements OnInit {
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
-      this.filteredDioceses = this.dioceseList.filter(d => d.stateId === stateId);
-      if (this.filteredDioceses.length === 0) {
-        this.dioceseDisabled = true;
-        this.parishDisabled = true;
-        this.selectedCrusade.dioceseId = 0;
-        this.selectedCrusade.parishId = 0;
-        this.filteredParishes = [];
-      } else {
-        this.dioceseDisabled = false;
-        const currentDioceseID = Number(this.selectedCrusade.dioceseId);
-        const found = this.filteredDioceses.find(d => d.dioceseId === currentDioceseID);
-        if (!found) {
-          this.selectedCrusade.dioceseId = 0;
-          this.selectedCrusade.parishId = 0;
-          this.filteredParishes = [];
-          this.parishDisabled = true;
-        }
-      }
+      const selectedState = this.allStates.find(s => s.stateId === stateId);
+      const abbrev = selectedState?.stateAbbreviation || '';
+      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      this.dioceseDisabled = this.filteredDioceses.length === 0;
+      this.selectedCrusade.dioceseId = 0;
+      this.selectedCrusade.parishId = 0;
+      this.filteredParishes = [];
+      this.parishDisabled = true;
     }
   }
 
@@ -227,28 +188,14 @@ export class RosaryCrusadeComponent implements OnInit {
       this.selectedCrusade.parishId = 0;
       this.filteredParishes = [];
     } else {
-      const temp = this.parishList.filter(p => p.dioceseId === dioceseId);
-      if (temp.length === 0) {
-        this.parishDisabled = true;
-        this.selectedCrusade.parishId = 0;
-        this.filteredParishes = [];
-      } else {
-        this.parishDisabled = false;
-        const currentParishID = Number(this.selectedCrusade.parishId);
-        const found = temp.find(p => p.parishId === currentParishID);
-        if (!found) {
-          this.selectedCrusade.parishId = 0;
-        }
-        this.filteredParishes = temp;
-      }
+      const stateId = Number(this.selectedCrusade.stateId);
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId && (!stateId || p.state?.stateId === stateId));
+      this.parishDisabled = this.filteredParishes.length === 0;
+      this.selectedCrusade.parishId = 0;
     }
   }
 
-  // ---------------------------
-  // CRUD Operations
-  // ---------------------------
   addCrusade(): void {
-    // The button is disabled if uiMode === 'editing', so no need to check that again
     this.hasSubmitted = true;
     if (!this.isAllFieldsValid()) {
       this.showWarning('Some required fields are missing.');
@@ -259,7 +206,6 @@ export class RosaryCrusadeComponent implements OnInit {
         this.showInfo('The Crusade has been added');
         this.loadAllCrusades();
         this.resetForm();
-        // Done => Return to 'view' mode
         this.uiMode = 'view';
       },
       error: (err) => {
@@ -270,7 +216,6 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   modifyCrusade(): void {
-    // The button is disabled if uiMode !== 'editing'
     if (!this.selectedCrusade.crusadeId) {
       this.showWarning('No crusade selected to modify!');
       return;
@@ -296,13 +241,10 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   deleteCrusade(): void {
-    // The button is disabled if uiMode !== 'editing'
     if (!this.selectedCrusade.crusadeId) {
       this.showWarning('No crusade selected to delete!');
       return;
     }
-
-    // Open the ConfirmationDialog exactly as in the other maintenance comps
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       disableClose: true,
       data: {
@@ -318,7 +260,6 @@ export class RosaryCrusadeComponent implements OnInit {
           next: () => {
             this.loadAllCrusades();
             this.resetForm();
-            // Done => Return to 'view' mode
             this.uiMode = 'view';
           },
           error: (err) => {
@@ -331,7 +272,6 @@ export class RosaryCrusadeComponent implements OnInit {
   }
 
   cancel(): void {
-    // Cancel editing => back to view mode
     this.resetForm();
     this.uiMode = 'view';
   }
@@ -369,37 +309,61 @@ export class RosaryCrusadeComponent implements OnInit {
     return true;
   }
 
-  // ---------------------------
-  // Drag & Drop for Grid Columns
-  // ---------------------------
-  onDrop(event: CdkDragDrop<any[]>): void {
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
-  }
-  onDragEntered(event: any): void {
-    event.container.element.nativeElement.classList.add('cdk-drag-over');
-  }
-  onDragExited(event: any): void {
-    event.container.element.nativeElement.classList.remove('cdk-drag-over');
-  }
-
-  // ---------------------------
-  // Grid Cell Value Lookup
-  // ---------------------------
   getCellValue(row: Crusade, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
-      return row.diocese?.dioceseName || '';
+      const dName = row.diocese?.dioceseName || '';
+      const dWebsite = row.diocese?.dioceseWebsite || '';
+      if (dWebsite.trim()) {
+        return `<a href="${dWebsite}" target="_blank">${dName}</a>`;
+      } else {
+        return dName;
+      }
     } else if (column.field === 'parishName') {
-      return row.parish?.parishName || '';
-    } else if (column.field === 'stateName') {
+      const pName = row.parish?.parishName || '';
+      const pWebsite = row.parish?.parishWebsite || '';
+      if (pWebsite.trim()) {
+        return `<a href="${pWebsite}" target="_blank">${pName}</a>`;
+      } else {
+        return pName;
+      }
+    } else if (column.field === 'state') {
       return row.state?.stateAbbreviation || '';
     } else {
       return (row as any)[column.field] || '';
     }
   }
 
-  // ---------------------------
-  // Snack Bar Helpers
-  // ---------------------------
+  getCellClass(row: Crusade, column: { header: string; field: string }): string {
+    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+      return 'no-state';
+    }
+    return '';
+  }
+
+  trackByCrusadeID(index: number, item: Crusade): number {
+    return item.crusadeId;
+  }
+
+  trackByColumn(index: number, item: any): string {
+    return item.field;
+  }
+
+  get gridTemplateColumns(): string {
+    return this.columns.map(() => 'auto').join(' ');
+  }
+
+  onDrop(event: CdkDragDrop<any[]>): void {
+    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
+  }
+
+  onDragEntered(event: CdkDragEnter): void {
+    event.container.element.nativeElement.classList.add('cdk-drag-over');
+  }
+
+  onDragExited(event: CdkDragExit): void {
+    event.container.element.nativeElement.classList.remove('cdk-drag-over');
+  }
+
   private showInfo(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

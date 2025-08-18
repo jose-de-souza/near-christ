@@ -59,6 +59,11 @@
         display: flex;
         flex-direction: column;
         gap: 3px;
+
+        .inline-error {
+          color: red;
+          font-size: 0.85em;
+        }
       }
 
       .crusade-start {
@@ -116,7 +121,7 @@
       }
     }
 
-    /* Row #4: comments => full width */
+    /* Row #4: Comments => full width */
     .row-4 {
       display: flex;
       gap: 15px;
@@ -225,7 +230,6 @@
       }
     }
 
-    /* NEW: styling for disabled buttons */
     button:disabled {
       background-color: color.scale(palette.$neutral-color, $lightness: 80%);
       cursor: not-allowed;
@@ -242,7 +246,7 @@
     border: 1px solid palette.$secondary-color;
     border-radius: 8px;
     padding: 10px;
-    overflow-x: auto; // horizontal scroll if columns exceed container width
+    overflow-x: auto;
 
     .grid-table {
       display: grid;
@@ -284,11 +288,15 @@
         flex: 0 0 auto;
         white-space: nowrap;
         cursor: pointer;
+
+        &.no-state {
+          background-color: #f0f0f0; /* Grey background */
+          color: #888; /* Grey text */
+        }
       }
     }
   }
 
-  /* Drag & Drop Styles */
   .drag-handle {
     cursor: move;
   }

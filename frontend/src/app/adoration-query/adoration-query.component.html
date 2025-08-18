@@ -52,17 +52,13 @@
   <!-- Results area -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-      (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-
-      <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
-        (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-
+         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+      <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
+           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
-            <div class="custom-drag-preview">
-              {{ column.header }}
-            </div>
+            <div class="custom-drag-preview">{{ column.header }}</div>
           </ng-template>
           <ng-template cdkDragPlaceholder>
             <div class="custom-drag-placeholder">
@@ -71,9 +67,10 @@
           </ng-template>
           {{ column.header }}
         </div>
-
-        <!-- THIS LINE CHANGED: [innerHTML]="getCellValue(row, column)" -->
-        <div class="grid-column-cell" *ngFor="let row of results" [innerHTML]="getCellValue(row, column)">
+        <div class="grid-column-cell" *ngFor="let row of results; trackBy: trackByAdorationID"
+             [ngClass]="column.field === 'state' ? getCellClass(row, column) : ''"
+             [matTooltip]="column.field === 'state' && !row.state?.stateAbbreviation ? 'This Adoration has no State registered.' : ''">
+          [innerHTML]="getCellValue(row, column)"
         </div>
       </div>
     </div>

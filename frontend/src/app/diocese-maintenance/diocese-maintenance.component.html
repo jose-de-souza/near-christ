@@ -23,7 +23,7 @@
         <!-- Street Name -->
         <div class="field-group streetName">
           <label>Street Name</label>
-          <input type="text" [(ngModel)]="selectedDiocese.dioceseStreetName" />
+          <input type="text" [(ngModel)]="selectedDiocese.dioceseStreetNo" />
         </div>
         <!-- Suburb -->
         <div class="field-group suburb">
@@ -36,16 +36,6 @@
     <!-- SECTION #2: Location / Contact -->
     <div class="section location" data-title="Location / Contact">
       <div class="row-2">
-        <!-- Now we store the foreign key => selectedDiocese.stateId -->
-        <div class="field-group state">
-          <label>State</label>
-          <select [(ngModel)]="selectedDiocese.stateId">
-            <option [ngValue]="0">Select State</option>
-            <option *ngFor="let st of allStates" [ngValue]="st.stateId"> {{ st.stateAbbreviation }}
-            </option>
-          </select>
-        </div>
-
         <div class="field-group postcode">
           <label>Postcode</label>
           <input type="text" [(ngModel)]="selectedDiocese.diocesePostcode" />
@@ -67,25 +57,21 @@
 
     <!-- CRUD Buttons -->
     <div class="buttons">
-      <!--
-          These buttons are actually disabled in the DOM so the user can't click.
-      -->
       <button (click)="addDiocese()" [disabled]="uiMode === 'editing'">Add</button>
       <button (click)="modifyDiocese()" [disabled]="uiMode !== 'editing'">Modify</button>
       <button (click)="deleteDiocese()" [disabled]="uiMode !== 'editing'">Delete</button>
       <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
     </div>
 
-    <!-- SECTION #3: Filter => uses the same .section styling -->
+    <!-- SECTION #3: Filter -->
     <div class="section filter" data-title="Filter">
       <div class="row-filter">
-        <!-- We store the user's chosen stateId in filterStateID (number).
-             0 => "All States" -->
         <div class="field-group state">
           <label>State</label>
           <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
             <option [ngValue]="0">All States</option>
-            <option *ngFor="let st of allStates" [ngValue]="st.stateId"> {{ st.stateAbbreviation }}
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId">
+              {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>
@@ -94,15 +80,12 @@
 
   </div><!-- end .form-container -->
 
-  <!-- Results area => table with drag-and-drop columns -->
+  <!-- Results area -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-      (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-
-      <div class="grid-column" *ngFor="let column of columns; trackBy: trackColumn" cdkDrag [cdkDragData]="column"
-        (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-
-        <!-- Column Header -->
+         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+      <div class="grid-column" *ngFor="let column of columns; trackBy: trackColumn" cdkDrag
+           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
@@ -115,13 +98,11 @@
           </ng-template>
           {{ column.header }}
         </div>
-
-        <!-- Column cells -->
         <div class="grid-column-cell" *ngFor="let row of dioceses; trackBy: trackByDioceseID"
-          (click)="selectDiocese(row)">
+             (click)="selectDiocese(row)" [ngClass]="getCellClass(row, column)"
+             [matTooltip]="column.field === 'associatedStateAbbreviations' && !row.associatedStateAbbreviations.length ? 'This Diocese has no Parishes registered to it yet.' : ''">
           {{ getCellValue(row, column) }}
         </div>
-
       </div>
     </div>
   </div><!-- end results-area -->

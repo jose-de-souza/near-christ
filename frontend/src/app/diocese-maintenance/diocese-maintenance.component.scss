@@ -88,11 +88,6 @@
             /*
                 Row 2 => 5 fields => total ~98%
             */
-            .row-2 .state {
-                flex: 0 0 10%;
-                max-width: 10%;
-            }
-
             .row-2 .postcode {
                 flex: 0 0 10%;
                 max-width: 10%;
@@ -314,6 +309,11 @@
                 flex: 0 0 auto;
                 white-space: nowrap;
                 cursor: pointer;
+
+                &.no-states {
+                    background-color: #f0f0f0; /* Grey background */
+                    color: #888; /* Grey text */
+                }
             }
         }
     }

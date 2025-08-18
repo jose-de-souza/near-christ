@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, DragDropModule, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CrusadeService, Crusade } from '../rosary-crusade/crusade.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
@@ -14,10 +15,9 @@ import { StateService, State } from '../state.service';
   selector: 'app-crusade-query',
   templateUrl: './crusade-query.component.html',
   styleUrls: ['./crusade-query.component.scss'],
-  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule]
+  imports: [CommonModule, FormsModule, DragDropModule, MatSnackBarModule, MatTooltipModule]
 })
 export class CrusadeQueryComponent implements OnInit {
-  // Columns for the results grid
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
@@ -31,24 +31,19 @@ export class CrusadeQueryComponent implements OnInit {
     { header: 'Contact Name', field: 'contactName' },
     { header: 'Contact Phone', field: 'contactPhone' },
     { header: 'Contact Email', field: 'contactEmail' },
-    { header: 'comments', field: 'comments' },
+    { header: 'Comments', field: 'comments' },
   ];
 
   allStates: State[] = [];
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
-
   filteredDioceses: Diocese[] = [];
   filteredParishes: Parish[] = [];
-
   dioceseDisabled = true;
   parishDisabled = true;
-
-  // 0 => "All States", null => "All Dioceses/Parishes"
   selectedStateID = 0;
   selectedDioceseID: number | null = null;
   selectedParishID: number | null = null;
-
   results: Crusade[] = [];
 
   constructor(
@@ -67,9 +62,6 @@ export class CrusadeQueryComponent implements OnInit {
     this.parishDisabled = true;
   }
 
-  /* -----------------------------------
-     LOAD
-  ----------------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
@@ -106,33 +98,24 @@ export class CrusadeQueryComponent implements OnInit {
     });
   }
 
-  /* -----------------------------------
-     FILTER LOGIC
-  ----------------------------------- */
   onStateChange(): void {
     if (!this.selectedStateID || this.selectedStateID === 0) {
-      this.dioceseDisabled = true;
+      this.filteredDioceses = this.dioceseList; // Show all dioceses for "All States"
+      this.dioceseDisabled = false;
       this.parishDisabled = true;
       this.selectedDioceseID = null;
       this.selectedParishID = null;
-      this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
       const chosenStateID = Number(this.selectedStateID);
-      this.filteredDioceses = this.dioceseList.filter(d => d.stateId === chosenStateID);
-      if (this.filteredDioceses.length === 0) {
-        this.dioceseDisabled = true;
-        this.parishDisabled = true;
-        this.selectedDioceseID = null;
-        this.selectedParishID = null;
-        this.filteredParishes = [];
-      } else {
-        this.dioceseDisabled = false;
-        this.selectedDioceseID = null;
-        this.selectedParishID = null;
-        this.filteredParishes = [];
-        this.parishDisabled = true;
-      }
+      const selectedState = this.allStates.find(s => s.stateId === chosenStateID);
+      const abbrev = selectedState?.stateAbbreviation || '';
+      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      this.dioceseDisabled = this.filteredDioceses.length === 0;
+      this.selectedDioceseID = null;
+      this.selectedParishID = null;
+      this.filteredParishes = [];
+      this.parishDisabled = true;
     }
   }
 
@@ -143,22 +126,13 @@ export class CrusadeQueryComponent implements OnInit {
       this.filteredParishes = [];
     } else {
       const chosenDioceseID = Number(this.selectedDioceseID);
-      const temp = this.parishList.filter(p => p.dioceseId === chosenDioceseID);
-      if (temp.length === 0) {
-        this.parishDisabled = true;
-        this.selectedParishID = null;
-        this.filteredParishes = [];
-      } else {
-        this.parishDisabled = false;
-        this.selectedParishID = null;
-        this.filteredParishes = temp;
-      }
+      const chosenStateID = Number(this.selectedStateID);
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === chosenDioceseID && (!chosenStateID || p.state?.stateId === chosenStateID));
+      this.parishDisabled = this.filteredParishes.length === 0;
+      this.selectedParishID = null;
     }
   }
 
-  /* -----------------------------------
-     SEARCH
-  ----------------------------------- */
   searchCrusade(): void {
     const stateId = this.selectedStateID > 0 ? this.selectedStateID : undefined;
     const dioceseId = this.selectedDioceseID != null ? this.selectedDioceseID : undefined;
@@ -175,12 +149,8 @@ export class CrusadeQueryComponent implements OnInit {
     });
   }
 
-  /* -----------------------------------
-     TABLE
-  ----------------------------------- */
   getCellValue(row: Crusade, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
-      // If diocese has a website, build <a> link
       const dName = row.diocese?.dioceseName || '';
       const dWebsite = row.diocese?.dioceseWebsite || '';
       if (dWebsite.trim()) {
@@ -189,7 +159,6 @@ export class CrusadeQueryComponent implements OnInit {
         return dName;
       }
     } else if (column.field === 'parishName') {
-      // If parish has a website, build <a> link
       const pName = row.parish?.parishName || '';
       const pWebsite = row.parish?.parishWebsite || '';
       if (pWebsite.trim()) {
@@ -204,6 +173,21 @@ export class CrusadeQueryComponent implements OnInit {
     }
   }
 
+  getCellClass(row: Crusade, column: { header: string; field: string }): string {
+    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+      return 'no-state';
+    }
+    return '';
+  }
+
+  trackByCrusadeID(index: number, item: Crusade): number {
+    return item.crusadeId;
+  }
+
+  trackByColumn(index: number, item: any): string {
+    return item.field;
+  }
+
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -211,16 +195,15 @@ export class CrusadeQueryComponent implements OnInit {
   onDrop(event: CdkDragDrop<any[]>): void {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
-  onDragEntered(event: any) {
+
+  onDragEntered(event: CdkDragEnter): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
-  onDragExited(event: any) {
+
+  onDragExited(event: CdkDragExit): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  /* -----------------------------------
-     HELPER
-  ----------------------------------- */
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 5000,
