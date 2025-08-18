@@ -177,30 +177,34 @@
         text-align: left;
         white-space: nowrap;
         /* Keep cell text on one line */
+
+        &.no-state {
+          background-color: #f0f0f0; /* Grey background */
+          color: #888; /* Grey text */
+        }
       }
     }
   }
-}
 
-/* DRAG HANDLE, PREVIEW, & PLACEHOLDER STYLES */
-.drag-handle {
-  cursor: move;
-}
+  .drag-handle {
+    cursor: move;
+  }
 
-.custom-drag-preview {
-  background: white;
-  border: 2px solid palette.$secondary-color;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  border-radius: 4px;
-  font-weight: bold;
-  color: #333;
-}
+  .custom-drag-preview {
+    background: white;
+    border: 2px solid palette.$secondary-color;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #333;
+  }
 
-.custom-drag-placeholder {
-  background-color: rgba(0, 0, 0, 0.05);
-  border: 2px dashed #999;
-  padding: 10px;
-  font-style: italic;
-  color: #555;
+  .custom-drag-placeholder {
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 2px dashed #999;
+    padding: 10px;
+    font-style: italic;
+    color: #555;
+  }
 }

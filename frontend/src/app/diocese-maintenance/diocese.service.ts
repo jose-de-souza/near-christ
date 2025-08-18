@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment'; // adjust if needed
 
 /**
- * The Diocese interface, now with a numeric `stateId` foreign key
- * plus an optional `state` object if your backend returns the relationship.
+ * The Diocese interface, without state reference.
+ * States are now inferred from parishes and provided as associatedStateAbbreviations.
  */
 export interface Diocese {
   dioceseId: number;
@@ -12,18 +12,11 @@ export interface Diocese {
   dioceseStreetNo: string;
   dioceseStreetName: string;
   dioceseSuburb: string;
-  stateId: number;  // Replaces the old DioceseState string
   diocesePostcode: string;
   diocesePhone: string;
   dioceseEmail: string;
   dioceseWebsite: string;
-
-  // NEW: if Laravel returns state with ->with('state'):
-  state?: {
-    stateId: number;
-    stateName: string;
-    stateAbbreviation: string;
-  };
+  associatedStateAbbreviations: string[]; // e.g., ['NSW', 'VIC']
 }
 
 @Injectable({
@@ -45,23 +38,13 @@ export class DioceseService {
   }
 
   // POST create new diocese
- createDiocese(diocese: Partial<Diocese>) {
-    const payload: any = { ...diocese };
-    if (payload.stateId) {
-      payload.state = { stateId: payload.stateId };
-      delete payload.stateId;
-    }
-    return this.http.post<Diocese>(`${this.baseUrl}/dioceses`, payload);
+  createDiocese(diocese: Partial<Diocese>) {
+    return this.http.post<Diocese>(`${this.baseUrl}/dioceses`, diocese);
   }
 
   // PUT update existing diocese by ID
-    updateDiocese(id: number, diocese: Partial<Diocese>) {
-    const payload: any = { ...diocese };
-    if (payload.stateId) {
-      payload.state = { stateId: payload.stateId };
-      delete payload.stateId;
-    }
-    return this.http.put<Diocese>(`${this.baseUrl}/dioceses/${id}`, payload);
+  updateDiocese(id: number, diocese: Partial<Diocese>) {
+    return this.http.put<Diocese>(`${this.baseUrl}/dioceses/${id}`, diocese);
   }
 
   // DELETE a diocese by ID

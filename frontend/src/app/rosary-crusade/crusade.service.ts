@@ -26,12 +26,18 @@ export interface Crusade {
   diocese?: {
     dioceseId: number;
     dioceseName: string;
-    dioceseWebsite?: string; // NEW: so we can reference it in the front end
+    dioceseWebsite?: string;
+    associatedStateAbbreviations: string[]; // Added for multi-state support
   };
   parish?: {
     parishId: number;
     parishName: string;
-    parishWebsite?: string; // NEW: so we can reference it in the front end
+    parishWebsite?: string;
+    state?: { // Added for state filtering
+      stateId: number;
+      stateName: string;
+      stateAbbreviation: string;
+    };
   };
   state?: {
     stateId: number;

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, DragDropModule, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AdorationService, Adoration } from '../adoration-schedule/adoration.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
@@ -13,14 +14,13 @@ import { StateService, State } from '../state.service';
   selector: 'app-adoration-query',
   templateUrl: './adoration-query.component.html',
   styleUrls: ['./adoration-query.component.scss'],
-  imports: [CommonModule, FormsModule, DragDropModule]
+  imports: [CommonModule, FormsModule, DragDropModule, MatTooltipModule]
 })
 export class AdorationQueryComponent implements OnInit {
-  // **Updated**: The column for state now uses { header: 'State', field: 'state' }
   columns = [
     { header: 'Parish Name', field: 'parishName' },
     { header: 'Diocese Name', field: 'dioceseName' },
-    { header: 'State', field: 'state' },  // Show "State" in header
+    { header: 'State', field: 'state' },
     { header: 'End', field: 'adorationEnd' },
     { header: 'Type', field: 'adorationType' },
     { header: 'Day', field: 'adorationDay' },
@@ -29,28 +29,16 @@ export class AdorationQueryComponent implements OnInit {
     { header: 'Start', field: 'adorationStart' },
   ];
 
-  // Real states from the back end
   allStates: State[] = [];
-
-  // Master arrays for diocese/parish
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
-
-  // Filtered arrays for diocese & parish
   filteredDioceses: Diocese[] = [];
   filteredParishes: Parish[] = [];
-
-  // Flags
   dioceseDisabled = true;
   parishDisabled = true;
-
-  // The user’s current filter selections
-  // 0 => "All States", null => "All Dioceses / Parishes"
   selectedStateID: number = 0;
   selectedDioceseID: number | null = null;
   selectedParishID: number | null = null;
-
-  // The result set from the server
   results: Adoration[] = [];
 
   constructor(
@@ -61,23 +49,16 @@ export class AdorationQueryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Load states, diocese, parish
     this.loadAllStates();
     this.loadAllDioceses();
     this.loadAllParishes();
-
-    // Initially => no state => diocese & parish disabled
     this.dioceseDisabled = true;
     this.parishDisabled = true;
   }
 
-  /* ---------------------------
-     LOAD METHODS
-  --------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
-        // If your back end returns { success, message, data: [ ...states ] }
         this.allStates = res.data;
       },
       error: (err) => {
@@ -89,7 +70,6 @@ export class AdorationQueryComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        // res.data => array of Dioceses
         this.dioceseList = res.data;
       },
       error: (err) => {
@@ -109,74 +89,48 @@ export class AdorationQueryComponent implements OnInit {
     });
   }
 
-  /* ---------------------------
-     STATE => Filter Dioceses
-  --------------------------- */
   onStateChange(): void {
     if (!this.selectedStateID || this.selectedStateID === 0) {
-      // "All States"
-      this.dioceseDisabled = true;
+      this.filteredDioceses = this.dioceseList; // Show all dioceses for "All States"
+      this.dioceseDisabled = false;
       this.parishDisabled = true;
       this.selectedDioceseID = null;
       this.selectedParishID = null;
-      this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
       const chosen = Number(this.selectedStateID);
-      this.filteredDioceses = this.dioceseList.filter(d => d.stateId === chosen);
-
-      if (this.filteredDioceses.length === 0) {
-        this.dioceseDisabled = true;
-        this.parishDisabled = true;
-        this.selectedDioceseID = null;
-        this.selectedParishID = null;
-        this.filteredParishes = [];
-      } else {
-        this.dioceseDisabled = false;
-        this.selectedDioceseID = null;
-        this.selectedParishID = null;
-        this.filteredParishes = [];
-        this.parishDisabled = true;
-      }
+      const selectedState = this.allStates.find(s => s.stateId === chosen);
+      const abbrev = selectedState?.stateAbbreviation || '';
+      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      this.dioceseDisabled = this.filteredDioceses.length === 0;
+      this.selectedDioceseID = null;
+      this.selectedParishID = null;
+      this.filteredParishes = [];
+      this.parishDisabled = true;
     }
   }
 
-  /* ---------------------------
-     DIOCESE => Filter Parishes
-  --------------------------- */
   onDioceseChange(): void {
     if (this.selectedDioceseID == null) {
-      // "All Dioceses"
       this.parishDisabled = true;
       this.selectedParishID = null;
       this.filteredParishes = [];
     } else {
       const chosenID = Number(this.selectedDioceseID);
-      const temp = this.parishList.filter(p => p.dioceseId === chosenID);
-      if (temp.length === 0) {
-        this.parishDisabled = true;
-        this.selectedParishID = null;
-        this.filteredParishes = [];
-      } else {
-        this.parishDisabled = false;
-        this.selectedParishID = null;
-        this.filteredParishes = temp;
-      }
+      const chosenStateID = Number(this.selectedStateID);
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === chosenID && (!chosenStateID || p.state?.stateId === chosenStateID));
+      this.parishDisabled = this.filteredParishes.length === 0;
+      this.selectedParishID = null;
     }
   }
 
-  /* ---------------------------
-     SEARCH
-  --------------------------- */
   searchAdoration(): void {
-    // Convert 0 => undefined for state, null => undefined for diocese/parish
     const stateId = (this.selectedStateID && this.selectedStateID > 0) ? this.selectedStateID : undefined;
     const dioceseId = (this.selectedDioceseID != null) ? this.selectedDioceseID : undefined;
     const parishId = (this.selectedParishID != null) ? this.selectedParishID : undefined;
 
     this.adorationService.searchAdorations(stateId, dioceseId, parishId).subscribe({
       next: (res: any) => {
-        // Usually {success, status, message, data: [... adorations ...]}
         this.results = res.data;
       },
       error: (err) => {
@@ -185,12 +139,8 @@ export class AdorationQueryComponent implements OnInit {
     });
   }
 
-  /* ---------------------------
-     TABLE HELPER
-  --------------------------- */
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
-      // If the diocese has a website, make name clickable
       const dioceseName = row.diocese?.dioceseName || '';
       const dioceseWebsite = row.diocese?.dioceseWebsite || '';
       if (dioceseWebsite.trim()) {
@@ -199,7 +149,6 @@ export class AdorationQueryComponent implements OnInit {
         return dioceseName;
       }
     } else if (column.field === 'parishName') {
-      // If the parish has a website, make name clickable
       const parishName = row.parish?.parishName || '';
       const parishWebsite = row.parish?.parishWebsite || '';
       if (parishWebsite.trim()) {
@@ -208,12 +157,25 @@ export class AdorationQueryComponent implements OnInit {
         return parishName;
       }
     } else if (column.field === 'state') {
-      // We changed to "State" => row.state?.stateAbbreviation
       return row.state?.stateAbbreviation || '';
     } else {
-      // e.g. adorationEnd, adorationType, etc.
       return (row as any)[column.field] ?? '';
     }
+  }
+
+  getCellClass(row: Adoration, column: { header: string; field: string }): string {
+    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+      return 'no-state';
+    }
+    return '';
+  }
+
+  trackByAdorationID(index: number, item: Adoration): number {
+    return item.adorationId;
+  }
+
+  trackByColumn(index: number, item: any): string {
+    return item.field;
   }
 
   get gridTemplateColumns(): string {
@@ -224,10 +186,11 @@ export class AdorationQueryComponent implements OnInit {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
 
-  onDragEntered(event: any) {
+  onDragEntered(event: CdkDragEnter): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
-  onDragExited(event: any) {
+
+  onDragExited(event: CdkDragExit): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 }

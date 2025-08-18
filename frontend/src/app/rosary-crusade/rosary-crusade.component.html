@@ -59,7 +59,7 @@
         <div class="field-group crusade-state">
           <label>State</label>
           <select [(ngModel)]="selectedCrusade.stateId" (change)="onStateChange()"
-            [disabled]="!allStates || allStates.length === 0">
+                  [disabled]="!allStates || allStates.length === 0">
             <option [ngValue]="0">-- select state --</option>
             <option *ngFor="let st of allStates" [ngValue]="st.stateId">
               {{ st.stateAbbreviation }}
@@ -80,7 +80,7 @@
             </option>
           </select>
           <div *ngIf="hasSubmitted && (!selectedCrusade.dioceseId || selectedCrusade.dioceseId === 0)"
-            class="inline-error">
+               class="inline-error">
             Diocese is required.
           </div>
         </div>
@@ -95,7 +95,7 @@
             </option>
           </select>
           <div *ngIf="hasSubmitted && (!selectedCrusade.parishId || selectedCrusade.parishId === 0)"
-            class="inline-error">
+               class="inline-error">
             Parish is required.
           </div>
         </div>
@@ -122,8 +122,8 @@
     </div>
     <!-- end row-3 -->
 
-    <!-- Row 4: comments -->
-    <div class="section comments" data-title="comments">
+    <!-- Row 4: Comments -->
+    <div class="section comments" data-title="Comments">
       <div class="row-4">
         <textarea [(ngModel)]="selectedCrusade.comments"></textarea>
       </div>
@@ -134,12 +134,6 @@
 
   <!-- Buttons -->
   <div class="buttons">
-    <!-- 
-      UI mode approach:
-       - Add is disabled if uiMode === 'editing'
-       - Modify & Delete are disabled if uiMode !== 'editing'
-       - Cancel is disabled if uiMode === 'view'
-    -->
     <button (click)="addCrusade()" [disabled]="uiMode === 'editing'">Add</button>
     <button (click)="modifyCrusade()" [disabled]="uiMode !== 'editing'">Modify</button>
     <button (click)="deleteCrusade()" [disabled]="uiMode !== 'editing'">Delete</button>
@@ -149,9 +143,9 @@
   <!-- Results Area -->
   <div class="results-area">
     <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-      (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-      <div class="grid-column" *ngFor="let column of columns; let i = index" cdkDrag [cdkDragData]="column"
-        (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+      <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
+           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
         <div class="grid-column-header">
           <span class="drag-handle" cdkDragHandle>☰</span>
           <ng-template cdkDragPreview>
@@ -164,9 +158,11 @@
           </ng-template>
           {{ column.header }}
         </div>
-
-        <div class="grid-column-cell" *ngFor="let row of crusades" (click)="selectCrusade(row)">
-          {{ getCellValue(row, column) }}
+        <div class="grid-column-cell" *ngFor="let row of crusades; trackBy: trackByCrusadeID"
+             (click)="selectCrusade(row)"
+             [ngClass]="column.field === 'state' ? getCellClass(row, column) : ''"
+             [matTooltip]="column.field === 'state' && !row.state?.stateAbbreviation ? 'This Crusade has no State registered.' : ''"
+             [innerHTML]="getCellValue(row, column)">
         </div>
       </div>
     </div>

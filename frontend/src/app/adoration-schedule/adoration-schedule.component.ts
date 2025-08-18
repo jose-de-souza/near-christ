@@ -1,16 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { Adoration, AdorationService } from './adoration.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
 import { StateService, State } from '../state.service';
-
-// Import your new ConfirmationDialog
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -23,7 +22,8 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
     FormsModule,
     DragDropModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ]
 })
 export class AdorationScheduleComponent implements OnInit {
@@ -43,12 +43,12 @@ export class AdorationScheduleComponent implements OnInit {
   dioceseList: Diocese[] = [];
   parishList: Parish[] = [];
   allStates: State[] = [];
-
   filteredDioceses: Diocese[] = [];
-  filteredParishes: Parish[] = [];
-
+  filteredParishes: Parish[] = []; // Fixed type from Diocese[] to Parish[]
   dioceseDisabled = true;
   parishDisabled = true;
+  hasSubmitted = false;
+  uiMode: 'view' | 'editing' = 'view';
 
   selectedAdoration: Partial<Adoration> = {
     adorationId: undefined,
@@ -62,9 +62,6 @@ export class AdorationScheduleComponent implements OnInit {
     adorationStart: '',
     adorationEnd: ''
   };
-
-  // === UI mode: 'view' or 'editing'
-  uiMode: 'view' | 'editing' = 'view';
 
   constructor(
     private adorationService: AdorationService,
@@ -82,9 +79,6 @@ export class AdorationScheduleComponent implements OnInit {
     this.loadAllAdorations();
   }
 
-  /* ----------------------------------
-     LOADING DATA
-  ---------------------------------- */
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
@@ -128,14 +122,11 @@ export class AdorationScheduleComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load adorations:', err);
-        this.showError('Error loading adorations from server.');
+        this.showError('Fatal error loading Adoration Schedules!');
       }
     });
   }
 
-  /* ----------------------------------
-     PERPETUAL vs REGULAR
-  ---------------------------------- */
   isPerpetual(): boolean {
     return this.selectedAdoration.adorationType === 'Perpetual';
   }
@@ -148,9 +139,6 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* ----------------------------------
-     STATE => Filter Dioceses
-  ---------------------------------- */
   onStateChange(): void {
     const sID = Number(this.selectedAdoration.stateId || 0);
     if (!sID) {
@@ -161,26 +149,17 @@ export class AdorationScheduleComponent implements OnInit {
       this.dioceseDisabled = true;
       this.parishDisabled = true;
     } else {
-      this.filteredDioceses = this.dioceseList.filter(d => d.stateId === sID);
-      if (this.filteredDioceses.length === 0) {
-        this.selectedAdoration.dioceseId = 0;
-        this.selectedAdoration.parishId = 0;
-        this.filteredParishes = [];
-        this.dioceseDisabled = true;
-        this.parishDisabled = true;
-      } else {
-        this.dioceseDisabled = false;
-        this.selectedAdoration.dioceseId = 0;
-        this.selectedAdoration.parishId = 0;
-        this.filteredParishes = [];
-        this.parishDisabled = true;
-      }
+      const selectedState = this.allStates.find(s => s.stateId === sID);
+      const abbrev = selectedState?.stateAbbreviation || '';
+      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      this.dioceseDisabled = this.filteredDioceses.length === 0;
+      this.selectedAdoration.dioceseId = 0;
+      this.selectedAdoration.parishId = 0;
+      this.filteredParishes = [];
+      this.parishDisabled = true;
     }
   }
 
-  /* ----------------------------------
-     DIOCESE => Filter Parishes
-  ---------------------------------- */
   onDioceseChange(): void {
     const dID = Number(this.selectedAdoration.dioceseId || 0);
     if (!dID) {
@@ -188,22 +167,13 @@ export class AdorationScheduleComponent implements OnInit {
       this.selectedAdoration.parishId = 0;
       this.parishDisabled = true;
     } else {
-      const temp = this.parishList.filter(p => p.dioceseId === dID);
-      if (temp.length === 0) {
-        this.parishDisabled = true;
-        this.selectedAdoration.parishId = 0;
-        this.filteredParishes = [];
-      } else {
-        this.parishDisabled = false;
-        this.selectedAdoration.parishId = 0;
-        this.filteredParishes = temp;
-      }
+      const sID = Number(this.selectedAdoration.stateId || 0);
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dID && (!sID || p.state?.stateId === sID));
+      this.parishDisabled = this.filteredParishes.length === 0;
+      this.selectedAdoration.parishId = 0;
     }
   }
 
-  /* ----------------------------------
-     LOCATION
-  ---------------------------------- */
   isParishChurch(): boolean {
     return this.selectedAdoration.adorationLocationType === 'Parish Church';
   }
@@ -223,36 +193,41 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
-  /* ----------------------------------
-     SELECT ROW => editing mode
-  ---------------------------------- */
   selectSchedule(schedule: Adoration): void {
     this.selectedAdoration = { ...schedule };
-
-    // Switch to editing mode
     this.uiMode = 'editing';
-
-    // 1) State
+    this.hasSubmitted = false;
     if (schedule.stateId) {
       this.onStateChange();
     }
-
-    // 2) Diocese
     if (schedule.dioceseId) {
       this.onDioceseChange();
     }
   }
 
-  /* ----------------------------------
-     CRUD
-  ---------------------------------- */
+  isFormValid(): boolean {
+    if (!this.selectedAdoration.stateId || this.selectedAdoration.stateId <= 0) return false;
+    if (!this.selectedAdoration.dioceseId || this.selectedAdoration.dioceseId <= 0) return false;
+    if (!this.selectedAdoration.parishId || this.selectedAdoration.parishId <= 0) return false;
+    if (this.selectedAdoration.adorationType === 'Regular') {
+      if (!this.selectedAdoration.adorationDay) return false;
+      if (!this.selectedAdoration.adorationStart?.trim()) return false;
+      if (!this.selectedAdoration.adorationEnd?.trim()) return false;
+    }
+    return true;
+  }
+
   addSchedule(): void {
+    this.hasSubmitted = true;
+    if (!this.isFormValid()) {
+      this.showWarning('Please fill all required fields.');
+      return;
+    }
     this.adorationService.createAdoration(this.selectedAdoration).subscribe({
       next: () => {
         this.showInfo('Adoration Schedule has been added');
         this.loadAllAdorations();
         this.resetForm();
-        // Return to view mode
         this.uiMode = 'view';
       },
       error: (err) => {
@@ -267,13 +242,17 @@ export class AdorationScheduleComponent implements OnInit {
       this.showWarning('No adoration selected to update!');
       return;
     }
+    this.hasSubmitted = true;
+    if (!this.isFormValid()) {
+      this.showWarning('Please fill all required fields.');
+      return;
+    }
     const id = this.selectedAdoration.adorationId;
     this.adorationService.updateAdoration(id, this.selectedAdoration).subscribe({
       next: () => {
         this.showInfo('Adoration Schedule modified');
         this.loadAllAdorations();
         this.resetForm();
-        // Return to view mode
         this.uiMode = 'view';
       },
       error: (err) => {
@@ -288,8 +267,6 @@ export class AdorationScheduleComponent implements OnInit {
       this.showWarning('No adoration selected to delete!');
       return;
     }
-
-    // 1) Show the ConfirmationDialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       disableClose: true,
       data: {
@@ -298,7 +275,6 @@ export class AdorationScheduleComponent implements OnInit {
       panelClass: 'orange-dialog'
     });
 
-    // 2) If confirmed => proceed with actual deletion
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
         const id = this.selectedAdoration.adorationId!;
@@ -306,7 +282,6 @@ export class AdorationScheduleComponent implements OnInit {
           next: () => {
             this.loadAllAdorations();
             this.resetForm();
-            // Return to view mode
             this.uiMode = 'view';
           },
           error: (err) => {
@@ -340,11 +315,9 @@ export class AdorationScheduleComponent implements OnInit {
     this.filteredParishes = [];
     this.dioceseDisabled = true;
     this.parishDisabled = true;
+    this.hasSubmitted = false;
   }
 
-  /* ----------------------------------
-     TABLE HELPERS
-  ---------------------------------- */
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
       return row.diocese?.dioceseName || '';
@@ -357,13 +330,21 @@ export class AdorationScheduleComponent implements OnInit {
     }
   }
 
+  getCellClass(row: Adoration, column: { header: string; field: string }): string {
+    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+      return 'no-state';
+    }
+    return '';
+  }
+
   trackByAdorationID(index: number, item: Adoration): number {
     return item.adorationId;
   }
 
-  /* ----------------------------------
-     DRAG & DROP
-  ---------------------------------- */
+  trackByColumn(index: number, item: any): string {
+    return item.field;
+  }
+
   get gridTemplateColumns(): string {
     return this.columns.map(() => 'auto').join(' ');
   }
@@ -372,17 +353,14 @@ export class AdorationScheduleComponent implements OnInit {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
 
-  onDragEntered(event: any): void {
+  onDragEntered(event: CdkDragEnter): void {
     event.container.element.nativeElement.classList.add('cdk-drag-over');
   }
 
-  onDragExited(event: any): void {
+  onDragExited(event: CdkDragExit): void {
     event.container.element.nativeElement.classList.remove('cdk-drag-over');
   }
 
-  /* ----------------------------------
-     SNACK BAR
-  ---------------------------------- */
   private showInfo(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

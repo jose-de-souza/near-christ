@@ -26,7 +26,7 @@
         border-radius: 8px;
 
         /*
-      Row 1 => Adoration (4 fields => 24% each => total 100%)
+      Row 1 => Adoration (4 fields => 24% each => total 96%)
       Row 2 => Diocese/Parish (3 fields => State=12%, Diocese=42%, Parish=42% => total 96%)
       Row 3 => Location (2 fields => Type=20%, Location=78% => total ~98%)
     */
@@ -60,7 +60,7 @@
                 color: palette.$primary-color;
             }
 
-            div {
+            .field-group {
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
@@ -81,15 +81,20 @@
                     border-radius: 4px;
                     box-sizing: border-box;
                 }
+
+                .inline-error {
+                    color: red;
+                    font-size: 0.85em;
+                    margin-top: 2px;
+                }
             }
         }
 
         /* Row 1 => Adoration => 4 fields => each 24% => total 96% */
-        .section.adoration>div {
+        .section.adoration .field-group {
             flex: 0 0 24%;
             max-width: 24%;
 
-            /* Remove the 180px limit so they fill 24% */
             select,
             input {
                 max-width: none !important;
@@ -98,40 +103,40 @@
         }
 
         /* Row 2 => State=12%, Diocese=42%, Parish=42% => total 96% */
-        .section.diocese-parish-names>div:nth-child(1) {
+        .section.diocese-parish-names .field-group.state {
             flex: 0 0 12%;
             max-width: 12%;
         }
 
-        .section.diocese-parish-names>div:nth-child(2) {
+        .section.diocese-parish-names .field-group.diocese {
             flex: 0 0 42%;
             max-width: 42%;
         }
 
-        .section.diocese-parish-names>div:nth-child(3) {
+        .section.diocese-parish-names .field-group.parish {
             flex: 0 0 42%;
             max-width: 42%;
         }
 
-        .section.diocese-parish-names>div select,
-        .section.diocese-parish-names>div input {
+        .section.diocese-parish-names .field-group select,
+        .section.diocese-parish-names .field-group input {
             max-width: none !important;
             width: 100% !important;
         }
 
         /* Row 3 => Type=20%, Location=78% => total ~98% */
-        .section.location>div:nth-child(1) {
+        .section.location .field-group.locationType {
             flex: 0 0 20%;
             max-width: 20%;
         }
 
-        .section.location>div:nth-child(2) {
+        .section.location .field-group.location {
             flex: 0 0 78%;
             max-width: 78%;
         }
 
-        .section.location>div select,
-        .section.location>div input {
+        .section.location .field-group select,
+        .section.location .field-group input {
             max-width: none !important;
             width: 100% !important;
         }
@@ -183,7 +188,6 @@
             }
         }
 
-        /* NEW: style for disabled buttons so they appear truly inactive */
         button:disabled {
             background-color: color.scale(palette.$neutral-color, $lightness: 80%);
             cursor: not-allowed;
@@ -242,12 +246,16 @@
                 flex: 0 0 auto;
                 white-space: nowrap;
                 cursor: pointer;
+
+                &.no-state {
+                    background-color: #f0f0f0; /* Grey background */
+                    color: #888; /* Grey text */
+                }
             }
         }
     }
 }
 
-/* DRAG HANDLE, PREVIEW, & PLACEHOLDER STYLES */
 .drag-handle {
     cursor: move;
 }

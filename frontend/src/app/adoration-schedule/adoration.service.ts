@@ -18,8 +18,22 @@ export interface Adoration {
   adorationEnd: string;        // e.g. '17:00:00'
 
   // NEW: if Laravel ->with('diocese','parish','state'), they include the full objects:
-  diocese?: Diocese; // so row.diocese?.dioceseWebsite is recognized
-  parish?: Parish;   // so row.parish?.parishWebsite is recognized
+  diocese?: {
+    dioceseId: number;
+    dioceseName: string;
+    dioceseWebsite?: string;
+    associatedStateAbbreviations: string[]; // Added for multi-state support
+  };
+  parish?: {
+    parishId: number;
+    parishName: string;
+    parishWebsite?: string;
+    state?: { // Added for state filtering
+      stateId: number;
+      stateName: string;
+      stateAbbreviation: string;
+    };
+  };
   state?: {
     stateId: number;
     stateName: string;
