@@ -127,6 +127,12 @@ export class RosaryCrusadeComponent implements OnInit {
     this.crusadeService.getAllCrusades().subscribe({
       next: (res: any) => {
         this.crusades = res.data;
+        console.log('Loaded Crusades:', this.crusades.map(c => ({
+          crusadeId: c.crusadeId,
+          state: c.state,
+          diocese: c.diocese,
+          parish: c.parish
+        })));
       },
       error: (err) => {
         console.error('Failed to load crusades:', err);
@@ -144,20 +150,8 @@ export class RosaryCrusadeComponent implements OnInit {
       parishId: Number(c.parishId)
     };
     this.uiMode = 'editing';
-    if (this.selectedCrusade.stateId && Number(this.selectedCrusade.stateId) > 0) {
-      this.onStateChange();
-    } else {
-      this.dioceseDisabled = true;
-      this.parishDisabled = true;
-      this.filteredDioceses = [];
-      this.filteredParishes = [];
-    }
-    if (this.selectedCrusade.dioceseId && Number(this.selectedCrusade.dioceseId) > 0) {
-      this.onDioceseChange();
-    } else {
-      this.parishDisabled = true;
-      this.filteredParishes = [];
-    }
+    this.onStateChange();
+    this.onDioceseChange();
   }
 
   onStateChange(): void {
@@ -165,8 +159,6 @@ export class RosaryCrusadeComponent implements OnInit {
     if (!stateId || stateId === 0) {
       this.dioceseDisabled = true;
       this.parishDisabled = true;
-      this.selectedCrusade.dioceseId = 0;
-      this.selectedCrusade.parishId = 0;
       this.filteredDioceses = [];
       this.filteredParishes = [];
     } else {
@@ -174,8 +166,6 @@ export class RosaryCrusadeComponent implements OnInit {
       const abbrev = selectedState?.stateAbbreviation || '';
       this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
       this.dioceseDisabled = this.filteredDioceses.length === 0;
-      this.selectedCrusade.dioceseId = 0;
-      this.selectedCrusade.parishId = 0;
       this.filteredParishes = [];
       this.parishDisabled = true;
     }
@@ -185,13 +175,10 @@ export class RosaryCrusadeComponent implements OnInit {
     const dioceseId = Number(this.selectedCrusade.dioceseId);
     if (!dioceseId || dioceseId === 0) {
       this.parishDisabled = true;
-      this.selectedCrusade.parishId = 0;
       this.filteredParishes = [];
     } else {
-      const stateId = Number(this.selectedCrusade.stateId);
-      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId && (!stateId || p.state?.stateId === stateId));
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
-      this.selectedCrusade.parishId = 0;
     }
   }
 
@@ -311,30 +298,33 @@ export class RosaryCrusadeComponent implements OnInit {
 
   getCellValue(row: Crusade, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
-      const dName = row.diocese?.dioceseName || '';
-      const dWebsite = row.diocese?.dioceseWebsite || '';
+      const diocese = this.dioceseList.find(d => d.dioceseId === row.dioceseId);
+      const dName = diocese?.dioceseName || '';
+      const dWebsite = diocese?.dioceseWebsite || '';
       if (dWebsite.trim()) {
         return `<a href="${dWebsite}" target="_blank">${dName}</a>`;
       } else {
         return dName;
       }
     } else if (column.field === 'parishName') {
-      const pName = row.parish?.parishName || '';
-      const pWebsite = row.parish?.parishWebsite || '';
+      const parish = this.parishList.find(p => p.parishId === row.parishId);
+      const pName = parish?.parishName || '';
+      const pWebsite = parish?.parishWebsite || '';
       if (pWebsite.trim()) {
         return `<a href="${pWebsite}" target="_blank">${pName}</a>`;
       } else {
         return pName;
       }
     } else if (column.field === 'state') {
-      return row.state?.stateAbbreviation || '';
+      const state = this.allStates.find(s => s.stateId === row.stateId);
+      return state?.stateAbbreviation || '';
     } else {
       return (row as any)[column.field] || '';
     }
   }
 
   getCellClass(row: Crusade, column: { header: string; field: string }): string {
-    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+    if (column.field === 'state' && !this.allStates.find(s => s.stateId === row.stateId)?.stateAbbreviation) {
       return 'no-state';
     }
     return '';
