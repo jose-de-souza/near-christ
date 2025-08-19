@@ -128,17 +128,30 @@ export class ParishMaintenanceComponent implements OnInit {
   onLocationStateChange(): void {
     this.locationDioceses = this.dioceseList;
     this.locationDioceseDisabled = this.dioceseList.length === 0;
+    console.log('Location State Changed:', { 
+      stateId: this.selectedParish.stateId, 
+      locationDioceses: this.locationDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName }))
+    });
   }
 
   selectParish(parish: Parish): void {
     this.selectedParish = {
-      ...parish,
-      stateId: parish.state?.stateId,
-      dioceseId: parish.diocese?.dioceseId
+      parishId: parish.parishId,
+      parishName: parish.parishName,
+      parishStNumber: parish.parishStNumber,
+      parishStName: parish.parishStName,
+      parishSuburb: parish.parishSuburb,
+      parishPostcode: parish.parishPostcode,
+      parishPhone: parish.parishPhone,
+      parishEmail: parish.parishEmail,
+      parishWebsite: parish.parishWebsite,
+      stateId: parish.stateId,
+      dioceseId: parish.dioceseId
     };
     this.hasSubmitted = false;
     this.uiMode = 'editing';
     this.onLocationStateChange();
+    console.log('Selected Parish:', this.selectedParish);
   }
 
   isFormValid(): boolean {
@@ -154,7 +167,19 @@ export class ParishMaintenanceComponent implements OnInit {
       this.showWarning('Parish Name, State, and Diocese are required!');
       return;
     }
-    this.parishService.createParish(this.selectedParish).subscribe({
+    const parishToCreate = {
+      parishName: this.selectedParish.parishName,
+      parishStNumber: this.selectedParish.parishStNumber,
+      parishStName: this.selectedParish.parishStName,
+      parishSuburb: this.selectedParish.parishSuburb,
+      parishPostcode: this.selectedParish.parishPostcode,
+      parishPhone: this.selectedParish.parishPhone,
+      parishEmail: this.selectedParish.parishEmail,
+      parishWebsite: this.selectedParish.parishWebsite,
+      stateId: this.selectedParish.stateId,
+      dioceseId: this.selectedParish.dioceseId
+    };
+    this.parishService.createParish(parishToCreate).subscribe({
       next: () => {
         this.showInfo(`${this.selectedParish.parishName} has been added`);
         this.loadAllParishes();
@@ -163,7 +188,7 @@ export class ParishMaintenanceComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Failed to create parish:', err);
-        this.showError('Fatal error creating parish!');
+        this.showError('Error creating parish: ' + (err.error?.message || 'Unknown error'));
       }
     });
   }
@@ -179,7 +204,20 @@ export class ParishMaintenanceComponent implements OnInit {
       return;
     }
     const id = this.selectedParish.parishId;
-    this.parishService.updateParish(id, this.selectedParish).subscribe({
+    const parishToUpdate = {
+      parishName: this.selectedParish.parishName,
+      parishStNumber: this.selectedParish.parishStNumber,
+      parishStName: this.selectedParish.parishStName,
+      parishSuburb: this.selectedParish.parishSuburb,
+      parishPostcode: this.selectedParish.parishPostcode,
+      parishPhone: this.selectedParish.parishPhone,
+      parishEmail: this.selectedParish.parishEmail,
+      parishWebsite: this.selectedParish.parishWebsite,
+      stateId: this.selectedParish.stateId,
+      dioceseId: this.selectedParish.dioceseId
+    };
+    console.log('Updating Parish:', parishToUpdate);
+    this.parishService.updateParish(id, parishToUpdate).subscribe({
       next: () => {
         this.showInfo(`${this.selectedParish.parishName} modified`);
         this.loadAllParishes();
@@ -188,7 +226,7 @@ export class ParishMaintenanceComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Failed to update parish:', err);
-        this.showError('Fatal error updating parish!');
+        this.showError('Error updating parish: ' + (err.error?.message || 'Unknown error'));
       }
     });
   }
@@ -211,13 +249,14 @@ export class ParishMaintenanceComponent implements OnInit {
         const id = this.selectedParish.parishId!;
         this.parishService.deleteParish(id).subscribe({
           next: () => {
+            this.showInfo('Parish deleted successfully');
             this.loadAllParishes();
             this.resetForm();
             this.uiMode = 'view';
           },
           error: (err: any) => {
             console.error('Failed to delete parish:', err);
-            this.showError('Fatal error deleting parish!');
+            this.showError('Error deleting parish: ' + (err.error?.message || 'Unknown error'));
           }
         });
       }
@@ -272,10 +311,10 @@ export class ParishMaintenanceComponent implements OnInit {
     const dioceseId = Number(this.filterDioceseID);
     let filtered = this.allParishes;
     if (stateId > 0) {
-      filtered = filtered.filter(p => p.state?.stateId === stateId);
+      filtered = filtered.filter(p => p.stateId === stateId);
     }
     if (dioceseId > 0) {
-      filtered = filtered.filter(p => p.diocese?.dioceseId === dioceseId);
+      filtered = filtered.filter(p => p.dioceseId === dioceseId);
     }
     this.parishes = filtered;
   }

@@ -90,16 +90,16 @@ export class AdorationQueryComponent implements OnInit {
   }
 
   onStateChange(): void {
-    if (!this.selectedStateID || this.selectedStateID === 0) {
-      this.filteredDioceses = this.dioceseList; // Show all dioceses for "All States"
-      this.dioceseDisabled = false;
-      this.parishDisabled = true;
+    const stateId = Number(this.selectedStateID);
+    if (!stateId || stateId === 0) {
+      this.filteredDioceses = [];
+      this.filteredParishes = [];
       this.selectedDioceseID = null;
       this.selectedParishID = null;
-      this.filteredParishes = [];
+      this.dioceseDisabled = true;
+      this.parishDisabled = true;
     } else {
-      const chosen = Number(this.selectedStateID);
-      const selectedState = this.allStates.find(s => s.stateId === chosen);
+      const selectedState = this.allStates.find(s => s.stateId === stateId);
       const abbrev = selectedState?.stateAbbreviation || '';
       this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
       this.dioceseDisabled = this.filteredDioceses.length === 0;
@@ -107,20 +107,29 @@ export class AdorationQueryComponent implements OnInit {
       this.selectedParishID = null;
       this.filteredParishes = [];
       this.parishDisabled = true;
+      console.log('State Changed:', { 
+        stateId, 
+        stateAbbreviation: abbrev, 
+        filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName }))
+      });
     }
   }
 
   onDioceseChange(): void {
-    if (this.selectedDioceseID == null) {
-      this.parishDisabled = true;
-      this.selectedParishID = null;
+    const dioceseId = this.selectedDioceseID != null ? Number(this.selectedDioceseID) : null;
+    if (!dioceseId) {
       this.filteredParishes = [];
+      this.selectedParishID = null;
+      this.parishDisabled = true;
     } else {
-      const chosenID = Number(this.selectedDioceseID);
-      const chosenStateID = Number(this.selectedStateID);
-      this.filteredParishes = this.parishList.filter(p => p.dioceseId === chosenID && (!chosenStateID || p.state?.stateId === chosenStateID));
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
       this.selectedParishID = null;
+      console.log('Diocese Changed:', { 
+        dioceseId, 
+        dioceseName: this.dioceseList.find(d => d.dioceseId === dioceseId)?.dioceseName, 
+        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId }))
+      });
     }
   }
 
@@ -132,6 +141,15 @@ export class AdorationQueryComponent implements OnInit {
     this.adorationService.searchAdorations(stateId, dioceseId, parishId).subscribe({
       next: (res: any) => {
         this.results = res.data;
+        console.log('Search Results:', this.results.map(a => ({
+          adorationId: a.adorationId,
+          stateId: a.stateId,
+          dioceseId: a.dioceseId,
+          parishId: a.parishId,
+          state: a.state,
+          diocese: a.diocese,
+          parish: a.parish
+        })));
       },
       error: (err) => {
         console.error('Failed to search adorations =>', err);
@@ -139,32 +157,42 @@ export class AdorationQueryComponent implements OnInit {
     });
   }
 
+  getTooltip(row: Adoration, column: { header: string; field: string }): string {
+    if (column.field === 'state' && !this.allStates.find(s => s.stateId === row.stateId)?.stateAbbreviation) {
+      return 'This Adoration has no State registered.';
+    }
+    return '';
+  }
+
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
-      const dioceseName = row.diocese?.dioceseName || '';
-      const dioceseWebsite = row.diocese?.dioceseWebsite || '';
+      const diocese = this.dioceseList.find(d => d.dioceseId === row.dioceseId);
+      const dioceseName = diocese?.dioceseName || '';
+      const dioceseWebsite = diocese?.dioceseWebsite || '';
       if (dioceseWebsite.trim()) {
         return `<a href="${dioceseWebsite}" target="_blank">${dioceseName}</a>`;
       } else {
         return dioceseName;
       }
     } else if (column.field === 'parishName') {
-      const parishName = row.parish?.parishName || '';
-      const parishWebsite = row.parish?.parishWebsite || '';
+      const parish = this.parishList.find(p => p.parishId === row.parishId);
+      const parishName = parish?.parishName || '';
+      const parishWebsite = parish?.parishWebsite || '';
       if (parishWebsite.trim()) {
         return `<a href="${parishWebsite}" target="_blank">${parishName}</a>`;
       } else {
         return parishName;
       }
     } else if (column.field === 'state') {
-      return row.state?.stateAbbreviation || '';
+      const state = this.allStates.find(s => s.stateId === row.stateId);
+      return state?.stateAbbreviation || '';
     } else {
       return (row as any)[column.field] ?? '';
     }
   }
 
   getCellClass(row: Adoration, column: { header: string; field: string }): string {
-    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+    if (column.field === 'state' && !this.allStates.find(s => s.stateId === row.stateId)?.stateAbbreviation) {
       return 'no-state';
     }
     return '';

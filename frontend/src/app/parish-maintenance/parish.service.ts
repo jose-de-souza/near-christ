@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface Parish {
@@ -37,33 +38,47 @@ export class ParishService {
 
     constructor(private http: HttpClient) { }
 
-    getAllParishes() {
-        return this.http.get<Parish[]>(`${this.baseUrl}/parishes`);
+    getAllParishes(): Observable<{ success: boolean; status: number; message: string; data: Parish[] }> {
+        return this.http.get<{ success: boolean; status: number; message: string; data: Parish[] }>(`${this.baseUrl}/parishes`);
     }
 
-    getParishById(id: number) {
-        return this.http.get<Parish>(`${this.baseUrl}/parishes/${id}`);
+    getParishById(id: number): Observable<{ success: boolean; status: number; message: string; data: Parish }> {
+        return this.http.get<{ success: boolean; status: number; message: string; data: Parish }>(`${this.baseUrl}/parishes/${id}`);
     }
 
-    createParish(parish: Partial<Parish>) {
-        const payload: any = { ...parish };
-        if (payload.stateId) payload.state = { stateId: payload.stateId };
-        if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
-        delete payload.stateId;
-        delete payload.dioceseId;
-        return this.http.post<Parish>(`${this.baseUrl}/parishes`, payload);
+    createParish(parish: Partial<Parish>): Observable<{ success: boolean; status: number; message: string; data: Parish }> {
+        const payload: Partial<Parish> = {
+            parishName: parish.parishName,
+            parishStNumber: parish.parishStNumber,
+            parishStName: parish.parishStName,
+            parishSuburb: parish.parishSuburb,
+            parishPostcode: parish.parishPostcode,
+            parishPhone: parish.parishPhone,
+            parishEmail: parish.parishEmail,
+            parishWebsite: parish.parishWebsite,
+            stateId: parish.stateId,
+            dioceseId: parish.dioceseId
+        };
+        return this.http.post<{ success: boolean; status: number; message: string; data: Parish }>(`${this.baseUrl}/parishes`, payload);
     }
 
-    updateParish(id: number, parish: Partial<Parish>) {
-        const payload: any = { ...parish };
-        if (payload.stateId) payload.state = { stateId: payload.stateId };
-        if (payload.dioceseId) payload.diocese = { dioceseId: payload.dioceseId };
-        delete payload.stateId;
-        delete payload.dioceseId;
-        return this.http.put<Parish>(`${this.baseUrl}/parishes/${id}`, payload);
+    updateParish(id: number, parish: Partial<Parish>): Observable<{ success: boolean; status: number; message: string; data: Parish }> {
+        const payload: Partial<Parish> = {
+            parishName: parish.parishName,
+            parishStNumber: parish.parishStNumber,
+            parishStName: parish.parishStName,
+            parishSuburb: parish.parishSuburb,
+            parishPostcode: parish.parishPostcode,
+            parishPhone: parish.parishPhone,
+            parishEmail: parish.parishEmail,
+            parishWebsite: parish.parishWebsite,
+            stateId: parish.stateId,
+            dioceseId: parish.dioceseId
+        };
+        return this.http.put<{ success: boolean; status: number; message: string; data: Parish }>(`${this.baseUrl}/parishes/${id}`, payload);
     }
 
-    deleteParish(id: number) {
-        return this.http.delete(`${this.baseUrl}/parishes/${id}`);
+    deleteParish(id: number): Observable<{ success: boolean; status: number; message: string; data: null }> {
+        return this.http.delete<{ success: boolean; status: number; message: string; data: null }>(`${this.baseUrl}/parishes/${id}`);
     }
 }

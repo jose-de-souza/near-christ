@@ -1,34 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Diocese } from '../diocese-maintenance/diocese.service'; // ADDED import so we can reference Diocese
-import { Parish } from '../parish-maintenance/parish.service';   // ADDED import so we can reference Parish
 
-// If the backend returns diocese/parish objects, define them optionally:
 export interface Adoration {
   adorationId: number;
-  dioceseId: number;           // references a valid Diocese
-  parishId: number;            // references a valid Parish
-  stateId: number;             // numeric foreign key => references State
-  adorationType: string;       // 'Regular' or 'Perpetual'
+  dioceseId: number;
+  parishId: number;
+  stateId: number;
+  adorationType: string;
   adorationLocation: string;
   adorationLocationType: string;
-  adorationDay: string;        // e.g. 'Monday', or empty if Perpetual
-  adorationStart: string;      // e.g. '09:00:00'
-  adorationEnd: string;        // e.g. '17:00:00'
-
-  // NEW: if Laravel ->with('diocese','parish','state'), they include the full objects:
+  adorationDay: string;
+  adorationStart: string;
+  adorationEnd: string;
   diocese?: {
     dioceseId: number;
     dioceseName: string;
     dioceseWebsite?: string;
-    associatedStateAbbreviations: string[]; // Added for multi-state support
+    associatedStateAbbreviations: string[];
   };
   parish?: {
     parishId: number;
     parishName: string;
     parishWebsite?: string;
-    state?: { // Added for state filtering
+    state?: {
       stateId: number;
       stateName: string;
       stateAbbreviation: string;
@@ -39,42 +35,36 @@ export interface Adoration {
     stateName: string;
     stateAbbreviation: string;
   };
-  [key: string]: any; // optional for expansion
+  [key: string]: any;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AdorationService {
-  private baseUrl = environment.apiUrl; // e.g. "http://localhost:8000"
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
-  // GET all adorations
-  getAllAdorations() {
-    return this.http.get<Adoration[]>(`${this.baseUrl}/adorations`);
+  getAllAdorations(): Observable<{ success: boolean; status: number; message: string; data: Adoration[] }> {
+    return this.http.get<{ success: boolean; status: number; message: string; data: Adoration[] }>(`${this.baseUrl}/adorations`);
   }
 
-  // GET single adoration
-  getAdorationById(id: number) {
-    return this.http.get<Adoration>(`${this.baseUrl}/adorations/${id}`);
+  getAdorationById(id: number): Observable<{ success: boolean; status: number; message: string; data: Adoration }> {
+    return this.http.get<{ success: boolean; status: number; message: string; data: Adoration }>(`${this.baseUrl}/adorations/${id}`);
   }
 
-  // POST create new adoration
-  createAdoration(adoration: Partial<Adoration>) {
-    return this.http.post<Adoration>(`${this.baseUrl}/adorations`, adoration);
+  createAdoration(adoration: Partial<Adoration>): Observable<{ success: boolean; status: number; message: string; data: Adoration }> {
+    return this.http.post<{ success: boolean; status: number; message: string; data: Adoration }>(`${this.baseUrl}/adorations`, adoration);
   }
 
-  // PUT update existing adoration
-  updateAdoration(id: number, adoration: Partial<Adoration>) {
-    return this.http.put<Adoration>(`${this.baseUrl}/adorations/${id}`, adoration);
+  updateAdoration(id: number, adoration: Partial<Adoration>): Observable<{ success: boolean; status: number; message: string; data: Adoration }> {
+    return this.http.put<{ success: boolean; status: number; message: string; data: Adoration }>(`${this.baseUrl}/adorations/${id}`, adoration);
   }
 
-  // DELETE an adoration
-  deleteAdoration(id: number) {
-    return this.http.delete(`${this.baseUrl}/adorations/${id}`);
+  deleteAdoration(id: number): Observable<{ success: boolean; status: number; message: string; data: null }> {
+    return this.http.delete<{ success: boolean; status: number; message: string; data: null }>(`${this.baseUrl}/adorations/${id}`);
   }
 
-  // SEARCH: optionally pass (stateId, dioceseId, parishId) as query params
-  searchAdorations(stateId?: number, dioceseId?: number, parishId?: number) {
+  searchAdorations(stateId?: number, dioceseId?: number, parishId?: number): Observable<{ success: boolean; status: number; message: string; data: Adoration[] }> {
     let params = new HttpParams();
     if (stateId && stateId > 0) {
       params = params.set('state_id', stateId.toString());
@@ -85,6 +75,6 @@ export class AdorationService {
     if (parishId && parishId > 0) {
       params = params.set('parish_id', parishId.toString());
     }
-    return this.http.get<Adoration[]>(`${this.baseUrl}/adorations`, { params });
+    return this.http.get<{ success: boolean; status: number; message: string; data: Adoration[] }>(`${this.baseUrl}/adorations`, { params });
   }
 }
