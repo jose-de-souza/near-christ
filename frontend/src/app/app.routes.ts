@@ -7,12 +7,14 @@ import { RosaryCrusadeComponent } from './rosary-crusade/rosary-crusade.componen
 import { AdorationQueryComponent } from './adoration-query/adoration-query.component';
 import { CrusadeQueryComponent } from './crusade-query/crusade-query.component';
 import { DioceseListComponent } from './diocese-list/diocese-list.component';
+import { ParishListComponent } from './parish-list/parish-list.component';
 
 export const appRoutes: Routes = [
   { path: '', redirectTo: 'adoration-query', pathMatch: 'full' },
   { path: 'adoration-query', component: AdorationQueryComponent },
   { path: 'crusade-query', component: CrusadeQueryComponent },
   { path: 'diocese-list', component: DioceseListComponent },
+  { path: 'parish-list', component: ParishListComponent },
   {
     path: 'login',
     loadComponent: () =>

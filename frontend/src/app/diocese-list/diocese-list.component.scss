@@ -18,9 +18,9 @@
   .form-container {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
-    padding: 15px;
+    gap: 15px; /* Match AdorationQueryComponent */
+    margin-top: 20px; /* Match AdorationQueryComponent */
+    padding: 15px; /* Match AdorationQueryComponent */
     background: palette.$background-color;
     border-radius: 8px;
 
@@ -28,12 +28,10 @@
       position: relative;
       border: 1px solid palette.$secondary-color;
       border-radius: 8px;
+      padding: 10px; /* Match AdorationQueryComponent */
       display: flex;
-      flex-wrap: nowrap;
-      gap: 15px;
-      width: 100%;
-      box-sizing: border-box;
-      padding: 25px 15px 15px;
+      flex-direction: column;
+      gap: 10px;
 
       &::before {
         content: attr(data-title);
@@ -41,10 +39,18 @@
         top: -10px;
         left: 10px;
         background: palette.$background-color;
-        padding: 0 8px;
-        font-size: 0.9em;
-        font-weight: normal;
+        padding: 0 5px;
         color: palette.$primary-color;
+        font-weight: bold; /* Match AdorationQueryComponent */
+        font-size: 0.9em;
+      }
+
+      .row-1 {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 5px; /* Match AdorationQueryComponent */
+        align-items: flex-end; /* Align bottom edges */
+        width: 100%;
       }
 
       .field-group {
@@ -52,21 +58,26 @@
         flex-direction: column;
         align-items: flex-start;
         box-sizing: border-box;
+        position: relative;
+        gap: 3px; /* Match AdorationQueryComponent */
+        flex: 0 0 50%; /* Equal width for consistency */
+        max-width: 50%; /* Prevent overflow */
+        min-width: 120px; /* Ensure compact size */
 
         label {
           color: palette.$primary-color;
           font-weight: bold;
-          margin-bottom: 5px;
+          margin-bottom: 0; /* Match AdorationQueryComponent */
+          font-size: 0.9em; /* Smaller font */
         }
 
-        select,
-        input {
+        select {
           width: 100%;
-          max-width: 180px;
-          padding: 6px;
+          padding: 6px; /* Match AdorationQueryComponent */
           border: 1px solid palette.$secondary-color;
           border-radius: 4px;
           box-sizing: border-box;
+          font-size: 0.9em; /* Smaller font */
         }
 
         .inline-error {
