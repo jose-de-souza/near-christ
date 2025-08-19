@@ -65,8 +65,8 @@
         </div>
         <div class="grid-column-cell" *ngFor="let row of results; trackBy: trackByCrusadeID"
              [ngClass]="column.field === 'state' ? getCellClass(row, column) : ''"
-             [matTooltip]="column.field === 'state' && !row.state?.stateAbbreviation ? 'This Crusade has no State registered.' : ''">
-          [innerHTML]="getCellValue(row, column)"
+             [matTooltip]="getTooltip(row, column)"
+             [innerHTML]="getCellValue(row, column)">
         </div>
       </div>
     </div>

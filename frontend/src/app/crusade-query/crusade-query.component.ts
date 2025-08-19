@@ -99,16 +99,16 @@ export class CrusadeQueryComponent implements OnInit {
   }
 
   onStateChange(): void {
-    if (!this.selectedStateID || this.selectedStateID === 0) {
-      this.filteredDioceses = this.dioceseList; // Show all dioceses for "All States"
-      this.dioceseDisabled = false;
-      this.parishDisabled = true;
+    const stateId = Number(this.selectedStateID);
+    if (!stateId || stateId === 0) {
+      this.filteredDioceses = [];
+      this.filteredParishes = [];
       this.selectedDioceseID = null;
       this.selectedParishID = null;
-      this.filteredParishes = [];
+      this.dioceseDisabled = true;
+      this.parishDisabled = true;
     } else {
-      const chosenStateID = Number(this.selectedStateID);
-      const selectedState = this.allStates.find(s => s.stateId === chosenStateID);
+      const selectedState = this.allStates.find(s => s.stateId === stateId);
       const abbrev = selectedState?.stateAbbreviation || '';
       this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
       this.dioceseDisabled = this.filteredDioceses.length === 0;
@@ -116,20 +116,29 @@ export class CrusadeQueryComponent implements OnInit {
       this.selectedParishID = null;
       this.filteredParishes = [];
       this.parishDisabled = true;
+      console.log('State Changed:', { 
+        stateId, 
+        stateAbbreviation: abbrev, 
+        filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName }))
+      });
     }
   }
 
   onDioceseChange(): void {
-    if (this.selectedDioceseID == null) {
-      this.parishDisabled = true;
-      this.selectedParishID = null;
+    const dioceseId = this.selectedDioceseID != null ? Number(this.selectedDioceseID) : null;
+    if (!dioceseId) {
       this.filteredParishes = [];
+      this.selectedParishID = null;
+      this.parishDisabled = true;
     } else {
-      const chosenDioceseID = Number(this.selectedDioceseID);
-      const chosenStateID = Number(this.selectedStateID);
-      this.filteredParishes = this.parishList.filter(p => p.dioceseId === chosenDioceseID && (!chosenStateID || p.state?.stateId === chosenStateID));
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
       this.selectedParishID = null;
+      console.log('Diocese Changed:', { 
+        dioceseId, 
+        dioceseName: this.dioceseList.find(d => d.dioceseId === dioceseId)?.dioceseName, 
+        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId }))
+      });
     }
   }
 
@@ -141,6 +150,15 @@ export class CrusadeQueryComponent implements OnInit {
     this.crusadeService.searchCrusades(stateId, dioceseId, parishId).subscribe({
       next: (res: any) => {
         this.results = res.data;
+        console.log('Search Results:', this.results.map(c => ({
+          crusadeId: c.crusadeId,
+          stateId: c.stateId,
+          dioceseId: c.dioceseId,
+          parishId: c.parishId,
+          state: c.state,
+          diocese: c.diocese,
+          parish: c.parish
+        })));
       },
       error: (err) => {
         console.error('Failed to search crusades =>', err);
@@ -149,32 +167,42 @@ export class CrusadeQueryComponent implements OnInit {
     });
   }
 
+  getTooltip(row: Crusade, column: { header: string; field: string }): string {
+    if (column.field === 'state' && !this.allStates.find(s => s.stateId === row.stateId)?.stateAbbreviation) {
+      return 'This Crusade has no State registered.';
+    }
+    return '';
+  }
+
   getCellValue(row: Crusade, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
-      const dName = row.diocese?.dioceseName || '';
-      const dWebsite = row.diocese?.dioceseWebsite || '';
-      if (dWebsite.trim()) {
-        return `<a href="${dWebsite}" target="_blank">${dName}</a>`;
+      const diocese = this.dioceseList.find(d => d.dioceseId === row.dioceseId);
+      const dioceseName = diocese?.dioceseName || '';
+      const dioceseWebsite = diocese?.dioceseWebsite || '';
+      if (dioceseWebsite.trim()) {
+        return `<a href="${dioceseWebsite}" target="_blank">${dioceseName}</a>`;
       } else {
-        return dName;
+        return dioceseName;
       }
     } else if (column.field === 'parishName') {
-      const pName = row.parish?.parishName || '';
-      const pWebsite = row.parish?.parishWebsite || '';
-      if (pWebsite.trim()) {
-        return `<a href="${pWebsite}" target="_blank">${pName}</a>`;
+      const parish = this.parishList.find(p => p.parishId === row.parishId);
+      const parishName = parish?.parishName || '';
+      const parishWebsite = parish?.parishWebsite || '';
+      if (parishWebsite.trim()) {
+        return `<a href="${parishWebsite}" target="_blank">${parishName}</a>`;
       } else {
-        return pName;
+        return parishName;
       }
     } else if (column.field === 'state') {
-      return row.state?.stateAbbreviation || '';
+      const state = this.allStates.find(s => s.stateId === row.stateId);
+      return state?.stateAbbreviation || '';
     } else {
       return (row as any)[column.field] || '';
     }
   }
 
   getCellClass(row: Crusade, column: { header: string; field: string }): string {
-    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+    if (column.field === 'state' && !this.allStates.find(s => s.stateId === row.stateId)?.stateAbbreviation) {
       return 'no-state';
     }
     return '';
