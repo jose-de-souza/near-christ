@@ -1,0 +1,55 @@
+<div class="diocese-list">
+  <h2>Dioceses</h2>
+
+  <div class="form-container">
+    <!-- Filter Section -->
+    <div class="section filter" data-title="Filter">
+      <div class="row-1">
+        <!-- State -->
+        <div class="field-group state">
+          <label>State</label>
+          <select [(ngModel)]="selectedStateID" (change)="onStateChange()" [disabled]="allStates.length === 0">
+            <option [ngValue]="0">All States</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId">
+              {{ st.stateAbbreviation }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results area -->
+  <div class="results-area">
+    <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
+         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
+      <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
+           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
+        <div class="grid-column-header" (click)="onSort(column.field)">
+          <span class="drag-handle" cdkDragHandle>☰</span>
+          <ng-template cdkDragPreview>
+            <div class="custom-drag-preview">{{ column.header }}</div>
+          </ng-template>
+          <ng-template cdkDragPlaceholder>
+            <div class="custom-drag-placeholder">
+              Dropping {{ column.header }} here
+            </div>
+          </ng-template>
+          {{ column.header }} {{ column.field === sortColumn ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+        </div>
+        <div class="grid-column-cell" *ngFor="let row of getPaginatedDioceses(); trackBy: trackByDioceseID"
+             [innerHTML]="getCellValue(row, column)">
+        </div>
+      </div>
+    </div>
+    <!-- Pagination Controls -->
+    <div class="pagination">
+      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
+      <button (click)="currentPage = currentPage - 1" [disabled]="currentPage === 1">Previous</button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button (click)="currentPage = currentPage + 1" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+</div>

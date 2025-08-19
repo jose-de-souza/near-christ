@@ -28,7 +28,7 @@ VALUES
 -- Data migrated from the old Diocese table.
 INSERT INTO dioceses (diocese_id, diocese_name, diocese_street_no, diocese_street_name, diocese_suburb, state_id, diocese_postcode, diocese_phone, diocese_email, diocese_website)
 VALUES
-    (1, 'Sydney Archdiocese', '38', 'Renwick St', 'Leichardt', 1, '2040', '02 9390 5100', 'chancery@sydneycatholic.org', 'www.sydneycatholic.org.au'),
+    (1, 'Sydney Archdiocese', '38', 'Renwick St', 'Leichardt', 1, '2040', '02 9390 5100', 'chancery@sydneycatholic.org', 'https://www.sydneycatholic.org.au'),
     (4, 'Canberra and Goulburn Archdiocese', '55', 'Franklin St', 'Forrest', 7, '2603', '02 6239 9800', 'reception@cg.org.au', 'https://cgcatholic.org.au/');
 
 -- 4) INSERT parishes
