@@ -1,32 +1,40 @@
 package com.nearchrist.backend.controller;
 
+import com.nearchrist.backend.dto.AdorationDto;
+import com.nearchrist.backend.dto.AdorationUpsertDto;
 import com.nearchrist.backend.dto.ApiResponse;
-import com.nearchrist.backend.entity.Adoration;
-import com.nearchrist.backend.repository.AdorationRepository;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.nearchrist.backend.service.AdorationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
+@RequestMapping("/adorations")
 public class AdorationController {
+    private final AdorationService service;
 
-    private final AdorationRepository adorationRepository;
-
-    public AdorationController(AdorationRepository adorationRepository) {
-        this.adorationRepository = adorationRepository;
+    public AdorationController(AdorationService service) {
+        this.service = service;
     }
 
-    @GetMapping("/adorations")
-    public ResponseEntity<ApiResponse<List<Adoration>>> getAll(
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<AdorationDto>>> getAll(
             @RequestParam(required = false) Long state_id,
             @RequestParam(required = false) Long diocese_id,
             @RequestParam(required = false) Long parish_id) {
         try {
-            List<Adoration> adorations = adorationRepository.findByFilters(state_id, diocese_id, parish_id);
+            List<AdorationDto> adorations = service.getAllAdorations();
+            if (state_id != null) {
+                adorations = adorations.stream().filter(a -> state_id.equals(a.stateId())).toList();
+            }
+            if (diocese_id != null) {
+                adorations = adorations.stream().filter(a -> diocese_id.equals(a.dioceseId())).toList();
+            }
+            if (parish_id != null) {
+                adorations = adorations.stream().filter(a -> parish_id.equals(a.parishId())).toList();
+            }
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "All adorations fetched", adorations));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -34,11 +42,11 @@ public class AdorationController {
         }
     }
 
-    @GetMapping("/adorations/{id}")
-    public ResponseEntity<ApiResponse<Adoration>> getById(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<AdorationDto>> getById(@PathVariable Long id) {
         try {
-            Optional<Adoration> adoration = adorationRepository.findById(id);
-            return adoration.map(a -> ResponseEntity.ok(new ApiResponse<>(true, 200, "Adoration fetched successfully", a)))
+            return service.getAdorationById(id)
+                    .map(a -> ResponseEntity.ok(new ApiResponse<>(true, 200, "Adoration fetched successfully", a)))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(new ApiResponse<>(false, 404, "Adoration not found", null)));
         } catch (Exception e) {
@@ -47,60 +55,48 @@ public class AdorationController {
         }
     }
 
-    @PostMapping("/adorations")
-    public ResponseEntity<ApiResponse<Adoration>> create(@RequestBody Adoration adoration) {
+    @PostMapping
+    public ResponseEntity<ApiResponse<AdorationDto>> create(@RequestBody AdorationUpsertDto dto) {
         try {
-            if (adoration.getState() == null || adoration.getDiocese() == null || adoration.getParish() == null || adoration.getAdorationType() == null) {
-                return ResponseEntity.badRequest()
-                        .body(new ApiResponse<>(false, 400, "Missing required fields: StateID, DioceseID, ParishID, AdorationType", null));
-            }
-            Adoration savedAdoration = adorationRepository.save(adoration);
+            AdorationDto saved = service.createAdoration(dto);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponse<>(true, 201, "Adoration created successfully", savedAdoration));
+                    .body(new ApiResponse<>(true, 201, "Adoration created successfully", saved));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, 400, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, 500, "Error creating adoration: " + e.getMessage(), null));
         }
     }
 
-    @PutMapping("/adorations/{id}")
-    public ResponseEntity<ApiResponse<Adoration>> update(@PathVariable Long id, @RequestBody Adoration updatedAdoration) {
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<AdorationDto>> update(@PathVariable Long id, @RequestBody AdorationUpsertDto dto) {
         try {
-            Optional<Adoration> optionalAdoration = adorationRepository.findById(id);
-            if (optionalAdoration.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse<>(false, 404, "Adoration not found", null));
-            }
-            Adoration adoration = optionalAdoration.get();
-            adoration.setState(updatedAdoration.getState());
-            adoration.setDiocese(updatedAdoration.getDiocese());
-            adoration.setParish(updatedAdoration.getParish());
-            adoration.setAdorationType(updatedAdoration.getAdorationType());
-            adoration.setAdorationLocation(updatedAdoration.getAdorationLocation());
-            adoration.setAdorationLocationType(updatedAdoration.getAdorationLocationType());
-            adoration.setAdorationDay(updatedAdoration.getAdorationDay());
-            adoration.setAdorationStart(updatedAdoration.getAdorationStart());
-            adoration.setAdorationEnd(updatedAdoration.getAdorationEnd());
-            Adoration savedAdoration = adorationRepository.save(adoration);
-            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Adoration updated successfully", savedAdoration));
+            return service.updateAdoration(id, dto)
+                    .map(a -> ResponseEntity.ok(new ApiResponse<>(true, 200, "Adoration updated successfully", a)))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(new ApiResponse<>(false, 404, "Adoration not found", null)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, 400, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, 500, "Error updating adoration: " + e.getMessage(), null));
         }
     }
 
-    @DeleteMapping("/adorations/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         try {
-            if (!adorationRepository.existsById(id)) {
+            if (!service.deleteAdoration(id)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new ApiResponse<>(false, 404, "Adoration not found", null));
             }
-            adorationRepository.deleteById(id);
             return ResponseEntity.ok(new ApiResponse<>(true, 204, "Adoration deleted successfully", null));
-        } catch (DataIntegrityViolationException e) {
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(false, 400, "Cannot delete Adoration because it is referenced by other records", null));
+                    .body(new ApiResponse<>(false, 400, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, 500, "Error deleting adoration: " + e.getMessage(), null));

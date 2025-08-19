@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface AdorationRepository extends JpaRepository<Adoration, Long> {
     @Query("SELECT a FROM Adoration a WHERE " +
-            "(:stateId IS NULL OR a.state.stateId = :stateId) AND " +
-            "(:dioceseId IS NULL OR a.diocese.dioceseId = :dioceseId) AND " +
-            "(:parishId IS NULL OR a.parish.parishId = :parishId)")
+            "(:state_id IS NULL OR a.state.stateId = :state_id) AND " +
+            "(:diocese_id IS NULL OR a.diocese.dioceseId = :diocese_id) AND " +
+            "(:parish_id IS NULL OR a.parish.parishId = :parish_id)")
     List<Adoration> findByFilters(
-            @Param("stateId") Long stateId,
-            @Param("dioceseId") Long dioceseId,
-            @Param("parishId") Long parishId);
+            @Param("state_id") Long stateId,
+            @Param("diocese_id") Long dioceseId,
+            @Param("parish_id") Long parishId);
 }

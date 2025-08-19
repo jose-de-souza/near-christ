@@ -44,7 +44,7 @@ export class AdorationScheduleComponent implements OnInit {
   parishList: Parish[] = [];
   allStates: State[] = [];
   filteredDioceses: Diocese[] = [];
-  filteredParishes: Parish[] = []; // Fixed type from Diocese[] to Parish[]
+  filteredParishes: Parish[] = [];
   dioceseDisabled = true;
   parishDisabled = true;
   hasSubmitted = false;
@@ -83,6 +83,7 @@ export class AdorationScheduleComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data;
+        console.log('Loaded States:', this.allStates);
       },
       error: (err) => {
         console.error('Failed to load states:', err);
@@ -95,6 +96,7 @@ export class AdorationScheduleComponent implements OnInit {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
         this.dioceseList = res.data;
+        console.log('Loaded Dioceses:', this.dioceseList.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName, associatedStateAbbreviations: d.associatedStateAbbreviations })));
       },
       error: (err) => {
         console.error('Failed to load dioceses:', err);
@@ -107,6 +109,7 @@ export class AdorationScheduleComponent implements OnInit {
     this.parishService.getAllParishes().subscribe({
       next: (res: any) => {
         this.parishList = res.data;
+        console.log('Loaded Parishes:', this.parishList.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })));
       },
       error: (err) => {
         console.error('Failed to load parishes:', err);
@@ -119,6 +122,7 @@ export class AdorationScheduleComponent implements OnInit {
     this.adorationService.getAllAdorations().subscribe({
       next: (res: any) => {
         this.schedules = res.data;
+        console.log('Loaded Adorations:', this.schedules);
       },
       error: (err) => {
         console.error('Failed to load adorations:', err);
@@ -140,8 +144,8 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   onStateChange(): void {
-    const sID = Number(this.selectedAdoration.stateId || 0);
-    if (!sID) {
+    const stateId = Number(this.selectedAdoration.stateId || 0);
+    if (!stateId) {
       this.filteredDioceses = [];
       this.filteredParishes = [];
       this.selectedAdoration.dioceseId = 0;
@@ -149,29 +153,40 @@ export class AdorationScheduleComponent implements OnInit {
       this.dioceseDisabled = true;
       this.parishDisabled = true;
     } else {
-      const selectedState = this.allStates.find(s => s.stateId === sID);
+      const selectedState = this.allStates.find(s => s.stateId === stateId);
       const abbrev = selectedState?.stateAbbreviation || '';
-      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev));
       this.dioceseDisabled = this.filteredDioceses.length === 0;
       this.selectedAdoration.dioceseId = 0;
       this.selectedAdoration.parishId = 0;
       this.filteredParishes = [];
       this.parishDisabled = true;
+      console.log('State Changed:', { stateId, stateAbbreviation: abbrev, filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })) });
     }
   }
 
   onDioceseChange(): void {
-    const dID = Number(this.selectedAdoration.dioceseId || 0);
-    if (!dID) {
+    const dioceseId = Number(this.selectedAdoration.dioceseId || 0);
+    if (!dioceseId) {
       this.filteredParishes = [];
       this.selectedAdoration.parishId = 0;
       this.parishDisabled = true;
     } else {
-      const sID = Number(this.selectedAdoration.stateId || 0);
-      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dID && (!sID || p.state?.stateId === sID));
+      const selectedDiocese = this.dioceseList.find(d => d.dioceseId === dioceseId);
+      console.log(this.parishList);
+      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
+      if (this.parishDisabled) {
+        this.showWarning(`No parishes found for diocese: ${selectedDiocese?.dioceseName || dioceseId}`);
+      }
       this.selectedAdoration.parishId = 0;
+      console.log('Diocese Changed:', { 
+        dioceseId, 
+        dioceseName: selectedDiocese?.dioceseName, 
+        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId }))
+      });
     }
+    this.updateLocationFromParish();
   }
 
   isParishChurch(): boolean {
@@ -197,12 +212,26 @@ export class AdorationScheduleComponent implements OnInit {
     this.selectedAdoration = { ...schedule };
     this.uiMode = 'editing';
     this.hasSubmitted = false;
+    this.filteredDioceses = [];
+    this.filteredParishes = [];
+    this.dioceseDisabled = true;
+    this.parishDisabled = true;
     if (schedule.stateId) {
       this.onStateChange();
+      if (schedule.dioceseId) {
+        this.onDioceseChange();
+      }
     }
-    if (schedule.dioceseId) {
-      this.onDioceseChange();
-    }
+    console.log('Selected Schedule:', { 
+      schedule: { 
+        adorationId: this.selectedAdoration.adorationId, 
+        stateId: this.selectedAdoration.stateId, 
+        dioceseId: this.selectedAdoration.dioceseId, 
+        parishId: this.selectedAdoration.parishId 
+      }, 
+      filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })), 
+      filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName }))
+    });
   }
 
   isFormValid(): boolean {

@@ -1,29 +1,28 @@
 package com.nearchrist.backend.controller;
 
+import com.nearchrist.backend.dto.ParishDto;
+import com.nearchrist.backend.dto.ParishUpsertDto;
 import com.nearchrist.backend.dto.ApiResponse;
-import com.nearchrist.backend.entity.Parish;
-import com.nearchrist.backend.repository.ParishRepository;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.nearchrist.backend.service.ParishService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
+@RequestMapping("/parishes")
 public class ParishController {
+    private final ParishService service;
 
-    private final ParishRepository parishRepository;
-
-    public ParishController(ParishRepository parishRepository) {
-        this.parishRepository = parishRepository;
+    public ParishController(ParishService service) {
+        this.service = service;
     }
 
-    @GetMapping("/parishes")
-    public ResponseEntity<ApiResponse<List<Parish>>> getAll() {
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ParishDto>>> getAll() {
         try {
-            List<Parish> parishes = parishRepository.findAll();
+            List<ParishDto> parishes = service.getAllParishes();
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "All parishes fetched", parishes));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -31,11 +30,11 @@ public class ParishController {
         }
     }
 
-    @GetMapping("/parishes/{id}")
-    public ResponseEntity<ApiResponse<Parish>> getById(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ParishDto>> getById(@PathVariable Long id) {
         try {
-            Optional<Parish> parish = parishRepository.findById(id);
-            return parish.map(p -> ResponseEntity.ok(new ApiResponse<>(true, 200, "Parish fetched successfully", p)))
+            return service.getParishById(id)
+                    .map(p -> ResponseEntity.ok(new ApiResponse<>(true, 200, "Parish fetched successfully", p)))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(new ApiResponse<>(false, 404, "Parish not found", null)));
         } catch (Exception e) {
@@ -44,61 +43,48 @@ public class ParishController {
         }
     }
 
-    @PostMapping("/parishes")
-    public ResponseEntity<ApiResponse<Parish>> create(@RequestBody Parish parish) {
+    @PostMapping
+    public ResponseEntity<ApiResponse<ParishDto>> create(@RequestBody ParishUpsertDto dto) {
         try {
-            if (parish.getDiocese() == null || parish.getParishName() == null || parish.getState() == null) {
-                return ResponseEntity.badRequest()
-                        .body(new ApiResponse<>(false, 400, "Missing one or more required fields: DioceseID, ParishName, StateID", null));
-            }
-            Parish savedParish = parishRepository.save(parish);
+            ParishDto saved = service.createParish(dto);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponse<>(true, 201, "Parish created successfully", savedParish));
+                    .body(new ApiResponse<>(true, 201, "Parish created successfully", saved));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, 400, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, 500, "Error creating parish: " + e.getMessage(), null));
         }
     }
 
-    @PutMapping("/parishes/{id}")
-    public ResponseEntity<ApiResponse<Parish>> update(@PathVariable Long id, @RequestBody Parish updatedParish) {
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ParishDto>> update(@PathVariable Long id, @RequestBody ParishUpsertDto dto) {
         try {
-            Optional<Parish> optionalParish = parishRepository.findById(id);
-            if (optionalParish.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse<>(false, 404, "Parish not found", null));
-            }
-            Parish parish = optionalParish.get();
-            parish.setDiocese(updatedParish.getDiocese());
-            parish.setParishName(updatedParish.getParishName());
-            parish.setState(updatedParish.getState());
-            parish.setParishStNumber(updatedParish.getParishStNumber());
-            parish.setParishStName(updatedParish.getParishStName());
-            parish.setParishSuburb(updatedParish.getParishSuburb());
-            parish.setParishPostcode(updatedParish.getParishPostcode());
-            parish.setParishPhone(updatedParish.getParishPhone());
-            parish.setParishEmail(updatedParish.getParishEmail());
-            parish.setParishWebsite(updatedParish.getParishWebsite());
-            Parish savedParish = parishRepository.save(parish);
-            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Parish updated successfully", savedParish));
+            return service.updateParish(id, dto)
+                    .map(p -> ResponseEntity.ok(new ApiResponse<>(true, 200, "Parish updated successfully", p)))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(new ApiResponse<>(false, 404, "Parish not found", null)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, 400, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, 500, "Error updating parish: " + e.getMessage(), null));
         }
     }
 
-    @DeleteMapping("/parishes/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         try {
-            if (!parishRepository.existsById(id)) {
+            if (!service.deleteParish(id)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new ApiResponse<>(false, 404, "Parish not found", null));
             }
-            parishRepository.deleteById(id);
             return ResponseEntity.ok(new ApiResponse<>(true, 204, "Parish deleted successfully", null));
-        } catch (DataIntegrityViolationException e) {
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(false, 400, "Cannot delete Parish because it is referenced by other records", null));
+                    .body(new ApiResponse<>(false, 400, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, 500, "Error deleting parish: " + e.getMessage(), null));
