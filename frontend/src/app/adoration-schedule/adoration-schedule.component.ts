@@ -122,7 +122,12 @@ export class AdorationScheduleComponent implements OnInit {
     this.adorationService.getAllAdorations().subscribe({
       next: (res: any) => {
         this.schedules = res.data;
-        console.log('Loaded Adorations:', this.schedules);
+        console.log('Loaded Adorations:', this.schedules.map(a => ({
+          adorationId: a.adorationId,
+          state: a.state,
+          diocese: a.diocese,
+          parish: a.parish
+        })));
       },
       error: (err) => {
         console.error('Failed to load adorations:', err);
@@ -161,7 +166,11 @@ export class AdorationScheduleComponent implements OnInit {
       this.selectedAdoration.parishId = 0;
       this.filteredParishes = [];
       this.parishDisabled = true;
-      console.log('State Changed:', { stateId, stateAbbreviation: abbrev, filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })) });
+      console.log('State Changed:', { 
+        stateId, 
+        stateAbbreviation: abbrev, 
+        filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName }))
+      });
     }
   }
 
@@ -219,7 +228,12 @@ export class AdorationScheduleComponent implements OnInit {
     if (schedule.stateId) {
       this.onStateChange();
       if (schedule.dioceseId) {
+        this.selectedAdoration.dioceseId = schedule.dioceseId;
         this.onDioceseChange();
+        if (schedule.parishId) {
+          this.selectedAdoration.parishId = schedule.parishId;
+          this.updateLocationFromParish();
+        }
       }
     }
     console.log('Selected Schedule:', { 
@@ -227,7 +241,8 @@ export class AdorationScheduleComponent implements OnInit {
         adorationId: this.selectedAdoration.adorationId, 
         stateId: this.selectedAdoration.stateId, 
         dioceseId: this.selectedAdoration.dioceseId, 
-        parishId: this.selectedAdoration.parishId 
+        parishId: this.selectedAdoration.parishId,
+        adorationLocation: this.selectedAdoration.adorationLocation 
       }, 
       filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })), 
       filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName }))
@@ -349,18 +364,21 @@ export class AdorationScheduleComponent implements OnInit {
 
   getCellValue(row: Adoration, column: { header: string; field: string }): any {
     if (column.field === 'dioceseName') {
-      return row.diocese?.dioceseName || '';
+      const diocese = this.dioceseList.find(d => d.dioceseId === row.dioceseId);
+      return diocese?.dioceseName || '';
     } else if (column.field === 'parishName') {
-      return row.parish?.parishName || '';
+      const parish = this.parishList.find(p => p.parishId === row.parishId);
+      return parish?.parishName || '';
     } else if (column.field === 'state') {
-      return row.state?.stateAbbreviation || '';
+      const state = this.allStates.find(s => s.stateId === row.stateId);
+      return state?.stateAbbreviation || '';
     } else {
-      return (row as any)[column.field] ?? '';
+      return (row as any)[column.field] || '';
     }
   }
 
   getCellClass(row: Adoration, column: { header: string; field: string }): string {
-    if (column.field === 'state' && !row.state?.stateAbbreviation) {
+    if (column.field === 'state' && !this.allStates.find(s => s.stateId === row.stateId)?.stateAbbreviation) {
       return 'no-state';
     }
     return '';
