@@ -6,11 +6,13 @@ import { ParishMaintenanceComponent } from './parish-maintenance/parish-maintena
 import { RosaryCrusadeComponent } from './rosary-crusade/rosary-crusade.component';
 import { AdorationQueryComponent } from './adoration-query/adoration-query.component';
 import { CrusadeQueryComponent } from './crusade-query/crusade-query.component';
+import { DioceseListComponent } from './diocese-list/diocese-list.component';
 
 export const appRoutes: Routes = [
   { path: '', redirectTo: 'adoration-query', pathMatch: 'full' },
   { path: 'adoration-query', component: AdorationQueryComponent },
   { path: 'crusade-query', component: CrusadeQueryComponent },
+  { path: 'diocese-list', component: DioceseListComponent },
   {
     path: 'login',
     loadComponent: () =>
@@ -39,16 +41,13 @@ export const appRoutes: Routes = [
     component: RosaryCrusadeComponent,
     canActivate: [AuthGuard],
   },
-
-  // NEW => lazy-load the UserMaintenanceComponent
   {
     path: 'user-maintenance',
     loadComponent: () =>
       import('./user-maintenance/user-maintenance.component').then(
         m => m.UserMaintenanceComponent
       ),
-    canActivate: [AuthGuard], // must be logged in
+    canActivate: [AuthGuard],
   },
-
   { path: '**', redirectTo: 'login' },
 ];
