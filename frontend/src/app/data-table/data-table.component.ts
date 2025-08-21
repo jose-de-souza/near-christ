@@ -76,9 +76,6 @@ export class DataTableComponent implements OnChanges {
   }
 
   getCellValue(row: any, column: { header: string; field: string }): any {
-    if (column.field === 'associatedStateAbbreviations') {
-      return row.associatedStateAbbreviations?.length ? row.associatedStateAbbreviations.join(', ') : '';
-    }
     return (row as any)[column.field] || '';
   }
 
