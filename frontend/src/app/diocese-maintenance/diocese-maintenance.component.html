@@ -1,69 +1,12 @@
 <div class="diocese-maintenance">
   <h2>Diocese Maintenance</h2>
 
-  <!-- form-container => houses top sections, CRUD buttons, and the Filter section -->
+  <div class="buttons">
+    <button (click)="addDiocese()">Add</button>
+  </div>
+
+  <!-- Filter Section -->
   <div class="form-container">
-
-    <!-- SECTION #1: Diocese Details -->
-    <div class="section diocese" data-title="Diocese Details">
-      <div class="row-1">
-        <!-- Diocese Name -->
-        <div class="field-group dioceseName">
-          <label>Diocese Name</label>
-          <input type="text" [(ngModel)]="selectedDiocese.dioceseName" />
-          <div *ngIf="hasSubmitted && !selectedDiocese.dioceseName?.trim()" class="inline-error">
-            Diocese Name is required.
-          </div>
-        </div>
-        <!-- Street No -->
-        <div class="field-group streetNo">
-          <label>Street No</label>
-          <input type="text" [(ngModel)]="selectedDiocese.dioceseStreetNo" />
-        </div>
-        <!-- Street Name -->
-        <div class="field-group streetName">
-          <label>Street Name</label>
-          <input type="text" [(ngModel)]="selectedDiocese.dioceseStreetName" />
-        </div>
-        <!-- Suburb -->
-        <div class="field-group suburb">
-          <label>Suburb</label>
-          <input type="text" [(ngModel)]="selectedDiocese.dioceseSuburb" />
-        </div>
-      </div>
-    </div><!-- end .section.diocese -->
-
-    <!-- SECTION #2: Location / Contact -->
-    <div class="section location" data-title="Location / Contact">
-      <div class="row-2">
-        <div class="field-group postcode">
-          <label>Postcode</label>
-          <input type="text" [(ngModel)]="selectedDiocese.diocesePostcode" />
-        </div>
-        <div class="field-group phone">
-          <label>Phone</label>
-          <input type="text" [(ngModel)]="selectedDiocese.diocesePhone" />
-        </div>
-        <div class="field-group email">
-          <label>Email</label>
-          <input type="text" [(ngModel)]="selectedDiocese.dioceseEmail" />
-        </div>
-        <div class="field-group website">
-          <label>Website</label>
-          <input type="text" [(ngModel)]="selectedDiocese.dioceseWebsite" />
-        </div>
-      </div>
-    </div><!-- end .section.location -->
-
-    <!-- CRUD Buttons -->
-    <div class="buttons">
-      <button (click)="addDiocese()" [disabled]="uiMode === 'editing'">Add</button>
-      <button (click)="modifyDiocese()" [disabled]="uiMode !== 'editing'">Modify</button>
-      <button (click)="deleteDiocese()" [disabled]="uiMode !== 'editing'">Delete</button>
-      <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
-    </div>
-
-    <!-- SECTION #3: Filter -->
     <div class="section filter" data-title="Filter">
       <div class="row-filter">
         <div class="field-group state">
@@ -76,34 +19,18 @@
           </select>
         </div>
       </div>
-    </div><!-- end .section.filter -->
-
-  </div><!-- end .form-container -->
-
-  <!-- Results area -->
-  <div class="results-area">
-    <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-      <div class="grid-column" *ngFor="let column of columns; trackBy: trackColumn" cdkDrag
-           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-        <div class="grid-column-header">
-          <span class="drag-handle" cdkDragHandle>☰</span>
-          <ng-template cdkDragPreview>
-            <div class="custom-drag-preview">{{ column.header }}</div>
-          </ng-template>
-          <ng-template cdkDragPlaceholder>
-            <div class="custom-drag-placeholder">
-              Dropping {{ column.header }} here
-            </div>
-          </ng-template>
-          {{ column.header }}
-        </div>
-        <div class="grid-column-cell" *ngFor="let row of dioceses; trackBy: trackByDioceseID"
-             (click)="selectDiocese(row)" [ngClass]="getCellClass(row, column)"
-             [matTooltip]="column.field === 'associatedStateAbbreviations' && !row.associatedStateAbbreviations.length ? 'This Diocese has no Parishes registered to it yet.' : ''">
-          {{ getCellValue(row, column) }}
-        </div>
-      </div>
     </div>
-  </div><!-- end results-area -->
+  </div>
+
+  <app-data-table
+    [columns]="columns"
+    [data]="dioceses"
+    [pageSizeOptions]="[10, 25, 50]"
+    [defaultPageSize]="10"
+    [sortColumn]="'dioceseName'"
+    [sortDirection]="'asc'"
+    [clickable]="true"
+    [trackIdField]="'dioceseId'"
+    (rowClicked)="onRowClicked($event)">
+  </app-data-table>
 </div>
