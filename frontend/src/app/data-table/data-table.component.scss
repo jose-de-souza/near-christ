@@ -1,0 +1,108 @@
+@use "sass:color";
+@use '../palette';
+
+.results-area {
+  margin-top: 20px;
+  border: 1px solid palette.$secondary-color;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+
+  .grid-table {
+    display: grid;
+    gap: 0;
+    grid-auto-rows: 1fr;
+    align-items: stretch;
+    grid-auto-flow: column;
+    grid-auto-columns: auto;
+    min-width: max-content;
+  }
+
+  .grid-column {
+    display: flex;
+    flex-direction: column;
+
+    &.cdk-drag-over {
+      outline: 2px dashed #666;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .grid-column-header {
+      border: 1px solid palette.$secondary-color;
+      background-color: palette.$secondary-color;
+      color: white;
+      padding: 10px;
+      font-weight: bold;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .grid-column-cell {
+      min-height: 20px;
+      border: 1px solid palette.$secondary-color;
+      padding: 10px;
+      text-align: left;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &.no-state {
+        background-color: #f0f0f0;
+        color: #888;
+      }
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+
+    select {
+      padding: 5px;
+      border: 1px solid palette.$secondary-color;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 5px 10px;
+      background-color: palette.$primary-color;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:disabled {
+        background-color: gray;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .drag-handle {
+    cursor: move;
+  }
+
+  .custom-drag-preview {
+    background: white;
+    border: 2px solid palette.$secondary-color;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .custom-drag-placeholder {
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 2px dashed #999;
+    padding: 10px;
+    font-style: italic;
+    color: #555;
+  }
+}

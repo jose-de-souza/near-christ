@@ -1,0 +1,194 @@
+@use "sass:color";
+@use '../palette';
+
+.diocese-edit-dialog {
+  max-width: 90vw;
+  height: 600px;
+  padding: 20px;
+  background: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    color: palette.$primary-color;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .form-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+    background: palette.$background-color;
+    border-radius: 8px;
+    overflow-y: auto;
+
+    .section {
+      position: relative;
+      border: 1px solid palette.$secondary-color;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: palette.$background-color;
+
+      &::before {
+        content: attr(data-title);
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        background: palette.$background-color;
+        padding: 0 5px;
+        color: palette.$primary-color;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+
+      .row-1,
+      .row-2 {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 5px;
+        align-items: flex-end;
+      }
+
+      .row-1 .dioceseName {
+        flex: 0 0 30%;
+        max-width: 30%;
+      }
+
+      .row-1 .streetNo {
+        flex: 0 0 10%;
+        max-width: 10%;
+      }
+
+      .row-1 .streetName {
+        flex: 0 0 29%;
+        max-width: 29%;
+      }
+
+      .row-1 .suburb {
+        flex: 0 0 29%;
+        max-width: 29%;
+      }
+
+      .row-2 .postcode {
+        flex: 0 0 10%;
+        max-width: 10%;
+      }
+
+      .row-2 .phone {
+        flex: 0 0 22%;
+        max-width: 22%;
+      }
+
+      .row-2 .email {
+        flex: 0 0 28%;
+        max-width: 28%;
+      }
+
+      .row-2 .website {
+        flex: 0 0 28%;
+        max-width: 28%;
+      }
+
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        box-sizing: border-box;
+        gap: 3px;
+
+        label {
+          color: palette.$primary-color;
+          font-weight: bold;
+          margin-bottom: 0;
+          font-size: 0.9em;
+        }
+
+        input {
+          width: 100%;
+          max-width: none;
+          padding: 6px;
+          border: 1px solid palette.$secondary-color;
+          border-radius: 4px;
+          box-sizing: border-box;
+          font-size: 0.9em;
+        }
+
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        .inline-error {
+          color: red;
+          font-size: 0.85em;
+          margin-top: 2px;
+        }
+      }
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+
+      button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: white;
+
+        &:nth-child(1) {
+          background-color: palette.$save-button-bg;
+          &:hover {
+            background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+          }
+        }
+
+        &:nth-child(2) {
+          background-color: palette.$default-button-bg;
+          &:hover {
+            background-color: palette.$default-button-hover-bg;
+          }
+        }
+
+        &:nth-child(3) {
+          background-color: palette.$delete-button-bg;
+          &:hover {
+            background-color: palette.$delete-button-hover-bg;
+          }
+        }
+
+        &:nth-child(4) {
+          background-color: palette.$neutral-color;
+          &:hover {
+            background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+          }
+        }
+
+        &:disabled {
+          background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+          cursor: not-allowed;
+          opacity: 0.6;
+          &:hover {
+            background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+          }
+        }
+      }
+    }
+  }
+}

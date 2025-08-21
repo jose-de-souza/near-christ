@@ -1,0 +1,92 @@
+<div class="parish-edit-dialog">
+  <h2>{{ data.parishId ? 'Edit Parish' : 'Add Parish' }}</h2>
+
+  <div class="form-container">
+    <!-- SECTION #1: Parish Details -->
+    <div class="section parish" data-title="Parish Details">
+      <div class="row-1">
+        <!-- Parish Name -->
+        <div class="field-group parishName">
+          <label>Parish Name</label>
+          <input type="text" [(ngModel)]="selectedParish.parishName" />
+          <div *ngIf="hasSubmitted && !selectedParish.parishName?.trim()" class="inline-error">
+            Parish Name is required.
+          </div>
+        </div>
+        <!-- Street No -->
+        <div class="field-group streetNo">
+          <label>Street No</label>
+          <input type="number" step="1" [(ngModel)]="selectedParish.parishStNumber" />
+        </div>
+        <!-- Street Name -->
+        <div class="field-group streetName">
+          <label>Street Name</label>
+          <input type="text" [(ngModel)]="selectedParish.parishStName" />
+        </div>
+        <!-- Suburb -->
+        <div class="field-group suburb">
+          <label>Suburb</label>
+          <input type="text" [(ngModel)]="selectedParish.parishSuburb" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION #2: Location / Contact -->
+    <div class="section location" data-title="Location / Contact">
+      <div class="row-1">
+        <!-- State -->
+        <div class="field-group state">
+          <label>State</label>
+          <select [(ngModel)]="selectedParish.stateId" (change)="onStateChange()" [disabled]="stateDropdownDisabled">
+            <option [ngValue]="0">Select State</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId">
+              {{ st.stateAbbreviation }}
+            </option>
+          </select>
+          <div *ngIf="hasSubmitted && !selectedParish.stateId" class="inline-error">
+            State is required.
+          </div>
+        </div>
+        <!-- Diocese -->
+        <div class="field-group diocese">
+          <label>Diocese</label>
+          <select [(ngModel)]="selectedParish.dioceseId" [disabled]="dioceseDropdownDisabled">
+            <option [ngValue]="0">Select Diocese</option>
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseId">
+              {{ d.dioceseName }}
+            </option>
+          </select>
+          <div *ngIf="hasSubmitted && !selectedParish.dioceseId" class="inline-error">
+            Diocese is required.
+          </div>
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field-group postcode">
+          <label>Postcode</label>
+          <input type="text" [(ngModel)]="selectedParish.parishPostcode" />
+        </div>
+        <div class="field-group phone">
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="selectedParish.parishPhone" />
+        </div>
+        <div class="field-group email">
+          <label>Email</label>
+          <input type="text" [(ngModel)]="selectedParish.parishEmail" />
+        </div>
+        <div class="field-group website">
+          <label>Website</label>
+          <input type="text" [(ngModel)]="selectedParish.parishWebsite" />
+        </div>
+      </div>
+    </div>
+
+    <!-- CRUD Buttons -->
+    <div class="buttons">
+      <button (click)="addParish()" [disabled]="uiMode === 'editing'">Add</button>
+      <button (click)="modifyParish()" [disabled]="uiMode !== 'editing'">Modify</button>
+      <button (click)="deleteParish()" [disabled]="uiMode !== 'editing'">Delete</button>
+      <button (click)="cancel()">Cancel</button>
+    </div>
+  </div>
+</div>
