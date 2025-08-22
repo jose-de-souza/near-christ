@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { SafeHtmlPipe } from '../safe-html.pipe';
 
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, DragDropModule, MatTooltipModule, SafeHtmlPipe],
   templateUrl: './data-table.component.html',
   styleUrls: ['./data-table.component.scss']
 })

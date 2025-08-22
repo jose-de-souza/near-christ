@@ -2,7 +2,6 @@
 @use '../palette';
 
 .rosary-crusade {
-  /* 90% container width, centered */
   width: 90%;
   margin: 0 auto;
   padding: 20px;
@@ -16,131 +15,50 @@
     margin-bottom: 20px;
   }
 
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+      background-color: palette.$save-button-bg;
+
+      &:hover {
+        background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+      }
+
+      &:disabled {
+        background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+        cursor: not-allowed;
+        opacity: 0.6;
+        &:hover {
+          background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+        }
+      }
+    }
+  }
+
   .form-container {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
     background: palette.$background-color;
     border-radius: 8px;
-    padding: 15px;
 
-    /* Row #1: Confession & Mass side by side (each 50%) */
-    .row-1 {
-      display: flex;
-      gap: 15px;
-
-      .section.confession,
-      .section.mass {
-        flex: 1 1 50%;
-
-        .two-fields-row {
-          display: flex;
-          gap: 15px;
-          align-items: flex-end;
-
-          .field-group {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            width: 100%;
-          }
-        }
-      }
-    }
-
-    /* Row #2: Start(10%), End(10%), State(10%), Diocese(32%), Parish(32%) */
-    .row-2 {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 15px;
-      align-items: flex-end;
-
-      .field-group {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-
-        .inline-error {
-          color: red;
-          font-size: 0.85em;
-        }
-      }
-
-      .crusade-start {
-        flex: 0 0 10%;
-        max-width: 10%;
-      }
-
-      .crusade-end {
-        flex: 0 0 10%;
-        max-width: 10%;
-      }
-
-      .crusade-state {
-        flex: 0 0 10%;
-        max-width: 10%;
-      }
-
-      .crusade-diocese {
-        flex: 0 0 32%;
-        max-width: 32%;
-      }
-
-      .crusade-parish {
-        flex: 0 0 32%;
-        max-width: 32%;
-      }
-    }
-
-    /* Row #3: Contact => 3 fields => 33%, 32%, 32% */
-    .row-3 {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 15px;
-      align-items: flex-end;
-
-      .field-group {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-      }
-
-      .contact-name {
-        flex: 0 0 33%;
-        max-width: 33%;
-      }
-
-      .contact-phone {
-        flex: 0 0 32%;
-        max-width: 32%;
-      }
-
-      .contact-email {
-        flex: 0 0 32%;
-        max-width: 32%;
-      }
-    }
-
-    /* Row #4: Comments => full width */
-    .row-4 {
-      display: flex;
-      gap: 15px;
-
-      textarea {
-        width: 100%;
-        padding: 6px;
-        border: 1px solid palette.$secondary-color;
-        border-radius: 4px;
-        height: 80px;
-        box-sizing: border-box;
-      }
-    }
-
-    .section {
+    .section.filter {
       position: relative;
       border: 1px solid palette.$secondary-color;
       border-radius: 8px;
       padding: 10px;
+      background: palette.$background-color;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -157,165 +75,39 @@
         font-size: 0.9em;
       }
 
-      label {
-        font-size: 0.85em;
-        font-weight: bold;
-        color: palette.$primary-color;
-      }
-
-      input,
-      select,
-      textarea {
-        width: 100%;
-        padding: 6px;
-        border: 1px solid palette.$secondary-color;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-
-      .inline-error {
-        color: red;
-        font-size: 0.85em;
-      }
-    }
-  }
-
-  .buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      color: white;
-    }
-
-    /* 1) Add => $save-button-bg; hover => darken($neutral-color, 10%) */
-    button:nth-child(1) {
-      background-color: palette.$save-button-bg;
-
-      &:hover {
-        background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
-      }
-    }
-
-    /* 2) Modify => $default-button-bg; hover => $default-button-hover-bg */
-    button:nth-child(2) {
-      background-color: palette.$default-button-bg;
-
-      &:hover {
-        background-color: palette.$default-button-hover-bg;
-      }
-    }
-
-    /* 3) Delete => $delete-button-bg; hover => $delete-button-hover-bg */
-    button:nth-child(3) {
-      background-color: palette.$delete-button-bg;
-
-      &:hover {
-        background-color: palette.$delete-button-hover-bg;
-      }
-    }
-
-    /* 4) Cancel => $neutral-color; hover => darken($neutral-color, 10%) */
-    button:nth-child(4) {
-      background-color: palette.$neutral-color;
-
-      &:hover {
-        background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
-      }
-    }
-
-    button:disabled {
-      background-color: color.scale(palette.$neutral-color, $lightness: 80%);
-      cursor: not-allowed;
-      opacity: 0.6;
-
-      &:hover {
-        background-color: color.scale(palette.$neutral-color, $lightness: 80%);
-      }
-    }
-  }
-
-  .results-area {
-    margin-top: 20px;
-    border: 1px solid palette.$secondary-color;
-    border-radius: 8px;
-    padding: 10px;
-    overflow-x: auto;
-
-    .grid-table {
-      display: grid;
-      gap: 0;
-      grid-auto-rows: 1fr;
-      align-items: stretch;
-      grid-auto-flow: column;
-      grid-auto-columns: auto;
-      min-width: max-content;
-    }
-
-    .grid-column {
-      display: flex;
-      flex-direction: column;
-
-      &.cdk-drag-over {
-        outline: 2px dashed #665;
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-
-      .grid-column-header {
-        border: 1px solid palette.$secondary-color;
-        background-color: palette.$secondary-color;
-        color: white;
-        padding: 10px;
-        font-weight: bold;
-        text-align: left;
+      .row-filter {
         display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
+        flex-wrap: nowrap;
+        gap: 5px;
+        align-items: flex-end;
       }
 
-      .grid-column-cell {
-        min-height: 20px;
-        border: 1px solid palette.$secondary-color;
-        padding: 10px;
-        text-align: left;
-        flex: 0 0 auto;
-        white-space: nowrap;
-        cursor: pointer;
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
 
-        &.no-state {
-          background-color: #f0f0f0; /* Grey background */
-          color: #888; /* Grey text */
+        &.state, &.diocese, &.parish {
+          flex: 0 0 12%;
+          max-width: 12%;
+        }
+
+        label {
+          color: palette.$primary-color;
+          font-weight: bold;
+          margin-bottom: 0;
+          font-size: 0.9em;
+        }
+
+        select {
+          width: 100%;
+          padding: 6px;
+          border: 1px solid palette.$secondary-color;
+          border-radius: 4px;
+          box-sizing: border-box;
+          font-size: 0.9em;
         }
       }
     }
-  }
-
-  .drag-handle {
-    cursor: move;
-  }
-
-  .custom-drag-preview {
-    background: white;
-    border: 2px solid palette.$secondary-color;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 4px;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .custom-drag-placeholder {
-    background-color: rgba(0, 0, 0, 0.05);
-    border: 2px dashed #999;
-    padding: 10px;
-    font-style: italic;
-    color: #555;
   }
 }
