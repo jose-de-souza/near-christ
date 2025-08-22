@@ -116,7 +116,7 @@ export class AuthService {
     this.isNavigating = true;
 
     this.ngZone.run(() => {
-        this.router.navigate(['/login']).finally(() => {
+        this.router.navigate(['/adoration-query']).finally(() => {
             this.isNavigating = false;
         });
     });
