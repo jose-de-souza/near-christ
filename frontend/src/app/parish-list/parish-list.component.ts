@@ -1,17 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { StateService, State } from '../state.service';
+import { DataTableComponent } from '../data-table/data-table.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-parish-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, MatSnackBarModule, MatTooltipModule, DataTableComponent],
   templateUrl: './parish-list.component.html',
   styleUrls: ['./parish-list.component.scss']
 })
@@ -47,96 +48,109 @@ export class ParishListComponent implements OnInit {
   constructor(
     private parishService: ParishService,
     private dioceseService: DioceseService,
-    private stateService: StateService
+    private stateService: StateService,
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
+  private getData<T>(res: any): T[] {
+    if (Array.isArray(res)) return res;
+    return Array.isArray(res.data) ? res.data : [];
+  }
+
+  isArray(prop: any): boolean {
+    return Array.isArray(prop);
+  }
+
   ngOnInit(): void {
-    this.loadAllStates();
-    this.loadAllDioceses();
-    this.loadAllParishes();
-  }
-
-  loadAllStates(): void {
-    this.stateService.getAllStates().subscribe({
-      next: (res: any) => {
-        this.allStates = res.data;
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
+    forkJoin({
+      states: this.stateService.getAllStates(),
+      dioceses: this.dioceseService.getAllDioceses(),
+      parishes: this.parishService.getAllParishes()
+    }).subscribe({
+      next: ({ states, dioceses, parishes }) => {
+        this.allStates = this.getData<State>(states);
+        this.dioceseList = this.getData<Diocese>(dioceses);
+        this.parishList = this.getData<Parish>(parishes);
+        this.dioceseDisabled = this.dioceseList.length === 0;
+        this.filteredParishes = this.mapParishData(this.parishList);
+        this.sortParishes();
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load states:', err);
+        this.showError('Error loading data from server.');
+        this.allStates = [];
+        this.dioceseList = [];
+        this.parishList = [];
+        this.filteredParishes = [];
+        this.dioceseDisabled = true;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  loadAllDioceses(): void {
-    this.dioceseService.getAllDioceses().subscribe({
-      next: (res: any) => {
-        this.dioceseList = res.data;
-        console.log('Loaded Dioceses:', this.dioceseList.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
-      },
-      error: (err) => {
-        console.error('Failed to load dioceses:', err);
-      }
-    });
-  }
-
-  loadAllParishes(): void {
-    this.parishService.getAllParishes().subscribe({
-      next: (res: any) => {
-        this.parishList = res.data;
-        this.onStateChange(); // Initialize filteredParishes
-        console.log('Loaded Parishes:', this.parishList.map(p => ({
-          parishId: p.parishId,
-          parishName: p.parishName,
-          dioceseId: p.dioceseId,
-          stateId: p.stateId
-        })));
-      },
-      error: (err) => {
-        console.error('Failed to load parishes:', err);
-      }
+  private mapParishData(parishes: Parish[]): any[] {
+    if (!Array.isArray(parishes)) {
+      return [];
+    }
+    return parishes.map(parish => {
+      const state = this.allStates.find(s => s.stateId === parish.stateId);
+      const diocese = this.dioceseList.find(d => d.dioceseId === parish.dioceseId);
+      const website = parish.parishWebsite || '';
+      return {
+        ...parish,
+        stateAbbreviation: state?.stateAbbreviation || '',
+        dioceseName: diocese?.dioceseName || '',
+        parishWebsite: website.trim() ? `<a href="${website}" target="_blank">${website}</a>` : ''
+      };
     });
   }
 
   onStateChange(): void {
     const stateId = Number(this.selectedStateID);
+    let abbrev = '';
+    if (!Array.isArray(this.dioceseList)) {
+      this.filteredDioceses = [];
+      this.dioceseDisabled = true;
+      return;
+    }
     if (!stateId || stateId === 0) {
       this.filteredDioceses = [];
       this.selectedDioceseID = null;
       this.dioceseDisabled = true;
-      this.filteredParishes = [...this.parishList];
+      this.filteredParishes = this.mapParishData(this.parishList);
     } else {
       const selectedState = this.allStates.find(s => s.stateId === stateId);
-      const abbrev = selectedState?.stateAbbreviation || '';
-      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev));
+      abbrev = selectedState?.stateAbbreviation || '';
+      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
       this.dioceseDisabled = this.filteredDioceses.length === 0;
       this.selectedDioceseID = null;
-      this.filteredParishes = this.parishList.filter(p => p.stateId === stateId);
+      this.filteredParishes = this.mapParishData(this.parishList.filter(p => p.stateId === stateId));
     }
-    this.onDioceseChange(); // Apply diocese filter if selected
+    this.onDioceseChange();
     this.sortParishes();
     this.currentPage = 1;
-    console.log('State Changed:', {
-      stateId,
-      stateAbbreviation: this.allStates.find(s => s.stateId === stateId)?.stateAbbreviation,
-      filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName }))
-    });
+    this.cdr.detectChanges();
   }
 
   onDioceseChange(): void {
     const dioceseId = this.selectedDioceseID != null ? Number(this.selectedDioceseID) : null;
+    if (!Array.isArray(this.parishList)) {
+      this.filteredParishes = [];
+      return;
+    }
     if (!dioceseId) {
-      this.filteredParishes = this.selectedStateID ? this.parishList.filter(p => p.stateId === this.selectedStateID) : [...this.parishList];
+      this.filteredParishes = this.mapParishData(
+        this.selectedStateID ? this.parishList.filter(p => p.stateId === this.selectedStateID) : this.parishList
+      );
     } else {
-      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId && (!this.selectedStateID || p.stateId === this.selectedStateID));
+      this.filteredParishes = this.mapParishData(
+        this.parishList.filter(p => p.dioceseId === dioceseId && (!this.selectedStateID || p.stateId === this.selectedStateID))
+      );
     }
     this.sortParishes();
     this.currentPage = 1;
-    console.log('Diocese Changed:', {
-      dioceseId,
-      dioceseName: this.dioceseList.find(d => d.dioceseId === dioceseId)?.dioceseName,
-      filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId }))
-    });
+    this.cdr.detectChanges();
   }
 
   sortParishes(): void {
@@ -184,46 +198,12 @@ export class ParishListComponent implements OnInit {
     return Math.ceil(this.filteredParishes.length / this.pageSize);
   }
 
-  getCellValue(row: Parish, column: { header: string; field: string }): any {
-    if (column.field === 'dioceseName') {
-      const diocese = this.dioceseList.find(d => d.dioceseId === row.dioceseId);
-      return diocese?.dioceseName || '';
-    } else if (column.field === 'stateAbbreviation') {
-      const state = this.allStates.find(s => s.stateId === row.stateId);
-      return state?.stateAbbreviation || '';
-    } else if (column.field === 'parishWebsite') {
-      const website = row.parishWebsite || '';
-      if (website.trim()) {
-        return `<a href="${website}" target="_blank">${website}</a>`;
-      } else {
-        return '';
-      }
-    } else {
-      return (row as any)[column.field] || '';
-    }
-  }
-
-  trackByParishID(index: number, item: Parish): number {
-    return item.parishId;
-  }
-
-  trackByColumn(index: number, item: any): string {
-    return item.field;
-  }
-
-  get gridTemplateColumns(): string {
-    return this.columns.map(() => 'auto').join(' ');
-  }
-
-  onDrop(event: CdkDragDrop<any[]>): void {
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
-  }
-
-  onDragEntered(event: CdkDragEnter): void {
-    event.container.element.nativeElement.classList.add('cdk-drag-over');
-  }
-
-  onDragExited(event: CdkDragExit): void {
-    event.container.element.nativeElement.classList.remove('cdk-drag-over');
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 7000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-error']
+    });
   }
 }

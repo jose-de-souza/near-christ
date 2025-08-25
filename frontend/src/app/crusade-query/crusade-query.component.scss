@@ -1,7 +1,6 @@
 @use '../palette';
 
 .crusade-query {
-  /* Container at 90% width, centered */
   width: 90%;
   margin: 0 auto;
   padding: 20px;
@@ -15,6 +14,13 @@
     margin-bottom: 20px;
   }
 
+  h4 {
+    color: palette.$primary-color;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: normal;
+  }
+
   .form-container {
     display: flex;
     flex-direction: column;
@@ -23,11 +29,9 @@
     border-radius: 8px;
     padding: 15px;
 
-    /* Single 'Filter' section with top-left label */
     .section.filter {
       position: relative;
       border: 1px solid palette.$secondary-color;
-      /* Outer border only */
       border-radius: 8px;
       padding: 10px;
       display: flex;
@@ -36,7 +40,6 @@
 
       &::before {
         content: attr(data-title);
-        /* "Filter" */
         position: absolute;
         top: -10px;
         left: 10px;
@@ -51,42 +54,33 @@
         display: flex;
         flex-wrap: nowrap;
         gap: 5px;
-        /* Align items by their bottom edges, so the button lines up with the select */
         align-items: flex-end;
+      }
 
-        /*
-          Four items => total 100%:
-            - State (10%)
-            - Diocese (40%)
-            - Parish (40%)
-            - Search (10%)
-        */
-        .field-group {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          box-sizing: border-box;
-          position: relative;
-          gap: 3px;
-          /* minimal gap between label and control */
-        }
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        box-sizing: border-box;
+        position: relative;
+        gap: 3px;
 
-        .state {
+        &.state {
           flex: 0 0 10%;
           max-width: 10%;
         }
 
-        .diocese {
+        &.diocese {
           flex: 0 0 40%;
           max-width: 40%;
         }
 
-        .parish {
+        &.parish {
           flex: 0 0 40%;
           max-width: 40%;
         }
 
-        .search {
+        &.search {
           flex: 0 0 10%;
           max-width: 10%;
         }
@@ -95,7 +89,6 @@
           color: palette.$primary-color;
           font-weight: bold;
           margin-bottom: 0;
-          /* reduce spacing */
         }
 
         select {
@@ -106,22 +99,20 @@
           box-sizing: border-box;
         }
       }
-    }
 
-    /* Final styling for the search button */
-    .search-button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      /* slightly smaller icon if space is tight */
-      line-height: 1;
-      margin-bottom: 5px;
-      padding: 0;
-      color: #555;
+      .search-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+        margin-bottom: 5px;
+        padding: 0;
+        color: #555;
 
-      &:hover {
-        color: #000;
+        &:hover {
+          color: #000;
+        }
       }
     }
   }
@@ -132,75 +123,5 @@
     border-radius: 8px;
     padding: 10px;
     overflow-x: auto;
-    /* horizontal scrolling if columns exceed container width */
-
-    .grid-table {
-      display: grid;
-      gap: 0;
-      grid-auto-rows: 1fr;
-      align-items: stretch;
-      grid-auto-flow: column;
-      grid-auto-columns: auto;
-      min-width: max-content;
-    }
-
-    .grid-column {
-      display: flex;
-      flex-direction: column;
-
-      &.cdk-drag-over {
-        outline: 2px dashed #665;
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-
-      .grid-column-header {
-        border: 1px solid palette.$secondary-color;
-        background-color: palette.$secondary-color;
-        color: white;
-        padding: 10px;
-        font-weight: bold;
-        text-align: left;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-      }
-
-      .grid-column-cell {
-        min-height: 20px;
-        border: 1px solid palette.$secondary-color;
-        padding: 10px;
-        text-align: left;
-        flex: 0 0 auto;
-        white-space: nowrap;
-
-        &.no-state {
-          background-color: #f0f0f0; /* Grey background */
-          color: #888; /* Grey text */
-        }
-      }
-    }
-  }
-
-  .drag-handle {
-    cursor: move;
-  }
-
-  .custom-drag-preview {
-    background: white;
-    border: 2px solid palette.$secondary-color;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 4px;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .custom-drag-placeholder {
-    background-color: rgba(0, 0, 0, 0.05);
-    border: 2px dashed #999;
-    padding: 10px;
-    font-style: italic;
-    color: #555;
   }
 }
