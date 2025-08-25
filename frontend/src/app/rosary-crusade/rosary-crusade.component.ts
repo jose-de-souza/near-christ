@@ -1,16 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
 import { CrusadeService, Crusade } from './crusade.service';
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { ParishService, Parish } from '../parish-maintenance/parish.service';
 import { StateService, State } from '../state.service';
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { DataTableComponent } from '../data-table/data-table.component';
+import { RosaryCrusadeEditDialogComponent } from '../rosary-crusade-edit-dialog/rosary-crusade-edit-dialog.component';
 
 @Component({
   selector: 'app-rosary-crusade',
@@ -20,17 +19,30 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
   imports: [
     CommonModule,
     FormsModule,
-    DragDropModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
+    DataTableComponent
   ]
 })
 export class RosaryCrusadeComponent implements OnInit {
+  allCrusades: Crusade[] = [];
+  crusades: any[] = [];
+  allStates: State[] = [];
+  allDioceses: Diocese[] = [];
+  allParishes: Parish[] = [];
+  filteredDioceses: Diocese[] = [];
+  filteredParishes: Parish[] = [];
+  filterStateID: number = 0;
+  filterDioceseID: number | null = null;
+  filterParishID: number | null = null;
+  dioceseDisabled: boolean = true;
+  parishDisabled: boolean = true;
+
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
     { header: 'Parish', field: 'parishName' },
-    { header: 'State', field: 'state' },
+    { header: 'State', field: 'stateAbbreviation' },
     { header: 'Confession Start', field: 'confessionStartTime' },
     { header: 'Confession End', field: 'confessionEndTime' },
     { header: 'Mass Start', field: 'massStartTime' },
@@ -43,42 +55,15 @@ export class RosaryCrusadeComponent implements OnInit {
     { header: 'Comments', field: 'comments' },
   ];
 
-  allStates: State[] = [];
-  dioceseList: Diocese[] = [];
-  parishList: Parish[] = [];
-  crusades: Crusade[] = [];
-  filteredDioceses: Diocese[] = [];
-  filteredParishes: Parish[] = [];
-  dioceseDisabled = true;
-  parishDisabled = true;
-  hasSubmitted = false;
-  uiMode: 'view' | 'editing' = 'view';
-
-  selectedCrusade: Partial<Crusade> = {
-    crusadeId: undefined,
-    stateId: 0,
-    dioceseId: 0,
-    parishId: 0,
-    confessionStartTime: '',
-    confessionEndTime: '',
-    massStartTime: '',
-    massEndTime: '',
-    crusadeStartTime: '',
-    crusadeEndTime: '',
-    contactName: '',
-    contactPhone: '',
-    contactEmail: '',
-    comments: ''
-  };
-
   constructor(
     private crusadeService: CrusadeService,
     private dioceseService: DioceseService,
     private parishService: ParishService,
     private stateService: StateService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
-  ) { }
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadAllStates();
@@ -90,7 +75,8 @@ export class RosaryCrusadeComponent implements OnInit {
   loadAllStates(): void {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
-        this.allStates = res.data;
+        this.allStates = res.data || [];
+        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
       },
       error: (err) => {
         console.error('Failed to load states:', err);
@@ -102,7 +88,11 @@ export class RosaryCrusadeComponent implements OnInit {
   loadAllDioceses(): void {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
-        this.dioceseList = res.data;
+        this.allDioceses = res.data || [];
+        this.filteredDioceses = [];
+        this.dioceseDisabled = true;
+        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
+        this.onFilterStateChange();
       },
       error: (err) => {
         console.error('Failed to load dioceses:', err);
@@ -114,7 +104,11 @@ export class RosaryCrusadeComponent implements OnInit {
   loadAllParishes(): void {
     this.parishService.getAllParishes().subscribe({
       next: (res: any) => {
-        this.parishList = res.data;
+        this.allParishes = res.data || [];
+        this.filteredParishes = [];
+        this.parishDisabled = true;
+        console.log('Loaded Parishes:', this.allParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
+        this.onFilterDioceseChange();
       },
       error: (err) => {
         console.error('Failed to load parishes:', err);
@@ -126,249 +120,129 @@ export class RosaryCrusadeComponent implements OnInit {
   loadAllCrusades(): void {
     this.crusadeService.getAllCrusades().subscribe({
       next: (res: any) => {
-        this.crusades = res.data;
+        this.allCrusades = res.data || [];
+        this.crusades = this.mapCrusadeData(this.allCrusades);
         console.log('Loaded Crusades:', this.crusades.map(c => ({
           crusadeId: c.crusadeId,
-          state: c.state,
-          diocese: c.diocese,
-          parish: c.parish
+          stateAbbreviation: c.stateAbbreviation,
+          dioceseName: c.dioceseName,
+          parishName: c.parishName
         })));
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load crusades:', err);
-        this.showError('Error loading crusades from server.');
+        this.showError('Fatal error loading crusades! Please contact support.');
       }
     });
   }
 
-  selectCrusade(c: Crusade): void {
-    this.hasSubmitted = false;
-    this.selectedCrusade = {
-      ...c,
-      stateId: Number(c.stateId),
-      dioceseId: Number(c.dioceseId),
-      parishId: Number(c.parishId)
-    };
-    this.uiMode = 'editing';
-    this.onStateChange();
-    this.onDioceseChange();
+  private mapCrusadeData(crusades: Crusade[]): any[] {
+    return crusades.map(crusade => {
+      const state = this.allStates.find(s => s.stateId === crusade.stateId);
+      const diocese = this.allDioceses.find(d => d.dioceseId === crusade.dioceseId);
+      const parish = this.allParishes.find(p => p.parishId === crusade.parishId);
+      const dioceseName = diocese?.dioceseName || '';
+      const parishName = parish?.parishName || '';
+      return {
+        ...crusade,
+        stateAbbreviation: state?.stateAbbreviation || '',
+        dioceseName: diocese?.dioceseWebsite ? `<a href="${diocese.dioceseWebsite}" target="_blank">${dioceseName}</a>` : dioceseName,
+        parishName: parish?.parishWebsite ? `<a href="${parish.parishWebsite}" target="_blank">${parishName}</a>` : parishName
+      };
+    });
   }
 
-  onStateChange(): void {
-    const stateId = Number(this.selectedCrusade.stateId);
-    if (!stateId || stateId === 0) {
-      this.dioceseDisabled = true;
-      this.parishDisabled = true;
+  onFilterStateChange(): void {
+    const stateId = Number(this.filterStateID);
+    if (stateId === 0) {
       this.filteredDioceses = [];
+      this.filterDioceseID = null;
+      this.dioceseDisabled = true;
       this.filteredParishes = [];
+      this.filterParishID = null;
+      this.parishDisabled = true;
+      this.crusades = this.mapCrusadeData(this.allCrusades);
     } else {
       const selectedState = this.allStates.find(s => s.stateId === stateId);
       const abbrev = selectedState?.stateAbbreviation || '';
-      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      this.filteredDioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
       this.dioceseDisabled = this.filteredDioceses.length === 0;
+      this.filterDioceseID = null;
       this.filteredParishes = [];
+      this.filterParishID = null;
       this.parishDisabled = true;
+      this.crusades = this.mapCrusadeData(this.allCrusades.filter(c => c.stateId === stateId));
     }
+    console.log('Filtered Dioceses:', this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
+    this.cdr.detectChanges();
   }
 
-  onDioceseChange(): void {
-    const dioceseId = Number(this.selectedCrusade.dioceseId);
-    if (!dioceseId || dioceseId === 0) {
-      this.parishDisabled = true;
+  onFilterDioceseChange(): void {
+    const stateId = Number(this.filterStateID);
+    const dioceseId = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
+    if (dioceseId === null) {
       this.filteredParishes = [];
+      this.filterParishID = null;
+      this.parishDisabled = true;
+      this.crusades = this.mapCrusadeData(
+        this.allCrusades.filter(c => !stateId || c.stateId === stateId)
+      );
     } else {
-      this.filteredParishes = this.parishList.filter(p => p.dioceseId === dioceseId);
+      this.filteredParishes = this.allParishes.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
+      this.filterParishID = null;
+      this.crusades = this.mapCrusadeData(
+        this.allCrusades.filter(c => c.dioceseId === dioceseId && (!stateId || c.stateId === stateId))
+      );
     }
+    console.log('Filtered Parishes:', this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
+    this.cdr.detectChanges();
+  }
+
+  onFilterParishChange(): void {
+    const stateId = Number(this.filterStateID);
+    const dioceseId = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
+    const parishId = this.filterParishID !== null ? Number(this.filterParishID) : null;
+    let filtered = this.allCrusades;
+    if (stateId > 0) {
+      filtered = filtered.filter(c => c.stateId === stateId);
+    }
+    if (dioceseId !== null) {
+      filtered = filtered.filter(c => c.dioceseId === dioceseId);
+    }
+    if (parishId !== null) {
+      filtered = filtered.filter(c => c.parishId === parishId);
+    }
+    this.crusades = this.mapCrusadeData(filtered);
+    console.log('Filtered Crusades:', this.crusades.map(c => ({
+      crusadeId: c.crusadeId,
+      stateAbbreviation: c.stateAbbreviation,
+      dioceseName: c.dioceseName,
+      parishName: c.parishName
+    })));
+    this.cdr.detectChanges();
+  }
+
+  onRowClicked(row: Crusade): void {
+    this.openEditDialog(row);
   }
 
   addCrusade(): void {
-    this.hasSubmitted = true;
-    if (!this.isAllFieldsValid()) {
-      this.showWarning('Some required fields are missing.');
-      return;
-    }
-    this.crusadeService.createCrusade(this.selectedCrusade).subscribe({
-      next: () => {
-        this.showInfo('The Crusade has been added');
+    this.openEditDialog({} as Crusade);
+  }
+
+  openEditDialog(crusade: Crusade): void {
+    const dialogRef = this.dialog.open(RosaryCrusadeEditDialogComponent, {
+      data: crusade,
+      maxWidth: '90vw',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
         this.loadAllCrusades();
-        this.resetForm();
-        this.uiMode = 'view';
-      },
-      error: (err) => {
-        console.error('Failed to create crusade:', err);
-        this.showError('Error creating crusade.');
       }
-    });
-  }
-
-  modifyCrusade(): void {
-    if (!this.selectedCrusade.crusadeId) {
-      this.showWarning('No crusade selected to modify!');
-      return;
-    }
-    this.hasSubmitted = true;
-    if (!this.isAllFieldsValid()) {
-      this.showWarning('Some required fields are missing.');
-      return;
-    }
-    const id = this.selectedCrusade.crusadeId;
-    this.crusadeService.updateCrusade(id, this.selectedCrusade).subscribe({
-      next: () => {
-        this.showInfo('Crusade modified');
-        this.loadAllCrusades();
-        this.resetForm();
-        this.uiMode = 'view';
-      },
-      error: (err) => {
-        console.error('Failed to update crusade:', err);
-        this.showError('Error updating crusade.');
-      }
-    });
-  }
-
-  deleteCrusade(): void {
-    if (!this.selectedCrusade.crusadeId) {
-      this.showWarning('No crusade selected to delete!');
-      return;
-    }
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      disableClose: true,
-      data: {
-        message: `Are you sure you want to delete this Crusade?`
-      },
-      panelClass: 'orange-dialog'
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        const id = this.selectedCrusade.crusadeId!;
-        this.crusadeService.deleteCrusade(id).subscribe({
-          next: () => {
-            this.loadAllCrusades();
-            this.resetForm();
-            this.uiMode = 'view';
-          },
-          error: (err) => {
-            console.error('Failed to delete crusade:', err);
-            this.showError('Error deleting crusade.');
-          }
-        });
-      }
-    });
-  }
-
-  cancel(): void {
-    this.resetForm();
-    this.uiMode = 'view';
-  }
-
-  private resetForm(): void {
-    this.selectedCrusade = {
-      crusadeId: undefined,
-      stateId: 0,
-      dioceseId: 0,
-      parishId: 0,
-      confessionStartTime: '',
-      confessionEndTime: '',
-      massStartTime: '',
-      massEndTime: '',
-      crusadeStartTime: '',
-      crusadeEndTime: '',
-      contactName: '',
-      contactPhone: '',
-      contactEmail: '',
-      comments: ''
-    };
-    this.hasSubmitted = false;
-    this.dioceseDisabled = true;
-    this.parishDisabled = true;
-    this.filteredDioceses = [];
-    this.filteredParishes = [];
-  }
-
-  private isAllFieldsValid(): boolean {
-    if (!this.selectedCrusade.stateId || Number(this.selectedCrusade.stateId) <= 0) return false;
-    if (!this.selectedCrusade.dioceseId || Number(this.selectedCrusade.dioceseId) <= 0) return false;
-    if (!this.selectedCrusade.parishId || Number(this.selectedCrusade.parishId) <= 0) return false;
-    if (!this.selectedCrusade.crusadeStartTime?.trim()) return false;
-    if (!this.selectedCrusade.crusadeEndTime?.trim()) return false;
-    return true;
-  }
-
-  getCellValue(row: Crusade, column: { header: string; field: string }): any {
-    if (column.field === 'dioceseName') {
-      const diocese = this.dioceseList.find(d => d.dioceseId === row.dioceseId);
-      const dName = diocese?.dioceseName || '';
-      const dWebsite = diocese?.dioceseWebsite || '';
-      if (dWebsite.trim()) {
-        return `<a href="${dWebsite}" target="_blank">${dName}</a>`;
-      } else {
-        return dName;
-      }
-    } else if (column.field === 'parishName') {
-      const parish = this.parishList.find(p => p.parishId === row.parishId);
-      const pName = parish?.parishName || '';
-      const pWebsite = parish?.parishWebsite || '';
-      if (pWebsite.trim()) {
-        return `<a href="${pWebsite}" target="_blank">${pName}</a>`;
-      } else {
-        return pName;
-      }
-    } else if (column.field === 'state') {
-      const state = this.allStates.find(s => s.stateId === row.stateId);
-      return state?.stateAbbreviation || '';
-    } else {
-      return (row as any)[column.field] || '';
-    }
-  }
-
-  getCellClass(row: Crusade, column: { header: string; field: string }): string {
-    if (column.field === 'state' && !this.allStates.find(s => s.stateId === row.stateId)?.stateAbbreviation) {
-      return 'no-state';
-    }
-    return '';
-  }
-
-  trackByCrusadeID(index: number, item: Crusade): number {
-    return item.crusadeId;
-  }
-
-  trackByColumn(index: number, item: any): string {
-    return item.field;
-  }
-
-  get gridTemplateColumns(): string {
-    return this.columns.map(() => 'auto').join(' ');
-  }
-
-  onDrop(event: CdkDragDrop<any[]>): void {
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
-  }
-
-  onDragEntered(event: CdkDragEnter): void {
-    event.container.element.nativeElement.classList.add('cdk-drag-over');
-  }
-
-  onDragExited(event: CdkDragExit): void {
-    event.container.element.nativeElement.classList.remove('cdk-drag-over');
-  }
-
-  private showInfo(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['snackbar-info']
-    });
-  }
-
-  private showWarning(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['snackbar-warning']
     });
   }
 

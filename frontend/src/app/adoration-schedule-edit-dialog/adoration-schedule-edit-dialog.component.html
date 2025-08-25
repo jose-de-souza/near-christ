@@ -1,0 +1,117 @@
+<div class="adoration-schedule-edit-dialog">
+  <h2>{{ data.adorationId ? 'Edit Adoration Schedule' : 'Add Adoration Schedule' }}</h2>
+  <!-- Form Container -->
+  <div class="form-container">
+    <!-- Row 1: Adoration -->
+    <div class="row-1">
+      <div class="section adoration" data-title="Adoration">
+        <!-- Four fields: Type, Day, Start, End -->
+        <div class="field-group adorationType">
+          <label>Adoration Type</label>
+          <select [(ngModel)]="selectedAdoration.adorationType" (ngModelChange)="onAdorationTypeChange()">
+            <option value="Perpetual">Perpetual</option>
+            <option value="Regular">Regular</option>
+          </select>
+        </div>
+        <div class="field-group adorationDay">
+          <label>Day</label>
+          <select [(ngModel)]="selectedAdoration.adorationDay" [disabled]="isPerpetual() || !dataLoaded">
+            <option value="">-- select day --</option>
+            <option value="Sunday">Sunday</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+          </select>
+          <div *ngIf="hasSubmitted && !selectedAdoration.adorationDay && selectedAdoration.adorationType === 'Regular'" class="inline-error">
+            Day is required for Regular Adoration.
+          </div>
+        </div>
+        <div class="field-group startTime">
+          <label>Start Time</label>
+          <input type="time" [(ngModel)]="selectedAdoration.adorationStart" [disabled]="isPerpetual() || !dataLoaded" />
+          <div *ngIf="hasSubmitted && !selectedAdoration.adorationStart?.trim() && selectedAdoration.adorationType === 'Regular'" class="inline-error">
+            Start Time is required for Regular Adoration.
+          </div>
+        </div>
+        <div class="field-group endTime">
+          <label>End Time</label>
+          <input type="time" [(ngModel)]="selectedAdoration.adorationEnd" [disabled]="isPerpetual() || !dataLoaded" />
+          <div *ngIf="hasSubmitted && !selectedAdoration.adorationEnd?.trim() && selectedAdoration.adorationType === 'Regular'" class="inline-error">
+            End Time is required for Regular Adoration.
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end row-1 -->
+    <!-- Row 2: State / Diocese / Parish -->
+    <div class="row-2">
+      <div class="section diocese-parish-names" data-title="Diocese/Parish">
+        <div class="field-group state">
+          <label>State</label>
+          <select *ngIf="isArray(allStates)" [(ngModel)]="selectedAdoration.stateId" (ngModelChange)="onStateChange();" [disabled]="allStates.length === 0 || !dataLoaded">
+            <option [ngValue]="0">Select State</option>
+            <option *ngFor="let st of allStates" [ngValue]="st.stateId">
+              {{ st.stateAbbreviation }}
+            </option>
+          </select>
+          <div *ngIf="hasSubmitted && (!selectedAdoration.stateId || selectedAdoration.stateId === 0)" class="inline-error">
+            State is required.
+          </div>
+        </div>
+        <div class="field-group diocese">
+          <label>Diocese Name</label>
+          <select *ngIf="isArray(allDioceses) && dataLoaded" [(ngModel)]="selectedAdoration.dioceseId" (ngModelChange)="onDioceseChange();" [disabled]="dioceseDisabled || !dataLoaded">
+            <option [ngValue]="0">-- select diocese --</option>
+            <option *ngFor="let d of allDioceses" [ngValue]="d.dioceseId">
+              {{ d.dioceseName }}
+            </option>
+          </select>
+          <div *ngIf="hasSubmitted && (!selectedAdoration.dioceseId || selectedAdoration.dioceseId === 0)" class="inline-error">
+            Diocese is required.
+          </div>
+        </div>
+        <div class="field-group parish">
+          <label>Parish Name</label>
+          <select *ngIf="isArray(allParishes) && dataLoaded" [(ngModel)]="selectedAdoration.parishId" (ngModelChange)="updateLocationFromParish();" [disabled]="parishDisabled || !dataLoaded">
+            <option [ngValue]="0">-- select parish --</option>
+            <option *ngFor="let p of allParishes" [ngValue]="p.parishId">
+              {{ p.parishName }}
+            </option>
+          </select>
+          <div *ngIf="hasSubmitted && (!selectedAdoration.parishId || selectedAdoration.parishId === 0)" class="inline-error">
+            Parish is required.
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end row-2 -->
+    <!-- Row 3: Location -->
+    <div class="row-3">
+      <div class="section location" data-title="Location">
+        <div class="field-group locationType">
+          <label>Location Type</label>
+          <select [(ngModel)]="selectedAdoration.adorationLocationType" (ngModelChange)="updateLocationFromParish();" [disabled]="!dataLoaded">
+            <option value="Parish Church">Parish Church</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field-group location">
+          <label>Location</label>
+          <input type="text" [(ngModel)]="selectedAdoration.adorationLocation" [disabled]="isParishChurch() || !dataLoaded" />
+        </div>
+      </div>
+    </div>
+    <!-- end row-3 -->
+  </div>
+  <!-- end form-container -->
+  <!-- Action Buttons -->
+  <div class="buttons">
+    <button (click)="addAdoration()" [disabled]="uiMode === 'editing' || !dataLoaded">Add</button>
+    <button (click)="modifyAdoration()" [disabled]="uiMode !== 'editing' || !dataLoaded">Modify</button>
+    <button (click)="deleteAdoration()" [disabled]="uiMode !== 'editing' || !dataLoaded">Delete</button>
+    <button (click)="cancel()" [disabled]="uiMode === 'view' || !dataLoaded">Cancel</button>
+  </div>
+</div>

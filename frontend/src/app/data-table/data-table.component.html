@@ -13,21 +13,21 @@
             Dropping {{ column.header }} here
           </div>
         </ng-template>
-        {{ column.header }} {{ column.field === sortColumn ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+        {{ column.header }}
       </div>
       <div class="grid-column-cell" *ngFor="let row of getPaginatedData(); trackBy: trackByID"
-           (click)="onRowClick(row)">
-        {{ getCellValue(row, column) }}
+           (click)="onRowClick(row)"
+           [innerHtml]="getCellValue(row, column) | safeHtml">
       </div>
     </div>
   </div>
-  <!-- Pagination Controls -->
+
   <div class="pagination">
     <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
       <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
     </select>
-    <button (click)="currentPage = currentPage - 1" [disabled]="currentPage === 1">Previous</button>
-    <span>Page {{ currentPage }} of {{ totalPages }}</span>
-    <button (click)="currentPage = currentPage + 1" [disabled]="currentPage === totalPages">Next</button>
+    <button (click)="currentPage = currentPage - 1" [disabled]="currentPage === 1">&lt;</button>
+    <span>{{ currentPage }} / {{ totalPages }}</span>
+    <button (click)="currentPage = currentPage + 1" [disabled]="currentPage === totalPages">&gt;</button>
   </div>
 </div>

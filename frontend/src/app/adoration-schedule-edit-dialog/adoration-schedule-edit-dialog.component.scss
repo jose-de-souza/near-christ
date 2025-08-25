@@ -1,0 +1,167 @@
+@use "sass:color";
+@use '../palette';
+
+.adoration-schedule-edit-dialog {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  h2 {
+    color: palette.$primary-color;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
+    background: palette.$background-color;
+    border-radius: 8px;
+    /*
+      Row 1 => Adoration (4 fields => 24% each => total 96%)
+      Row 2 => Diocese/Parish (3 fields => State=12%, Diocese=42%, Parish=42% => total 96%)
+      Row 3 => Location (2 fields => Type=20%, Location=78% => total ~98%)
+    */
+    .row-1,
+    .row-2,
+    .row-3 {
+      display: flex;
+      gap: 15px;
+    }
+    .section {
+      position: relative;
+      border: 1px solid palette.$secondary-color;
+      border-radius: 8px;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 15px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 25px 15px 15px;
+      &::before {
+        content: attr(data-title);
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        background: palette.$background-color;
+        padding: 0 8px;
+        font-size: 0.9em;
+        font-weight: normal;
+        color: palette.$primary-color;
+      }
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        box-sizing: border-box;
+        label {
+          color: palette.$primary-color;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        select,
+        input {
+          width: 100%;
+          max-width: 180px;
+          padding: 6px;
+          border: 1px solid palette.$secondary-color;
+          border-radius: 4px;
+          box-sizing: border-box;
+        }
+        .inline-error {
+          color: red;
+          font-size: 0.85em;
+          margin-top: 2px;
+        }
+      }
+    }
+    /* Row 1 => Adoration => 4 fields => each 24% => total 96% */
+    .section.adoration .field-group {
+      flex: 0 0 24%;
+      max-width: 24%;
+      select,
+      input {
+        max-width: none !important;
+        width: 100% !important;
+      }
+    }
+    /* Row 2 => State=12%, Diocese=42%, Parish=42% => total 96% */
+    .section.diocese-parish-names .field-group.state {
+      flex: 0 0 12%;
+      max-width: 12%;
+    }
+    .section.diocese-parish-names .field-group.diocese {
+      flex: 0 0 42%;
+      max-width: 42%;
+    }
+    .section.diocese-parish-names .field-group.parish {
+      flex: 0 0 42%;
+      max-width: 42%;
+    }
+    .section.diocese-parish-names .field-group select,
+    .section.diocese-parish-names .field-group input {
+      max-width: none !important;
+      width: 100% !important;
+    }
+    /* Row 3 => Type=20%, Location=78% => total ~98% */
+    .section.location .field-group.locationType {
+      flex: 0 0 20%;
+      max-width: 20%;
+    }
+    .section.location .field-group.location {
+      flex: 0 0 78%;
+      max-width: 78%;
+    }
+    .section.location .field-group select,
+    .section.location .field-group input {
+      max-width: none !important;
+      width: 100% !important;
+    }
+  }
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+    }
+    button:nth-child(1) {
+      background-color: palette.$save-button-bg;
+      &:hover {
+        background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+      }
+    }
+    button:nth-child(2) {
+      background-color: palette.$default-button-bg;
+      &:hover {
+        background-color: palette.$default-button-hover-bg;
+      }
+    }
+    button:nth-child(3) {
+      background-color: palette.$delete-button-bg;
+      &:hover {
+        background-color: palette.$delete-button-hover-bg;
+      }
+    }
+    button:nth-child(4) {
+      background-color: palette.$neutral-color;
+      &:hover {
+        background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+      }
+    }
+    button:disabled {
+      background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+      cursor: not-allowed;
+      opacity: 0.6;
+      &:hover {
+        background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+      }
+    }
+  }
+}
