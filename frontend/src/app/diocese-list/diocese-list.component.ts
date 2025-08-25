@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
 import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service';
 import { StateService, State } from '../state.service';
+import { DataTableComponent } from '../data-table/data-table.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-diocese-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, MatSnackBarModule, MatTooltipModule, DataTableComponent],
   templateUrl: './diocese-list.component.html',
   styleUrls: ['./diocese-list.component.scss']
 })
@@ -40,48 +41,74 @@ export class DioceseListComponent implements OnInit {
 
   constructor(
     private dioceseService: DioceseService,
-    private stateService: StateService
+    private stateService: StateService,
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.loadAllStates();
-    this.loadAllDioceses();
+  private getData<T>(res: any): T[] {
+    if (Array.isArray(res)) return res;
+    return Array.isArray(res.data) ? res.data : [];
   }
 
-  loadAllStates(): void {
-    this.stateService.getAllStates().subscribe({
-      next: (res: any) => {
-        this.allStates = res.data;
+  isArray(prop: any): boolean {
+    return Array.isArray(prop);
+  }
+
+  ngOnInit(): void {
+    forkJoin({
+      states: this.stateService.getAllStates(),
+      dioceses: this.dioceseService.getAllDioceses()
+    }).subscribe({
+      next: ({ states, dioceses }) => {
+        this.allStates = this.getData<State>(states);
+        this.dioceseList = this.getData<Diocese>(dioceses);
+        this.filteredDioceses = this.mapDioceseData(this.dioceseList);
+        this.sortDioceses();
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load states:', err);
+        this.showError('Error loading data from server.');
+        this.allStates = [];
+        this.dioceseList = [];
+        this.filteredDioceses = [];
+        this.cdr.detectChanges();
       }
     });
   }
 
-  loadAllDioceses(): void {
-    this.dioceseService.getAllDioceses().subscribe({
-      next: (res: any) => {
-        this.dioceseList = res.data;
-        this.onStateChange(); // Initialize filteredDioceses
-      },
-      error: (err) => {
-        console.error('Failed to load dioceses:', err);
-      }
+  private mapDioceseData(dioceses: Diocese[]): any[] {
+    if (!Array.isArray(dioceses)) {
+      return [];
+    }
+    return dioceses.map(diocese => {
+      const website = diocese.dioceseWebsite || '';
+      return {
+        ...diocese,
+        dioceseWebsite: website.trim() ? `<a href="${website}" target="_blank">${website}</a>` : '',
+        associatedStateAbbreviations: diocese.associatedStateAbbreviations?.join(', ') || ''
+      };
     });
   }
 
   onStateChange(): void {
     const stateId = Number(this.selectedStateID);
+    if (!Array.isArray(this.dioceseList)) {
+      this.filteredDioceses = [];
+      return;
+    }
     if (stateId === 0) {
-      this.filteredDioceses = [...this.dioceseList];
+      this.filteredDioceses = this.mapDioceseData(this.dioceseList);
     } else {
       const selectedState = this.allStates.find(s => s.stateId === stateId);
       const abbrev = selectedState?.stateAbbreviation || '';
-      this.filteredDioceses = this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
+      this.filteredDioceses = this.mapDioceseData(
+        this.dioceseList.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false)
+      );
     }
     this.sortDioceses();
     this.currentPage = 1;
+    this.cdr.detectChanges();
   }
 
   sortDioceses(): void {
@@ -89,8 +116,8 @@ export class DioceseListComponent implements OnInit {
       let valA = (a as any)[this.sortColumn];
       let valB = (b as any)[this.sortColumn];
       if (this.sortColumn === 'associatedStateAbbreviations') {
-        valA = valA?.join(', ') || '';
-        valB = valB?.join(', ') || '';
+        valA = valA || '';
+        valB = valB || '';
       }
       if (valA < valB) {
         return this.sortDirection === 'asc' ? -1 : 1;
@@ -126,42 +153,12 @@ export class DioceseListComponent implements OnInit {
     return Math.ceil(this.filteredDioceses.length / this.pageSize);
   }
 
-  getCellValue(row: Diocese, column: { header: string; field: string }): any {
-    if (column.field === 'associatedStateAbbreviations') {
-      return row.associatedStateAbbreviations?.join(', ') || '';
-    } else if (column.field === 'dioceseWebsite') {
-      const website = row.dioceseWebsite || '';
-      if (website.trim()) {
-        return `<a href="${website}" target="_blank">${website}</a>`;
-      } else {
-        return '';
-      }
-    } else {
-      return (row as any)[column.field] || '';
-    }
-  }
-
-  trackByDioceseID(index: number, item: Diocese): number {
-    return item.dioceseId;
-  }
-
-  trackByColumn(index: number, item: any): string {
-    return item.field;
-  }
-
-  get gridTemplateColumns(): string {
-    return this.columns.map(() => 'auto').join(' ');
-  }
-
-  onDrop(event: CdkDragDrop<any[]>): void {
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
-  }
-
-  onDragEntered(event: CdkDragEnter): void {
-    event.container.element.nativeElement.classList.add('cdk-drag-over');
-  }
-
-  onDragExited(event: CdkDragExit): void {
-    event.container.element.nativeElement.classList.remove('cdk-drag-over');
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 7000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['snackbar-error']
+    });
   }
 }
