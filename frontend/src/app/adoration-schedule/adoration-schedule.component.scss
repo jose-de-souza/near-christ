@@ -2,278 +2,112 @@
 @use '../palette';
 
 .adoration-schedule {
-    /* 90% container width */
-    width: 90%;
-    margin: 0 auto;
-    padding: 20px;
-    background: white;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+
+  h2 {
+    color: palette.$primary-color;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+      background-color: palette.$save-button-bg;
+
+      &:hover {
+        background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
+      }
+
+      &:disabled {
+        background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+        cursor: not-allowed;
+        opacity: 0.6;
+        &:hover {
+          background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+        }
+      }
+    }
+  }
+
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
+    background: palette.$background-color;
     border-radius: 8px;
 
-    h2 {
-        color: palette.$primary-color;
-        text-align: center;
-        margin-bottom: 20px;
-    }
+    .section.filter {
+      position: relative;
+      border: 1px solid palette.$secondary-color;
+      border-radius: 8px;
+      padding: 10px;
+      background: palette.$background-color;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
 
-    .form-container {
+      &::before {
+        content: attr(data-title);
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        background: palette.$background-color;
+        padding: 0 5px;
+        color: palette.$primary-color;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+
+      .row-filter {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 5px;
+        align-items: flex-end;
+      }
+
+      .field-group {
         display: flex;
         flex-direction: column;
-        gap: 15px;
-        margin-top: 20px;
-        padding: 15px;
-        background: palette.$background-color;
-        border-radius: 8px;
+        gap: 3px;
 
-        /*
-      Row 1 => Adoration (4 fields => 24% each => total 96%)
-      Row 2 => Diocese/Parish (3 fields => State=12%, Diocese=42%, Parish=42% => total 96%)
-      Row 3 => Location (2 fields => Type=20%, Location=78% => total ~98%)
-    */
-        .row-1,
-        .row-2,
-        .row-3 {
-            display: flex;
-            gap: 15px;
+        &.state, &.diocese, &.parish {
+          flex: 0 0 12%;
+          max-width: 12%;
         }
 
-        .section {
-            position: relative;
-            border: 1px solid palette.$secondary-color;
-            border-radius: 8px;
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 15px;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 25px 15px 15px;
-
-            &::before {
-                content: attr(data-title);
-                position: absolute;
-                top: -10px;
-                left: 10px;
-                background: palette.$background-color;
-                padding: 0 8px;
-                font-size: 0.9em;
-                font-weight: normal;
-                color: palette.$primary-color;
-            }
-
-            .field-group {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                box-sizing: border-box;
-
-                label {
-                    color: palette.$primary-color;
-                    font-weight: bold;
-                    margin-bottom: 5px;
-                }
-
-                select,
-                input {
-                    width: 100%;
-                    max-width: 180px;
-                    padding: 6px;
-                    border: 1px solid palette.$secondary-color;
-                    border-radius: 4px;
-                    box-sizing: border-box;
-                }
-
-                .inline-error {
-                    color: red;
-                    font-size: 0.85em;
-                    margin-top: 2px;
-                }
-            }
+        label {
+          color: palette.$primary-color;
+          font-weight: bold;
+          margin-bottom: 0;
+          font-size: 0.9em;
         }
 
-        /* Row 1 => Adoration => 4 fields => each 24% => total 96% */
-        .section.adoration .field-group {
-            flex: 0 0 24%;
-            max-width: 24%;
-
-            select,
-            input {
-                max-width: none !important;
-                width: 100% !important;
-            }
+        select {
+          width: 100%;
+          padding: 6px;
+          border: 1px solid palette.$secondary-color;
+          border-radius: 4px;
+          box-sizing: border-box;
+          font-size: 0.9em;
         }
-
-        /* Row 2 => State=12%, Diocese=42%, Parish=42% => total 96% */
-        .section.diocese-parish-names .field-group.state {
-            flex: 0 0 12%;
-            max-width: 12%;
-        }
-
-        .section.diocese-parish-names .field-group.diocese {
-            flex: 0 0 42%;
-            max-width: 42%;
-        }
-
-        .section.diocese-parish-names .field-group.parish {
-            flex: 0 0 42%;
-            max-width: 42%;
-        }
-
-        .section.diocese-parish-names .field-group select,
-        .section.diocese-parish-names .field-group input {
-            max-width: none !important;
-            width: 100% !important;
-        }
-
-        /* Row 3 => Type=20%, Location=78% => total ~98% */
-        .section.location .field-group.locationType {
-            flex: 0 0 20%;
-            max-width: 20%;
-        }
-
-        .section.location .field-group.location {
-            flex: 0 0 78%;
-            max-width: 78%;
-        }
-
-        .section.location .field-group select,
-        .section.location .field-group input {
-            max-width: none !important;
-            width: 100% !important;
-        }
+      }
     }
-
-    .buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-        }
-
-        button:nth-child(1) {
-            background-color: palette.$save-button-bg;
-
-            &:hover {
-                background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
-            }
-        }
-
-        button:nth-child(2) {
-            background-color: palette.$default-button-bg;
-
-            &:hover {
-                background-color: palette.$default-button-hover-bg;
-            }
-        }
-
-        button:nth-child(3) {
-            background-color: palette.$delete-button-bg;
-
-            &:hover {
-                background-color: palette.$delete-button-hover-bg;
-            }
-        }
-
-        button:nth-child(4) {
-            background-color: palette.$neutral-color;
-
-            &:hover {
-                background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
-            }
-        }
-
-        button:disabled {
-            background-color: color.scale(palette.$neutral-color, $lightness: 80%);
-            cursor: not-allowed;
-            opacity: 0.6;
-
-            &:hover {
-                background-color: color.scale(palette.$neutral-color, $lightness: 80%);
-            }
-        }
-    }
-
-    .results-area {
-        margin-top: 20px;
-        border: 1px solid palette.$secondary-color;
-        border-radius: 8px;
-        padding: 10px;
-        overflow-x: auto;
-
-        .grid-table {
-            display: grid;
-            gap: 0;
-            grid-auto-rows: 1fr;
-            align-items: stretch;
-            grid-auto-flow: column;
-            grid-auto-columns: auto;
-            min-width: max-content;
-        }
-
-        .grid-column {
-            display: flex;
-            flex-direction: column;
-
-            &.cdk-drag-over {
-                outline: 2px dashed #665;
-                background-color: rgba(0, 0, 0, 0.05);
-            }
-
-            .grid-column-header {
-                border: 1px solid palette.$secondary-color;
-                background-color: palette.$secondary-color;
-                color: white;
-                padding: 10px;
-                font-weight: bold;
-                text-align: left;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                white-space: nowrap;
-            }
-
-            .grid-column-cell {
-                min-height: 20px;
-                border: 1px solid palette.$secondary-color;
-                padding: 10px;
-                text-align: left;
-                flex: 0 0 auto;
-                white-space: nowrap;
-                cursor: pointer;
-
-                &.no-state {
-                    background-color: #f0f0f0; /* Grey background */
-                    color: #888; /* Grey text */
-                }
-            }
-        }
-    }
-}
-
-.drag-handle {
-    cursor: move;
-}
-
-.custom-drag-preview {
-    background: white;
-    border: 2px solid palette.$secondary-color;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 4px;
-    font-weight: bold;
-    color: #333;
-}
-
-.custom-drag-placeholder {
-    background-color: rgba(0, 0, 0, 0.05);
-    border: 2px dashed #999;
-    padding: 10px;
-    font-style: italic;
-    color: #555;
+  }
 }
