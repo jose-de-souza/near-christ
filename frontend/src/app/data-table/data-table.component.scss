@@ -47,7 +47,11 @@
       text-align: left;
       flex: 0 0 auto;
       white-space: nowrap;
-      cursor: pointer;
+      cursor: default; /* Default cursor for read-only mode */
+
+      &[clickable="true"] {
+        cursor: pointer; /* Pointer cursor when clickable is true */
+      }
 
       &.no-state {
         background-color: #f0f0f0;
