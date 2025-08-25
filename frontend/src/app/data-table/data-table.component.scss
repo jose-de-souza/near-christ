@@ -47,10 +47,10 @@
       text-align: left;
       flex: 0 0 auto;
       white-space: nowrap;
-      cursor: default; /* Default cursor for read-only mode */
+      cursor: default;
 
       &[clickable="true"] {
-        cursor: pointer; /* Pointer cursor when clickable is true */
+        cursor: pointer;
       }
 
       &.no-state {
@@ -66,6 +66,10 @@
     align-items: center;
     gap: 10px;
     margin-top: 10px;
+
+    &[data-empty="true"] {
+      display: none; /* Hide pagination when table is empty */
+    }
 
     select {
       padding: 5px;

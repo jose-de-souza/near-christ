@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  <div class="pagination">
+  <div class="pagination" [attr.data-empty]="filteredData.length === 0">
     <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
       <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
     </select>

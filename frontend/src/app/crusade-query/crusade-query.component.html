@@ -1,5 +1,6 @@
 <div class="crusade-query">
   <h2>Rosary Crusade Query</h2>
+  <h4>Select the filters and click the spy glass button.</h4>
 
   <div class="form-container">
     <div class="section filter" data-title="Filter">
@@ -7,7 +8,7 @@
         <!-- State -->
         <div class="field-group state">
           <label>State</label>
-          <select [(ngModel)]="selectedStateID" (change)="onStateChange()" [disabled]="allStates.length === 0">
+          <select *ngIf="isArray(allStates)" [(ngModel)]="selectedStateID" (ngModelChange)="onStateChange()" [disabled]="allStates.length === 0">
             <option [ngValue]="0">All States</option>
             <option *ngFor="let st of allStates" [ngValue]="st.stateId">
               {{ st.stateAbbreviation }}
@@ -18,7 +19,7 @@
         <!-- Diocese -->
         <div class="field-group diocese">
           <label>Diocese</label>
-          <select [(ngModel)]="selectedDioceseID" (change)="onDioceseChange()" [disabled]="dioceseDisabled">
+          <select *ngIf="isArray(filteredDioceses)" [(ngModel)]="selectedDioceseID" (ngModelChange)="onDioceseChange()" [disabled]="dioceseDisabled">
             <option [ngValue]="null">All Dioceses</option>
             <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseId">
               {{ d.dioceseName }}
@@ -29,7 +30,7 @@
         <!-- Parish -->
         <div class="field-group parish">
           <label>Parish</label>
-          <select [(ngModel)]="selectedParishID" [disabled]="parishDisabled">
+          <select *ngIf="isArray(filteredParishes)" [(ngModel)]="selectedParishID" [disabled]="parishDisabled">
             <option [ngValue]="null">All Parishes</option>
             <option *ngFor="let p of filteredParishes" [ngValue]="p.parishId">
               {{ p.parishName }}
@@ -45,30 +46,8 @@
     </div>
   </div>
 
-  <!-- Results area as a grid-based table -->
+  <!-- Results area -->
   <div class="results-area">
-    <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-      <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
-           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-        <div class="grid-column-header">
-          <span class="drag-handle" cdkDragHandle>☰</span>
-          <ng-template cdkDragPreview>
-            <div class="custom-drag-preview">{{ column.header }}</div>
-          </ng-template>
-          <ng-template cdkDragPlaceholder>
-            <div class="custom-drag-placeholder">
-              Dropping {{ column.header }} here
-            </div>
-          </ng-template>
-          {{ column.header }}
-        </div>
-        <div class="grid-column-cell" *ngFor="let row of results; trackBy: trackByCrusadeID"
-             [ngClass]="column.field === 'state' ? getCellClass(row, column) : ''"
-             [matTooltip]="getTooltip(row, column)"
-             [innerHTML]="getCellValue(row, column)">
-        </div>
-      </div>
-    </div>
+    <app-data-table *ngIf="isArray(results)" [data]="results" [columns]="columns" [clickable]="false"></app-data-table>
   </div>
 </div>

@@ -14,6 +14,13 @@
     margin-bottom: 20px;
   }
 
+  h4 {
+    color: palette.$primary-color;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: normal;
+  }
+
   .form-container {
     display: flex;
     flex-direction: column;
