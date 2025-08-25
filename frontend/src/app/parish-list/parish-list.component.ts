@@ -69,22 +69,15 @@ export class ParishListComponent implements OnInit {
       parishes: this.parishService.getAllParishes()
     }).subscribe({
       next: ({ states, dioceses, parishes }) => {
-        console.log('Response for states:', states);
-        console.log('Response for dioceses:', dioceses);
-        console.log('Response for parishes:', parishes);
         this.allStates = this.getData<State>(states);
         this.dioceseList = this.getData<Diocese>(dioceses);
         this.parishList = this.getData<Parish>(parishes);
         this.dioceseDisabled = this.dioceseList.length === 0;
         this.filteredParishes = this.mapParishData(this.parishList);
         this.sortParishes();
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
-        console.log('Loaded Dioceses:', this.dioceseList.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
-        console.log('Loaded Parishes:', this.parishList.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load data:', err);
         this.showError('Error loading data from server.');
         this.allStates = [];
         this.dioceseList = [];
@@ -98,15 +91,11 @@ export class ParishListComponent implements OnInit {
 
   private mapParishData(parishes: Parish[]): any[] {
     if (!Array.isArray(parishes)) {
-      console.warn('mapParishData received non-array:', parishes);
       return [];
     }
-    console.log('Mapping parishes for DataTable:', parishes);
     return parishes.map(parish => {
       const state = this.allStates.find(s => s.stateId === parish.stateId);
       const diocese = this.dioceseList.find(d => d.dioceseId === parish.dioceseId);
-      if (!state) console.warn(`No state found for stateId: ${parish.stateId}`);
-      if (!diocese) console.warn(`No diocese found for dioceseId: ${parish.dioceseId}`);
       const website = parish.parishWebsite || '';
       return {
         ...parish,
@@ -121,7 +110,6 @@ export class ParishListComponent implements OnInit {
     const stateId = Number(this.selectedStateID);
     let abbrev = '';
     if (!Array.isArray(this.dioceseList)) {
-      console.warn('diocesesList is not an array:', this.dioceseList);
       this.filteredDioceses = [];
       this.dioceseDisabled = true;
       return;
@@ -142,19 +130,12 @@ export class ParishListComponent implements OnInit {
     this.onDioceseChange();
     this.sortParishes();
     this.currentPage = 1;
-    console.log('State Changed:', {
-      stateId,
-      stateAbbreviation: abbrev,
-      filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })),
-      filteredParishesLength: this.filteredParishes.length
-    });
     this.cdr.detectChanges();
   }
 
   onDioceseChange(): void {
     const dioceseId = this.selectedDioceseID != null ? Number(this.selectedDioceseID) : null;
     if (!Array.isArray(this.parishList)) {
-      console.warn('parishList is not an array:', this.parishList);
       this.filteredParishes = [];
       return;
     }
@@ -169,11 +150,6 @@ export class ParishListComponent implements OnInit {
     }
     this.sortParishes();
     this.currentPage = 1;
-    console.log('Diocese Changed:', {
-      dioceseId,
-      dioceseName: this.dioceseList.find(d => d.dioceseId === dioceseId)?.dioceseName,
-      filteredParishesLength: this.filteredParishes.length
-    });
     this.cdr.detectChanges();
   }
 

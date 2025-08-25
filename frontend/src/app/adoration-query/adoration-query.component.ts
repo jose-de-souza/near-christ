@@ -67,9 +67,6 @@ export class AdorationQueryComponent implements OnInit {
       parishes: this.parishService.getAllParishes()
     }).subscribe({
       next: ({ states, dioceses, parishes }) => {
-        console.log('Response for states:', states);
-        console.log('Response for dioceses:', dioceses);
-        console.log('Response for parishes:', parishes);
         this.allStates = this.getData<State>(states);
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
@@ -77,13 +74,9 @@ export class AdorationQueryComponent implements OnInit {
         this.parishDisabled = this.allParishes.length === 0;
         this.filteredDioceses = [];
         this.filteredParishes = [];
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
-        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
-        console.log('Loaded Parishes:', this.allParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load data:', err);
         this.showError('Error loading data from server.');
         this.allStates = [];
         this.allDioceses = [];
@@ -98,17 +91,12 @@ export class AdorationQueryComponent implements OnInit {
 
   private mapAdorationData(adorations: Adoration[]): any[] {
     if (!Array.isArray(adorations)) {
-      console.warn('mapAdorationData received non-array:', adorations);
       return [];
     }
-    console.log('Mapping adorations for DataTable:', adorations);
     return adorations.map(adoration => {
       const state = this.allStates.find(s => s.stateId === adoration.stateId);
       const diocese = this.allDioceses.find(d => d.dioceseId === adoration.dioceseId);
       const parish = this.allParishes.find(p => p.parishId === adoration.parishId);
-      if (!state) console.warn(`No state found for stateId: ${adoration.stateId}`);
-      if (!diocese) console.warn(`No diocese found for dioceseId: ${adoration.dioceseId}`);
-      if (!parish) console.warn(`No parish found for parishId: ${adoration.parishId}`);
       const dioceseName = diocese?.dioceseName || '';
       const parishName = parish?.parishName || '';
       return {
@@ -123,7 +111,6 @@ export class AdorationQueryComponent implements OnInit {
   onStateChange(): void {
     const stateId = Number(this.selectedStateID);
     if (!Array.isArray(this.allDioceses)) {
-      console.warn('allDioceses is not an array:', this.allDioceses);
       this.filteredDioceses = [];
       this.dioceseDisabled = true;
       return;
@@ -144,19 +131,12 @@ export class AdorationQueryComponent implements OnInit {
       this.selectedParishID = null;
       this.filteredParishes = [];
       this.parishDisabled = true;
-      console.log('State Changed:', {
-        stateId,
-        stateAbbreviation: abbrev,
-        filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })),
-        resultsLength: this.results.length
-      });
     }
   }
 
   onDioceseChange(): void {
     const dioceseId = this.selectedDioceseID != null ? Number(this.selectedDioceseID) : null;
     if (!Array.isArray(this.allParishes)) {
-      console.warn('allParishes is not an array:', this.allParishes);
       this.filteredParishes = [];
       this.parishDisabled = true;
       return;
@@ -169,12 +149,6 @@ export class AdorationQueryComponent implements OnInit {
       this.filteredParishes = this.allParishes.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
       this.selectedParishID = null;
-      console.log('Diocese Changed:', {
-        dioceseId,
-        dioceseName: this.allDioceses.find(d => d.dioceseId === dioceseId)?.dioceseName,
-        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })),
-        resultsLength: this.results.length
-      });
     }
   }
 
@@ -185,18 +159,10 @@ export class AdorationQueryComponent implements OnInit {
 
     this.adorationService.searchAdorations(stateId, dioceseId, parishId).subscribe({
       next: (res: any) => {
-        console.log('Search Response:', res);
         this.results = this.mapAdorationData(this.getData<Adoration>(res));
-        console.log('Search Results:', this.results.map(a => ({
-          adorationId: a.adorationId,
-          stateAbbreviation: a.stateAbbreviation,
-          dioceseName: a.dioceseName,
-          parishName: a.parishName
-        })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to search adorations:', err);
         this.showError('Error searching adorations.');
         this.results = [];
         this.cdr.detectChanges();

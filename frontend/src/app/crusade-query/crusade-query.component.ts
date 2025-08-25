@@ -71,9 +71,6 @@ export class CrusadeQueryComponent implements OnInit {
       parishes: this.parishService.getAllParishes()
     }).subscribe({
       next: ({ states, dioceses, parishes }) => {
-        console.log('Response for states:', states);
-        console.log('Response for dioceses:', dioceses);
-        console.log('Response for parishes:', parishes);
         this.allStates = this.getData<State>(states);
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
@@ -81,13 +78,9 @@ export class CrusadeQueryComponent implements OnInit {
         this.parishDisabled = this.allParishes.length === 0;
         this.filteredDioceses = [];
         this.filteredParishes = [];
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
-        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
-        console.log('Loaded Parishes:', this.allParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load data:', err);
         this.showError('Error loading data from server.');
         this.allStates = [];
         this.allDioceses = [];
@@ -102,17 +95,12 @@ export class CrusadeQueryComponent implements OnInit {
 
   private mapCrusadeData(crusades: Crusade[]): any[] {
     if (!Array.isArray(crusades)) {
-      console.warn('mapCrusadeData received non-array:', crusades);
       return [];
     }
-    console.log('Mapping crusades for DataTable:', crusades);
     return crusades.map(crusade => {
       const state = this.allStates.find(s => s.stateId === crusade.stateId);
       const diocese = this.allDioceses.find(d => d.dioceseId === crusade.dioceseId);
       const parish = this.allParishes.find(p => p.parishId === crusade.parishId);
-      if (!state) console.warn(`No state found for stateId: ${crusade.stateId}`);
-      if (!diocese) console.warn(`No diocese found for dioceseId: ${crusade.dioceseId}`);
-      if (!parish) console.warn(`No parish found for parishId: ${crusade.parishId}`);
       const dioceseName = diocese?.dioceseName || '';
       const parishName = parish?.parishName || '';
       return {
@@ -127,7 +115,6 @@ export class CrusadeQueryComponent implements OnInit {
   onStateChange(): void {
     const stateId = Number(this.selectedStateID);
     if (!Array.isArray(this.allDioceses)) {
-      console.warn('allDioceses is not an array:', this.allDioceses);
       this.filteredDioceses = [];
       this.dioceseDisabled = true;
       return;
@@ -148,19 +135,12 @@ export class CrusadeQueryComponent implements OnInit {
       this.selectedParishID = null;
       this.filteredParishes = [];
       this.parishDisabled = true;
-      console.log('State Changed:', {
-        stateId,
-        stateAbbreviation: abbrev,
-        filteredDioceses: this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })),
-        resultsLength: this.results.length
-      });
     }
   }
 
   onDioceseChange(): void {
     const dioceseId = this.selectedDioceseID != null ? Number(this.selectedDioceseID) : null;
     if (!Array.isArray(this.allParishes)) {
-      console.warn('allParishes is not an array:', this.allParishes);
       this.filteredParishes = [];
       this.parishDisabled = true;
       return;
@@ -173,12 +153,6 @@ export class CrusadeQueryComponent implements OnInit {
       this.filteredParishes = this.allParishes.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
       this.selectedParishID = null;
-      console.log('Diocese Changed:', {
-        dioceseId,
-        dioceseName: this.allDioceses.find(d => d.dioceseId === dioceseId)?.dioceseName,
-        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })),
-        resultsLength: this.results.length
-      });
     }
   }
 
@@ -189,18 +163,10 @@ export class CrusadeQueryComponent implements OnInit {
 
     this.crusadeService.searchCrusades(stateId, dioceseId, parishId).subscribe({
       next: (res: any) => {
-        console.log('Search Response:', res);
         this.results = this.mapCrusadeData(this.getData<Crusade>(res));
-        console.log('Search Results:', this.results.map(c => ({
-          crusadeId: c.crusadeId,
-          stateAbbreviation: c.stateAbbreviation,
-          dioceseName: c.dioceseName,
-          parishName: c.parishName
-        })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to search crusades:', err);
         this.showError('Error searching crusades.');
         this.results = [];
         this.cdr.detectChanges();
