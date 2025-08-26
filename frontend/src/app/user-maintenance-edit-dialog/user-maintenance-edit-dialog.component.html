@@ -1,0 +1,58 @@
+<div class="user-maintenance-edit-dialog">
+  <h2>{{ data.id ? 'Edit User' : 'Add User' }}</h2>
+
+  <div class="form-container">
+    <!-- User Details Section -->
+    <div class="section user" data-title="User Details">
+      <div class="row-user">
+        <div class="field-group user-name">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="selectedUser.userFullName" autocomplete="off" />
+          <div *ngIf="hasSubmitted && !selectedUser.userFullName?.trim()" class="inline-error">
+            Full Name is required.
+          </div>
+        </div>
+        <div class="field-group user-email">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="selectedUser.userEmail" autocomplete="off" />
+          <div *ngIf="hasSubmitted && !selectedUser.userEmail?.trim()" class="inline-error">
+            Email is required.
+          </div>
+        </div>
+        <div class="field-group user-password">
+          <label>Password</label>
+          <input type="password" [(ngModel)]="selectedUser.password" placeholder="Leave blank to keep unchanged" autocomplete="new-password" />
+          <div *ngIf="hasSubmitted && !data.id && !selectedUser.password?.trim()" class="inline-error">
+            Password is required for new users.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roles Section -->
+    <div class="section roles" data-title="Roles">
+      <div class="row-roles">
+        <div class="field-group user-roles">
+          <div class="checkbox-group">
+            <mat-checkbox *ngFor="let role of allRoles"
+                          [checked]="selectedRoles.get(role)"
+                          (change)="selectedRoles.set(role, $event.checked)">
+              {{ role }}
+            </mat-checkbox>
+          </div>
+          <div *ngIf="hasSubmitted && selectedRolesCount === 0" class="inline-error">
+            At least one role is required.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRUD Buttons -->
+    <div class="buttons">
+      <button (click)="addUser()" [disabled]="uiMode === 'editing'">Add</button>
+      <button (click)="modifyUser()" [disabled]="uiMode !== 'editing'">Modify</button>
+      <button (click)="deleteUser()" [disabled]="uiMode !== 'editing'">Delete</button>
+      <button (click)="cancel()">Cancel</button>
+    </div>
+  </div>
+</div>
