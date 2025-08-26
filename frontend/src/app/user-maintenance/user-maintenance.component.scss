@@ -2,328 +2,111 @@
 @use '../palette';
 
 .user-maintenance {
-    /* Container at 90% width for a consistent, responsive layout */
-    width: 90%;
-    margin: 0 auto;
-    padding: 20px;
-    background: white;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+
+  h2 {
+    color: palette.$primary-color;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+      background-color: palette.$save-button-bg;
+
+      &:hover {
+        background-color: color.adjust(palette.$neutral-color, $lightness: -10%);
+      }
+
+      &:disabled {
+        background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+        cursor: not-allowed;
+        opacity: 0.6;
+        &:hover {
+          background-color: color.scale(palette.$neutral-color, $lightness: 80%);
+        }
+      }
+    }
+  }
+
+  .results-area {
+    margin-top: 20px;
+    border: 1px solid palette.$secondary-color;
     border-radius: 8px;
+    padding: 10px;
+    overflow-x: auto;
 
-    h2 {
-        color: palette.$primary-color;
-        text-align: center;
-        margin-bottom: 20px;
+    app-data-table {
+      display: block;
+
+      td[clickable="true"] {
+        cursor: pointer;
+
+        &:hover {
+          background-color: color.adjust(palette.$background-color, $lightness: -5%);
+        }
+      }
+    }
+  }
+
+  :host ::ng-deep .orange-dialog {
+    .mat-mdc-dialog-surface {
+      background-color: #ff9800 !important;
+      color: #000 !important;
+      padding: 20px;
+      border-radius: 6px;
+      max-width: 500px;
     }
 
-    .form-container {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        background: palette.$background-color;
-        border-radius: 8px;
-        padding: 15px;
-        margin-top: 20px;
-
-        .section.user {
-            position: relative;
-            border: 1px solid palette.$secondary-color;
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            &::before {
-                content: attr(data-title);
-                /* "User Details" */
-                position: absolute;
-                top: -10px;
-                left: 10px;
-                background: palette.$background-color;
-                padding: 0 5px;
-                font-size: 0.9em;
-                font-weight: bold;
-                color: palette.$primary-color;
-            }
-
-            /* Single row with 3 fields => 32% each => 96% total, 4% leftover */
-            .row-user {
-                display: flex;
-                flex-wrap: nowrap;
-                gap: 15px;
-                align-items: flex-end;
-
-                .field-group {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 3px;
-                }
-
-                .user-name,
-                .user-email,
-                .user-password {
-                    flex: 0 0 32%;
-                    max-width: 32%;
-                }
-
-                label {
-                    color: palette.$primary-color;
-                    font-weight: bold;
-                    margin-bottom: 3px;
-                }
-
-                input,
-                select {
-                    width: 100%;
-                    max-width: none;
-                    padding: 6px;
-                    border: 1px solid palette.$secondary-color;
-                    border-radius: 4px;
-                    box-sizing: border-box;
-                }
-
-                .inline-error {
-                    color: red;
-                    font-size: 0.8em;
-                    margin-top: 2px;
-                }
-            }
-        }
-
-        .section.roles {
-            position: relative;
-            border: 1px solid palette.$secondary-color;
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            &::before {
-                content: attr(data-title);
-                /* "Roles" */
-                position: absolute;
-                top: -10px;
-                left: 10px;
-                background: palette.$background-color;
-                padding: 0 5px;
-                font-size: 0.9em;
-                font-weight: bold;
-                color: palette.$primary-color;
-            }
-
-            .row-roles {
-                display: flex;
-                flex-wrap: nowrap;
-                gap: 15px;
-
-                .field-group.user-roles {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 3px;
-                    flex: 1;
-
-                    .checkbox-group {
-                        display: flex;
-                        flex-direction: row;
-                        gap: 20px;
-                        align-items: center;
-                    }
-
-                    .inline-error {
-                        color: red;
-                        font-size: 0.8em;
-                        margin-top: 2px;
-                    }
-                }
-            }
-        }
+    .mat-dialog-title {
+      color: #000;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
 
-    .buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-        }
-
-        /* 1) Add => $save-button-bg; hover => darken($neutral-color, 10%) */
-        button:nth-child(1) {
-            background-color: palette.$save-button-bg;
-
-            &:hover {
-                background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
-            }
-        }
-
-        /* 2) Modify => $default-button-bg; hover => $default-button-hover-bg */
-        button:nth-child(2) {
-            background-color: palette.$default-button-bg;
-
-            &:hover {
-                background-color: palette.$default-button-hover-bg;
-            }
-        }
-
-        /* 3) Delete => $delete-button-bg; hover => $delete-button-hover-bg */
-        button:nth-child(3) {
-            background-color: palette.$delete-button-bg;
-
-            &:hover {
-                background-color: palette.$delete-button-hover-bg;
-            }
-        }
-
-        /* 4) Cancel => $neutral-color; hover => darken($neutral-color, 10%) */
-        button:nth-child(4) {
-            background-color: palette.$neutral-color;
-
-            &:hover {
-                background-color: color.adjust(palette.$neutral-color, $lightness: -10%, $space: hsl);
-            }
-        }
-
-        /* 
-        NEW: explicitly style disabled buttons 
-        so they appear clearly inactive 
-        */
-        button:disabled {
-            background-color: color.scale(palette.$neutral-color, $lightness: 80%);
-            cursor: not-allowed;
-            opacity: 0.6;
-
-            &:hover {
-                background-color: color.scale(palette.$neutral-color, $lightness: 80%);
-            }
-        }
+    .mat-dialog-content {
+      color: #000;
+      font-size: 16px;
+      margin: 1rem 0;
     }
 
-    .results-area {
-        margin-top: 20px;
-        border: 1px solid palette.$secondary-color;
-        border-radius: 8px;
-        padding: 10px;
-        overflow-x: auto; // horizontal scroll if columns exceed container width
+    .mat-dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
 
-        .grid-table {
-            display: grid;
-            grid-auto-rows: 1fr;
-            align-items: stretch;
-            grid-auto-flow: column;
-            grid-auto-columns: auto;
-            min-width: max-content;
-            gap: 0;
-
-            .grid-column {
-                display: flex;
-                flex-direction: column;
-
-                &.cdk-drag-over {
-                    outline: 2px dashed #665;
-                    background-color: rgba(0, 0, 0, 0.05);
-                }
-
-                .grid-column-header {
-                    border: 1px solid palette.$secondary-color;
-                    background-color: palette.$secondary-color;
-                    color: white;
-                    padding: 10px;
-                    font-weight: bold;
-                    text-align: left;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    white-space: nowrap;
-                }
-
-                .grid-column-cell {
-                    border: 1px solid palette.$secondary-color;
-                    padding: 10px;
-                    text-align: left;
-                    flex: 0 0 auto;
-                    white-space: nowrap;
-                    cursor: pointer;
-                }
-            }
-        }
-    }
-
-    /* Drag & Drop Styles */
-    .drag-handle {
-        cursor: move;
-    }
-
-    /* The custom drag preview & placeholder, matching other screens */
-    .custom-drag-preview {
-        background: white;
-        border: 2px solid palette.$secondary-color;
-        box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-        padding: 10px;
+      button {
+        min-width: 70px;
+        border: none;
         border-radius: 4px;
-        font-weight: bold;
-        color: #333;
+        padding: 8px 12px;
+        cursor: pointer;
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      button.button-yes {
+        color: red;
+      }
+
+      button.button-no {
+        color: grey;
+      }
     }
-
-    .custom-drag-placeholder {
-        background-color: rgba(0, 0, 0, 0.05);
-        border: 2px dashed #999;
-        padding: 10px;
-        font-style: italic;
-        color: #555;
-    }
-
-    /* Dialog styling */
-    :host ::ng-deep .orange-dialog {
-        .mat-mdc-dialog-surface {
-            background-color: #ff9800 !important;
-            color: #000 !important;
-            padding: 20px;
-            border-radius: 6px;
-            max-width: 500px;
-        }
-
-        .mat-dialog-title {
-            color: #000;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .mat-dialog-content {
-            color: #000;
-            font-size: 16px;
-            margin: 1rem 0;
-        }
-
-        .mat-dialog-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-
-            button {
-                min-width: 70px;
-                border: none;
-                border-radius: 4px;
-                padding: 8px 12px;
-                cursor: pointer;
-                background-color: rgba(255, 255, 255, 0.2);
-            }
-
-            button.button-yes {
-                color: red;
-            }
-
-            button.button-no {
-                color: grey;
-            }
-        }
-    }
+  }
 }

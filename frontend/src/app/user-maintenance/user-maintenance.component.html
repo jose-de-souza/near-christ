@@ -1,90 +1,11 @@
 <div class="user-maintenance">
   <h2>User Maintenance</h2>
 
-  <!-- Form container for sections and buttons -->
-  <div class="form-container">
-    <!-- SECTION #1: User Details -->
-    <div class="section user" data-title="User Details">
-      <div class="row-user">
-        <!-- Full Name -->
-        <div class="field-group user-name">
-          <label>Full Name</label>
-          <input type="text" [(ngModel)]="selectedUser.userFullName" autocomplete="off" />
-          <div *ngIf="hasSubmitted && !selectedUser.userFullName?.trim()" class="inline-error">
-            Full Name is required.
-          </div>
-        </div>
-        <!-- Email -->
-        <div class="field-group user-email">
-          <label>Email</label>
-          <input type="email" [(ngModel)]="selectedUser.userEmail" autocomplete="off" />
-          <div *ngIf="hasSubmitted && !selectedUser.userEmail?.trim()" class="inline-error">
-            Email is required.
-          </div>
-        </div>
-        <!-- Password -->
-        <div class="field-group user-password">
-          <label>Password</label>
-          <input type="password" [(ngModel)]="selectedUser.password" placeholder="Leave blank to keep unchanged" autocomplete="new-password" />
-          <div *ngIf="hasSubmitted && !selectedUser.id && !selectedUser.password?.trim()" class="inline-error">
-            Password is required for new users.
-          </div>
-        </div>
-      </div>
-    </div><!-- end .section.user -->
+  <div class="buttons">
+    <button (click)="openAddDialog()">Add User</button>
+  </div>
 
-    <!-- SECTION #2: Roles -->
-    <div class="section roles" data-title="Roles">
-      <div class="row-roles">
-        <div class="field-group user-roles">
-          <div class="checkbox-group">
-            <mat-checkbox *ngFor="let role of allRoles"
-                          [checked]="selectedRoles.get(role)"
-                          (change)="selectedRoles.set(role, $event.checked)">
-              {{ role }}
-            </mat-checkbox>
-          </div>
-          <div *ngIf="hasSubmitted && selectedRolesCount === 0" class="inline-error">
-            At least one role is required.
-          </div>
-        </div>
-      </div>
-    </div><!-- end .section.roles -->
-
-    <!-- CRUD Buttons -->
-    <div class="buttons">
-      <button (click)="addUser()" [disabled]="uiMode === 'editing'">Add</button>
-      <button (click)="modifyUser()" [disabled]="uiMode !== 'editing'">Modify</button>
-      <button (click)="deleteUser()" [disabled]="uiMode !== 'editing'">Delete</button>
-      <button (click)="cancel()" [disabled]="uiMode === 'view'">Cancel</button>
-    </div>
-  </div><!-- end .form-container -->
-
-  <!-- Results area -->
   <div class="results-area">
-    <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
-         (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-      <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag [cdkDragData]="column"
-           (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-        <!-- Column Header -->
-        <div class="grid-column-header">
-          <span class="drag-handle" cdkDragHandle>☰</span>
-          <ng-template cdkDragPreview>
-            <div class="custom-drag-preview">{{ column.header }}</div>
-          </ng-template>
-          <ng-template cdkDragPlaceholder>
-            <div class="custom-drag-placeholder">
-              Dropping {{ column.header }} here
-            </div>
-          </ng-template>
-          {{ column.header }}
-        </div>
-        <!-- Column cells -->
-        <div class="grid-column-cell" *ngFor="let row of users; trackBy: trackByUserID"
-             (click)="selectUser(row)">
-          {{ getCellValue(row, column) }}
-        </div>
-      </div>
-    </div>
-  </div><!-- end .results-area -->
+    <app-data-table *ngIf="isArray(users)" [data]="users" [columns]="columns" [clickable]="true" (rowClicked)="openEditDialog($event)"></app-data-table>
+  </div>
 </div>
