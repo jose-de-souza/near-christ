@@ -13,50 +13,54 @@
     gap: 0;
     grid-auto-rows: 1fr;
     align-items: stretch;
-    grid-auto-flow: column;
-    grid-auto-columns: auto;
     min-width: max-content;
   }
 
-  .grid-column {
+  .grid-column-header-row {
+    display: contents;
+  }
+
+  .grid-column-header {
+    border: 1px solid palette.$secondary-color;
+    background-color: palette.$secondary-color;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    text-align: left;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
 
     &.cdk-drag-over {
       outline: 2px dashed #655;
       background-color: rgba(0, 0, 0, 0.05);
     }
+  }
 
-    .grid-column-header {
-      border: 1px solid palette.$secondary-color;
-      background-color: palette.$secondary-color;
-      color: white;
-      padding: 10px;
-      font-weight: bold;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
+  .grid-row {
+    display: contents;
+
+    &.clickable {
+      &:hover .grid-column-cell {
+        background-color: color.adjust(palette.$background-color, $lightness: -5%) !important;
+        cursor: pointer !important;
+      }
     }
+  }
 
-    .grid-column-cell {
-      min-height: 20px;
-      border: 1px solid palette.$secondary-color;
-      padding: 10px;
-      text-align: left;
-      flex: 0 0 auto;
-      white-space: nowrap;
-      cursor: default;
+  .grid-column-cell {
+    min-height: 20px;
+    border: 1px solid palette.$secondary-color;
+    padding: 10px;
+    text-align: left;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    cursor: default;
 
-      &[clickable="true"] {
-        cursor: pointer;
-      }
-
-      &.no-state {
-        background-color: #f0f0f0;
-        color: #888;
-      }
+    &.no-state {
+      background-color: #f0f0f0;
+      color: #888;
     }
   }
 
@@ -68,7 +72,7 @@
     margin-top: 10px;
 
     &[data-empty="true"] {
-      display: none; /* Hide pagination when table is empty */
+      display: none;
     }
 
     select {

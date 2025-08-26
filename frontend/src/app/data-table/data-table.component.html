@@ -1,9 +1,10 @@
 <div class="results-area">
   <div class="grid-table" cdkDropList cdkDropListOrientation="horizontal" [cdkDropListData]="columns"
        (cdkDropListDropped)="onDrop($event)" [style.gridTemplateColumns]="gridTemplateColumns">
-    <div class="grid-column" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
-         [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)">
-      <div class="grid-column-header" (click)="onSort(column.field)">
+    <div class="grid-column-header-row">
+      <div class="grid-column-header" *ngFor="let column of columns; trackBy: trackByColumn" cdkDrag
+           [cdkDragData]="column" (cdkDragEntered)="onDragEntered($event)" (cdkDragExited)="onDragExited($event)"
+           (click)="onSort(column.field)">
         <span class="drag-handle" cdkDragHandle>☰</span>
         <ng-template cdkDragPreview>
           <div class="custom-drag-preview">{{ column.header }}</div>
@@ -15,10 +16,11 @@
         </ng-template>
         {{ column.header }}
       </div>
-      <div class="grid-column-cell" *ngFor="let row of getPaginatedData(); trackBy: trackByID"
-           (click)="onRowClick(row)"
-           [innerHtml]="getCellValue(row, column) | safeHtml">
-      </div>
+    </div>
+    <div class="grid-row" *ngFor="let row of getPaginatedData(); trackBy: trackByID"
+         [class.clickable]="clickable" (click)="onRowClick(row)">
+      <div class="grid-column-cell" *ngFor="let column of columns; trackBy: trackByColumn"
+           [innerHtml]="getCellValue(row, column) | safeHtml"></div>
     </div>
   </div>
 

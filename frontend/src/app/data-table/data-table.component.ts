@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
@@ -23,6 +23,10 @@ export class DataTableComponent implements OnChanges {
   @Input() trackIdField: string = 'id';
 
   @Output() rowClicked = new EventEmitter<any>();
+
+  @HostBinding('class.clickable-table') get isClickable(): boolean {
+    return this.clickable;
+  }
 
   filteredData: any[] = [];
   sortedData: any[] = [];
