@@ -67,10 +67,8 @@ export class ParishEditDialogComponent implements OnInit {
       next: (res: any) => {
         this.allStates = res.data || [];
         this.stateDropdownDisabled = this.allStates.length === 0;
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
       },
       error: (err) => {
-        console.error('Failed to load states:', err);
         this.showError('Error loading states from server.');
       }
     });
@@ -82,10 +80,8 @@ export class ParishEditDialogComponent implements OnInit {
         this.allDioceses = res.data || [];
         this.filteredDioceses = [...this.allDioceses];
         this.dioceseDropdownDisabled = this.allDioceses.length === 0;
-        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
       },
       error: (err) => {
-        console.error('Failed to load dioceses:', err);
         this.showError('Error loading dioceses.');
       }
     });
@@ -120,7 +116,6 @@ export class ParishEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to create parish:', err);
         this.showError('Error creating parish. Verify all mandatory fields.');
       }
     });
@@ -147,7 +142,6 @@ export class ParishEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to update parish:', err);
         this.showError('Error updating parish.');
       }
     });
@@ -175,7 +169,6 @@ export class ParishEditDialogComponent implements OnInit {
             this.dialogRef.close(true);
           },
           error: (err) => {
-            console.error('Failed to delete parish:', err);
             this.showError('Error deleting parish.');
           }
         });

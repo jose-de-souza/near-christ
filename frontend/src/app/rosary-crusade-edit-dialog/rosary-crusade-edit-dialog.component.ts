@@ -72,9 +72,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
     } else {
       this.uiMode = 'view';
     }
-    console.log('Initial Dialog Data:', this.data);
-    console.log('Initial Selected Crusade:', this.selectedCrusade);
-    console.log('Initial uiMode:', this.uiMode);
   }
 
   private getData<T>(res: any): T[] {
@@ -93,9 +90,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
       parishes: this.parishService.getAllParishes()
     }).subscribe({
       next: ({ states, dioceses, parishes }) => {
-        console.log('Dialog Response for states:', states);
-        console.log('Dialog Response for dioceses:', dioceses);
-        console.log('Dialog Response for parishes:', parishes);
         this.allStates = this.getData<State>(states);
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
@@ -113,14 +107,9 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
           if (this.selectedCrusade.dioceseId && this.allDioceses.some(d => d.dioceseId === this.selectedCrusade.dioceseId)) {
             this.onDioceseChange();
           }
-        }
-        console.log('Dialog Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
-        console.log('Dialog Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
-        console.log('Dialog Loaded Parishes:', this.allParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })));
-        console.log('Dialog Selected Crusade after init:', this.selectedCrusade);
+        }        
       },
       error: (err) => {
-        console.error('Failed to load dialog data:', err);
         this.showError('Error loading data for dialog.');
         this.allStates = [];
         this.allDioceses = [];
@@ -138,7 +127,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
   onStateChange(): void {
     const stateId = Number(this.selectedCrusade.stateId || 0);
     if (!Array.isArray(this.allDioceses)) {
-      console.warn('allDioceses is not an array:', this.allDioceses);
       this.dioceseDropdownDisabled = true;
       this.showWarning('No dioceses available for selection.');
       return;
@@ -165,14 +153,7 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
         this.selectedCrusade.parishId = 0;
       }
       this.filteredParishes = [];
-      this.parishDropdownDisabled = true;
-      console.log('Dialog State Changed:', {
-        stateId,
-        stateAbbreviation: abbrev,
-        dioceseDropdownDisabled: this.dioceseDropdownDisabled,
-        selectedDioceseId: this.selectedCrusade.dioceseId,
-        selectedParishId: this.selectedCrusade.parishId
-      });
+      this.parishDropdownDisabled = true;   
     }
     if (this.selectedCrusade.dioceseId) {
       this.onDioceseChange();
@@ -182,7 +163,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
   onDioceseChange(): void {
     const dioceseId = Number(this.selectedCrusade.dioceseId || 0);
     if (!Array.isArray(this.allParishes)) {
-      console.warn('allParishes is not an array:', this.allParishes);
       this.parishDropdownDisabled = true;
       this.showWarning('No parishes available for selection.');
       return;
@@ -206,14 +186,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
       if (currentParishId && !this.filteredParishes.some(p => p.parishId === currentParishId)) {
         this.selectedCrusade.parishId = 0;
       }
-      console.log('Dialog Diocese Changed:', {
-        dioceseId,
-        dioceseName: selectedDiocese?.dioceseName,
-        parishDropdownDisabled: this.parishDropdownDisabled,
-        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })),
-        currentParishId,
-        selectedParishId: this.selectedCrusade.parishId
-      });
     }
   }
 
@@ -238,7 +210,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to create crusade:', err);
         this.showError('Error creating crusade.');
       }
     });
@@ -261,7 +232,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to update crusade:', err);
         this.showError('Error updating crusade.');
       }
     });
@@ -289,7 +259,6 @@ export class RosaryCrusadeEditDialogComponent implements OnInit {
             this.dialogRef.close(true);
           },
           error: (err) => {
-            console.error('Failed to delete crusade:', err);
             this.showError('Error deleting crusade.');
           }
         });

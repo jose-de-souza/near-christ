@@ -66,10 +66,8 @@ export class ParishMaintenanceComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data || [];
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
       },
       error: (err) => {
-        console.error('Failed to load states:', err);
         this.showError('Error loading states from server.');
       }
     });
@@ -81,11 +79,9 @@ export class ParishMaintenanceComponent implements OnInit {
         this.allDioceses = res.data || [];
         this.filteredDioceses = [...this.allDioceses];
         this.dioceseDisabled = this.allDioceses.length === 0;
-        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
         this.onFilterStateChange();
       },
       error: (err) => {
-        console.error('Failed to load dioceses:', err);
         this.showError('Error loading dioceses.');
       }
     });
@@ -96,16 +92,9 @@ export class ParishMaintenanceComponent implements OnInit {
       next: (res: any) => {
         this.allParishes = res.data || [];
         this.parishes = this.mapParishData(this.allParishes);
-        console.log('Loaded Parishes:', this.parishes.map(p => ({ 
-          parishId: p.parishId, 
-          parishName: p.parishName, 
-          stateAbbreviation: p.stateAbbreviation, 
-          dioceseName: p.dioceseName 
-        })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load parishes:', err);
         this.showError('Fatal error loading parishes! Please contact support.');
       }
     });
@@ -138,7 +127,6 @@ export class ParishMaintenanceComponent implements OnInit {
       this.filterDioceseID = null;
       this.parishes = this.mapParishData(this.allParishes.filter(p => p.stateId === stateId));
     }
-    console.log('Filtered Dioceses:', this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
     this.cdr.detectChanges();
   }
 
@@ -153,12 +141,6 @@ export class ParishMaintenanceComponent implements OnInit {
       filtered = filtered.filter(p => p.dioceseId === dioceseId);
     }
     this.parishes = this.mapParishData(filtered);
-    console.log('Filtered Parishes:', this.parishes.map(p => ({ 
-      parishId: p.parishId, 
-      parishName: p.parishName, 
-      stateAbbreviation: p.stateAbbreviation, 
-      dioceseName: p.dioceseName 
-    })));
     this.cdr.detectChanges();
   }
 

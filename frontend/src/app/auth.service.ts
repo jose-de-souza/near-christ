@@ -95,7 +95,6 @@ export class AuthService {
         map(res => res.data),
         tap(response => {
           if (!response?.accessToken) {
-            console.error('Login failed: No valid token received!');
             return;
           }
           this._token.set(response.accessToken);

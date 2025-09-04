@@ -79,10 +79,6 @@ export class AdorationScheduleComponent implements OnInit {
       adorations: this.adorationService.getAllAdorations()
     }).subscribe({
       next: ({ states, dioceses, parishes, adorations }) => {
-        console.log('Response for states:', states);
-        console.log('Response for dioceses:', dioceses);
-        console.log('Response for parishes:', parishes);
-        console.log('Response for adorations:', adorations);
         this.allStates = this.getData<State>(states);
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
@@ -92,19 +88,9 @@ export class AdorationScheduleComponent implements OnInit {
         this.filteredParishes = [];
         this.dioceseDisabled = true;
         this.parishDisabled = true;
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
-        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
-        console.log('Loaded Parishes:', this.allParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
-        console.log('Loaded Adorations:', this.adorations.map(a => ({
-          adorationId: a.adorationId,
-          stateAbbreviation: a.stateAbbreviation,
-          dioceseName: a.dioceseName,
-          parishName: a.parishName
-        })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load data:', err);
         this.showError('Error loading data from server.');
         this.allStates = [];
         this.allDioceses = [];
@@ -118,17 +104,12 @@ export class AdorationScheduleComponent implements OnInit {
 
   private mapAdorationData(adorations: Adoration[]): any[] {
     if (!Array.isArray(adorations)) {
-      console.warn('mapAdorationData received non-array:', adorations);
       return [];
     }
-    console.log('Mapping adorations for DataTable:', adorations);
     return adorations.map(adoration => {
       const state = this.allStates.find(s => s.stateId === adoration.stateId);
       const diocese = this.allDioceses.find(d => d.dioceseId === adoration.dioceseId);
-      const parish = this.allParishes.find(p => p.parishId === adoration.parishId);
-      if (!state) console.warn(`No state found for stateId: ${adoration.stateId}`);
-      if (!diocese) console.warn(`No diocese found for dioceseId: ${adoration.dioceseId}`);
-      if (!parish) console.warn(`No parish found for parishId: ${adoration.parishId}`);
+      const parish = this.allParishes.find(p => p.parishId === adoration.parishId); 
       return {
         ...adoration,
         stateAbbreviation: state?.stateAbbreviation || '',
@@ -141,11 +122,9 @@ export class AdorationScheduleComponent implements OnInit {
   onFilterStateChange(): void {
     const stateId = Number(this.filterStateID);
     if (!Array.isArray(this.allDioceses)) {
-      console.warn('allDioceses is not an array:', this.allDioceses);
       this.filteredDioceses = [];
     }
     if (!Array.isArray(this.allAdorations)) {
-      console.warn('allAdorations is not an array:', this.allAdorations);
       this.adorations = [];
     }
     if (stateId === 0) {
@@ -167,7 +146,6 @@ export class AdorationScheduleComponent implements OnInit {
       this.parishDisabled = true;
       this.adorations = this.mapAdorationData(this.allAdorations.filter(a => a.stateId === stateId));
     }
-    console.log('Filtered Dioceses:', this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
     this.cdr.detectChanges();
   }
 
@@ -175,11 +153,9 @@ export class AdorationScheduleComponent implements OnInit {
     const stateId = Number(this.filterStateID);
     const dioceseId = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
     if (!Array.isArray(this.allParishes)) {
-      console.warn('allParishes is not an array:', this.allParishes);
       this.filteredParishes = [];
     }
     if (!Array.isArray(this.allAdorations)) {
-      console.warn('allAdorations is not an array:', this.allAdorations);
       this.adorations = [];
     }
     if (dioceseId === null) {
@@ -197,7 +173,6 @@ export class AdorationScheduleComponent implements OnInit {
         this.allAdorations.filter(a => a.dioceseId === dioceseId && (!stateId || a.stateId === stateId))
       );
     }
-    console.log('Filtered Parishes:', this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
     this.cdr.detectChanges();
   }
 
@@ -206,7 +181,6 @@ export class AdorationScheduleComponent implements OnInit {
     const dioceseId = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
     const parishId = this.filterParishID !== null ? Number(this.filterParishID) : null;
     if (!Array.isArray(this.allAdorations)) {
-      console.warn('allAdorations is not an array:', this.allAdorations);
       this.adorations = [];
     }
     let filtered = this.allAdorations;
@@ -220,17 +194,10 @@ export class AdorationScheduleComponent implements OnInit {
       filtered = filtered.filter(a => a.parishId === parishId);
     }
     this.adorations = this.mapAdorationData(filtered);
-    console.log('Filtered Adorations:', this.adorations.map(a => ({
-      adorationId: a.adorationId,
-      stateAbbreviation: a.stateAbbreviation,
-      dioceseName: a.dioceseName,
-      parishName: a.parishName
-    })));
     this.cdr.detectChanges();
   }
 
   onRowClicked(row: Adoration): void {
-    console.log('Row clicked:', row);
     this.openEditDialog(row);
   }
 
@@ -239,7 +206,6 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   openEditDialog(adoration: Adoration): void {
-    console.log('Opening edit dialog with data:', adoration);
     try {
       const dialogRef = this.dialog.open(AdorationScheduleEditDialogComponent, {
         data: adoration,
@@ -248,13 +214,11 @@ export class AdorationScheduleComponent implements OnInit {
       });
 
       dialogRef.afterClosed().subscribe(result => {
-        console.log('Dialog closed with result:', result);
         if (result) {
           this.loadAllAdorations();
         }
       });
     } catch (err) {
-      console.error('Failed to open dialog:', err);
       this.showError('Error opening edit dialog. Please try again.');
     }
   }
@@ -262,19 +226,11 @@ export class AdorationScheduleComponent implements OnInit {
   private loadAllAdorations(): void {
     this.adorationService.getAllAdorations().subscribe({
       next: (res: any) => {
-        console.log('Response for adorations:', res);
         this.allAdorations = this.getData<Adoration>(res);
         this.adorations = this.mapAdorationData(this.allAdorations);
-        console.log('Loaded Adorations:', this.adorations.map(a => ({
-          adorationId: a.adorationId,
-          stateAbbreviation: a.stateAbbreviation,
-          dioceseName: a.dioceseName,
-          parishName: a.parishName
-        })));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load adorations:', err);
         this.showError('Fatal error loading Adoration Schedules!');
         this.allAdorations = [];
         this.adorations = [];

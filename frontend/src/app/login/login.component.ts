@@ -21,7 +21,6 @@ export class LoginComponent {
   onLogin() {
     this.auth.login(this.email, this.password).subscribe({
       next: () => {
-        // console.log('Login successful, navigating...');
         this.router.navigate(['/adoration-schedule']);
       },
       error: () => {

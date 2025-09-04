@@ -76,10 +76,8 @@ export class RosaryCrusadeComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data || [];
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
       },
       error: (err) => {
-        console.error('Failed to load states:', err);
         this.showError('Error loading states from server.');
       }
     });
@@ -91,11 +89,9 @@ export class RosaryCrusadeComponent implements OnInit {
         this.allDioceses = res.data || [];
         this.filteredDioceses = [];
         this.dioceseDisabled = true;
-        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
         this.onFilterStateChange();
       },
       error: (err) => {
-        console.error('Failed to load dioceses:', err);
         this.showError('Error loading dioceses.');
       }
     });
@@ -107,11 +103,9 @@ export class RosaryCrusadeComponent implements OnInit {
         this.allParishes = res.data || [];
         this.filteredParishes = [];
         this.parishDisabled = true;
-        console.log('Loaded Parishes:', this.allParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
         this.onFilterDioceseChange();
       },
       error: (err) => {
-        console.error('Failed to load parishes:', err);
         this.showError('Error loading parishes.');
       }
     });
@@ -121,17 +115,10 @@ export class RosaryCrusadeComponent implements OnInit {
     this.crusadeService.getAllCrusades().subscribe({
       next: (res: any) => {
         this.allCrusades = res.data || [];
-        this.crusades = this.mapCrusadeData(this.allCrusades);
-        console.log('Loaded Crusades:', this.crusades.map(c => ({
-          crusadeId: c.crusadeId,
-          stateAbbreviation: c.stateAbbreviation,
-          dioceseName: c.dioceseName,
-          parishName: c.parishName
-        })));
+        this.crusades = this.mapCrusadeData(this.allCrusades);   
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load crusades:', err);
         this.showError('Fatal error loading crusades! Please contact support.');
       }
     });
@@ -174,7 +161,6 @@ export class RosaryCrusadeComponent implements OnInit {
       this.parishDisabled = true;
       this.crusades = this.mapCrusadeData(this.allCrusades.filter(c => c.stateId === stateId));
     }
-    console.log('Filtered Dioceses:', this.filteredDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
     this.cdr.detectChanges();
   }
 
@@ -196,7 +182,6 @@ export class RosaryCrusadeComponent implements OnInit {
         this.allCrusades.filter(c => c.dioceseId === dioceseId && (!stateId || c.stateId === stateId))
       );
     }
-    console.log('Filtered Parishes:', this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName })));
     this.cdr.detectChanges();
   }
 
@@ -215,12 +200,6 @@ export class RosaryCrusadeComponent implements OnInit {
       filtered = filtered.filter(c => c.parishId === parishId);
     }
     this.crusades = this.mapCrusadeData(filtered);
-    console.log('Filtered Crusades:', this.crusades.map(c => ({
-      crusadeId: c.crusadeId,
-      stateAbbreviation: c.stateAbbreviation,
-      dioceseName: c.dioceseName,
-      parishName: c.parishName
-    })));
     this.cdr.detectChanges();
   }
 

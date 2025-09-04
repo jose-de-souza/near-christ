@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment'; // adjust if needed
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 /**
  * The Diocese interface, without state reference.
@@ -23,32 +25,35 @@ export interface Diocese {
   providedIn: 'root'
 })
 export class DioceseService {
-  private baseUrl = environment.apiUrl; // e.g. "http://localhost:8000"
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
-  // GET all dioceses
-  getAllDioceses() {
-    return this.http.get<Diocese[]>(`${this.baseUrl}/dioceses`);
+  getAllDioceses(): Observable<{ success: boolean; status: number; message: string; data: Diocese[] }> {
+    return this.http.get<{ success: boolean; status: number; message: string; data: Diocese[] }>(`${this.baseUrl}/dioceses`);
   }
 
-  // GET single diocese by ID
-  getDioceseById(id: number) {
-    return this.http.get<Diocese>(`${this.baseUrl}/dioceses/${id}`);
+  getDioceseById(id: number): Observable<{ success: boolean; status: number; message: string; data: Diocese }> {
+    return this.http.get<{ success: boolean; status: number; message: string; data: Diocese }>(`${this.baseUrl}/dioceses/${id}`);
   }
 
-  // POST create new diocese
-  createDiocese(diocese: Partial<Diocese>) {
-    return this.http.post<Diocese>(`${this.baseUrl}/dioceses`, diocese);
+  createDiocese(diocese: Partial<Diocese>): Observable<{ success: boolean; status: number; message: string; data: Diocese }> {
+    return this.http.post<{ success: boolean; status: number; message: string; data: Diocese }>(`${this.baseUrl}/dioceses`, diocese);
   }
 
-  // PUT update existing diocese by ID
-  updateDiocese(id: number, diocese: Partial<Diocese>) {
-    return this.http.put<Diocese>(`${this.baseUrl}/dioceses/${id}`, diocese);
+  updateDiocese(id: number, diocese: Partial<Diocese>): Observable<{ success: boolean; status: number; message: string; data: Diocese }> {
+    return this.http.put<{ success: boolean; status: number; message: string; data: Diocese }>(`${this.baseUrl}/dioceses/${id}`, diocese);
   }
 
-  // DELETE a diocese by ID
-  deleteDiocese(id: number) {
-    return this.http.delete(`${this.baseUrl}/dioceses/${id}`);
+  deleteDiocese(id: number): Observable<{ success: boolean; status: number; message: string; data: null }> {
+    return this.http.delete<{ success: boolean; status: number; message: string; data: null }>(`${this.baseUrl}/dioceses/${id}`)
+      .pipe(
+        catchError(error => {
+          if (error.status === 400 && error.error.message.includes('associated to it')) {
+            return throwError(() => new Error(error.error.message));
+          }
+          return throwError(() => new Error(error.error.message || 'Fatal error deleting diocese! Please contact support.'));
+        })
+      );
   }
 }

@@ -3,6 +3,7 @@ package com.nearchrist.backend.controller;
 import com.nearchrist.backend.dto.ApiResponse;
 import com.nearchrist.backend.dto.DioceseDto;
 import com.nearchrist.backend.dto.DioceseUpsertDto;
+import com.nearchrist.backend.exception.DioceseHasParishesException;
 import com.nearchrist.backend.service.DioceseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/dioceses")
 public class DioceseController {
 
     private final DioceseService dioceseService;
@@ -19,7 +21,7 @@ public class DioceseController {
         this.dioceseService = dioceseService;
     }
 
-    @GetMapping("/dioceses")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<DioceseDto>>> getAll() {
         try {
             List<DioceseDto> dioceses = dioceseService.getAllDioceses();
@@ -30,7 +32,7 @@ public class DioceseController {
         }
     }
 
-    @GetMapping("/dioceses/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DioceseDto>> getById(@PathVariable Long id) {
         try {
             return dioceseService.getDioceseById(id)
@@ -43,7 +45,7 @@ public class DioceseController {
         }
     }
 
-    @PostMapping("/dioceses")
+    @PostMapping
     public ResponseEntity<ApiResponse<DioceseDto>> create(@RequestBody DioceseUpsertDto dioceseDto) {
         try {
             DioceseDto savedDiocese = dioceseService.createDiocese(dioceseDto);
@@ -58,7 +60,7 @@ public class DioceseController {
         }
     }
 
-    @PutMapping("/dioceses/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DioceseDto>> update(@PathVariable Long id, @RequestBody DioceseUpsertDto dioceseDto) {
         try {
             return dioceseService.updateDiocese(id, dioceseDto)
@@ -74,14 +76,17 @@ public class DioceseController {
         }
     }
 
-    @DeleteMapping("/dioceses/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         try {
             if (dioceseService.deleteDiocese(id)) {
-                return ResponseEntity.ok(new ApiResponse<>(true, 204, "Diocese deleted successfully", null));
+                return ResponseEntity.ok(new ApiResponse<>(true, 200, "Diocese deleted successfully", null));
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, 404, "Diocese not found", null));
+        } catch (DioceseHasParishesException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, 400, e.getMessage(), null));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(false, 400, e.getMessage(), null));
