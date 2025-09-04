@@ -112,6 +112,6 @@
     <button (click)="addAdoration()" [disabled]="uiMode === 'editing' || !dataLoaded">Add</button>
     <button (click)="modifyAdoration()" [disabled]="uiMode !== 'editing' || !dataLoaded">Modify</button>
     <button (click)="deleteAdoration()" [disabled]="uiMode !== 'editing' || !dataLoaded">Delete</button>
-    <button (click)="cancel()" [disabled]="uiMode === 'view' || !dataLoaded">Cancel</button>
+    <button (click)="cancel()">Cancel</button>
   </div>
 </div>
