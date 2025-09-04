@@ -67,9 +67,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
     } else {
       this.uiMode = 'view';
     }
-    console.log('Initial Dialog Data:', this.data);
-    console.log('Initial Selected Adoration:', this.selectedAdoration);
-    console.log('Initial uiMode:', this.uiMode);
   }
 
   private getData<T>(res: any): T[] {
@@ -87,10 +84,7 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
       dioceses: this.dioceseService.getAllDioceses(),
       parishes: this.parishService.getAllParishes()
     }).subscribe({
-      next: ({ states, dioceses, parishes }) => {
-        console.log('Dialog Response for states:', states);
-        console.log('Dialog Response for dioceses:', dioceses);
-        console.log('Dialog Response for parishes:', parishes);
+      next: ({ states, dioceses, parishes }) => { 
         this.allStates = this.getData<State>(states);
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
@@ -109,13 +103,8 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
             this.updateLocationFromParish();
           }
         }
-        console.log('Dialog Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
-        console.log('Dialog Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
-        console.log('Dialog Loaded Parishes:', this.allParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })));
-        console.log('Dialog Selected Adoration after init:', this.selectedAdoration);
       },
       error: (err) => {
-        console.error('Failed to load dialog data:', err);
         this.showError('Error loading data for dialog.');
         this.allStates = [];
         this.allDioceses = [];
@@ -144,7 +133,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
   onStateChange(): void {
     const stateId = Number(this.selectedAdoration.stateId || 0);
     if (!Array.isArray(this.allDioceses)) {
-      console.warn('allDioceses is not an array:', this.allDioceses);
       this.dioceseDisabled = true;
       this.showWarning('No dioceses available for selection.');
       return;
@@ -172,13 +160,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
       }
       this.filteredParishes = [];
       this.parishDisabled = true;
-      console.log('Dialog State Changed:', {
-        stateId,
-        stateAbbreviation: abbrev,
-        dioceseDisabled: this.dioceseDisabled,
-        selectedDioceseId: this.selectedAdoration.dioceseId,
-        selectedParishId: this.selectedAdoration.parishId
-      });
     }
     if (this.selectedAdoration.dioceseId) {
       this.onDioceseChange();
@@ -188,7 +169,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
   onDioceseChange(): void {
     const dioceseId = Number(this.selectedAdoration.dioceseId || 0);
     if (!Array.isArray(this.allParishes)) {
-      console.warn('allParishes is not an array:', this.allParishes);
       this.parishDisabled = true;
       this.showWarning('No parishes available for selection.');
       return;
@@ -212,14 +192,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
       if (currentParishId && !this.filteredParishes.some(p => p.parishId === currentParishId)) {
         this.selectedAdoration.parishId = 0;
       }
-      console.log('Dialog Diocese Changed:', {
-        dioceseId,
-        dioceseName: selectedDiocese?.dioceseName,
-        parishDisabled: this.parishDisabled,
-        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })),
-        currentParishId,
-        selectedParishId: this.selectedAdoration.parishId
-      });
     }
     if (this.dataLoaded && this.selectedAdoration.parishId) {
       this.updateLocationFromParish();
@@ -233,22 +205,16 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
   updateLocationFromParish(): void {
     if (!this.isParishChurch() || !this.dataLoaded) {
       this.selectedAdoration.adorationLocation = '';
-      console.log('Location not updated: not Parish Church or data not loaded', {
-        isParishChurch: this.isParishChurch(),
-        dataLoaded: this.dataLoaded
-      });
-      return;
+         return;
     }
     const pID = Number(this.selectedAdoration.parishId || 0);
     if (!pID) {
       this.selectedAdoration.adorationLocation = '';
-      console.warn('No valid parishId for location update:', pID);
       return;
     }
     const p = this.allParishes.find(par => par.parishId === pID);
     if (!p) {
       this.selectedAdoration.adorationLocation = '';
-      console.warn('Parish not found for parishId:', pID);
       return;
     }
     // Construct address with fallbacks
@@ -258,12 +224,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
     const postcode = p.parishPostcode || '';
     const addr = [stNumber, stName, suburb, postcode].filter(Boolean).join(', ').trim();
     this.selectedAdoration.adorationLocation = addr || '';
-    console.log('Updated Location:', {
-      parishId: pID,
-      parishName: p.parishName,
-      address: addr,
-      parishData: { stNumber, stName, suburb, postcode }
-    });
   }
 
   isFormValid(): boolean {
@@ -290,7 +250,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to create adoration:', err);
         this.showError('Error creating adoration. Verify all mandatory fields.');
       }
     });
@@ -313,7 +272,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to update adoration:', err);
         this.showError('Error updating adoration schedule.');
       }
     });
@@ -341,7 +299,6 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
             this.dialogRef.close(true);
           },
           error: (err) => {
-            console.error('Failed to delete adoration:', err);
             this.showError('Error deleting adoration schedule.');
           }
         });

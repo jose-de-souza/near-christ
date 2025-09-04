@@ -57,7 +57,6 @@ export class DioceseEditDialogComponent implements OnInit {
         this.allStates = res.data;
       },
       error: (err) => {
-        console.error('Failed to load states:', err);
         this.showError('Error loading states from server.');
       }
     });
@@ -69,7 +68,6 @@ export class DioceseEditDialogComponent implements OnInit {
       this.showWarning('Diocese Name is required!');
       return;
     }
-    // Convert dioceseStreetNo to string
     const dioceseData = {
       ...this.selectedDiocese,
       dioceseStreetNo: this.selectedDiocese.dioceseStreetNo ? String(this.selectedDiocese.dioceseStreetNo) : ''
@@ -80,7 +78,6 @@ export class DioceseEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to create diocese:', err);
         this.showError('Fatal error creating diocese! Please contact support.');
       }
     });
@@ -96,7 +93,6 @@ export class DioceseEditDialogComponent implements OnInit {
       this.showWarning('Diocese Name is required!');
       return;
     }
-    // Convert dioceseStreetNo to string
     const dioceseData = {
       ...this.selectedDiocese,
       dioceseStreetNo: this.selectedDiocese.dioceseStreetNo ? String(this.selectedDiocese.dioceseStreetNo) : ''
@@ -108,7 +104,6 @@ export class DioceseEditDialogComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Failed to update diocese:', err);
         this.showError('Fatal error updating diocese! Please contact support.');
       }
     });
@@ -122,7 +117,7 @@ export class DioceseEditDialogComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       disableClose: true,
       data: {
-        message: `Are you sure you want to delete "${this.selectedDiocese.dioceseName}" AND ALL ITS PARISHES?`
+        message: `Are you sure you want to delete "${this.selectedDiocese.dioceseName}"?`
       },
       panelClass: 'orange-dialog'
     });
@@ -135,8 +130,7 @@ export class DioceseEditDialogComponent implements OnInit {
             this.dialogRef.close(true);
           },
           error: (err) => {
-            console.error('Failed to delete diocese:', err);
-            this.showError('Fatal error deleting diocese! Please contact support.');
+            this.showError(err.message || 'Fatal error deleting diocese! Please contact support.');
           }
         });
       }
@@ -165,7 +159,7 @@ export class DioceseEditDialogComponent implements OnInit {
 
   private showInfo(message: string): void {
     this.snackBar.open(message, 'Close', {
-      duration: 3000,
+      duration: 5000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
       panelClass: ['snackbar-info']
@@ -174,7 +168,7 @@ export class DioceseEditDialogComponent implements OnInit {
 
   private showWarning(message: string): void {
     this.snackBar.open(message, 'Close', {
-      duration: 3000,
+      duration: 5000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
       panelClass: ['snackbar-warning']
@@ -183,7 +177,7 @@ export class DioceseEditDialogComponent implements OnInit {
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
-      duration: 7000,
+      duration: 10000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
       panelClass: ['snackbar-error']

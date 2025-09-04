@@ -57,10 +57,8 @@ export class DioceseMaintenanceComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data || [];
-        console.log('Loaded States:', this.allStates.map(s => ({ stateId: s.stateId, stateAbbreviation: s.stateAbbreviation })));
       },
       error: (err) => {
-        console.error('Failed to load states:', err);
         this.showError('Error loading states from server.');
       }
     });
@@ -71,10 +69,8 @@ export class DioceseMaintenanceComponent implements OnInit {
       next: (res: any) => {
         this.allDioceses = res.data || [];
         this.dioceses = [...this.allDioceses];
-        console.log('Loaded Dioceses:', this.allDioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
       },
       error: (err) => {
-        console.error('Failed to load dioceses:', err);
         this.showError('Fatal error loading dioceses! Please contact support.');
       }
     });
@@ -89,7 +85,6 @@ export class DioceseMaintenanceComponent implements OnInit {
       const abbrev = selectedState?.stateAbbreviation || '';
       this.dioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
     }
-    console.log('Filtered Dioceses:', this.dioceses.map(d => ({ dioceseId: d.dioceseId, dioceseName: d.dioceseName })));
   }
 
   onRowClicked(row: Diocese): void {
