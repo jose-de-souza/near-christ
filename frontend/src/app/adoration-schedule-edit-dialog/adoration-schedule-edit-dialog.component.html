@@ -63,9 +63,9 @@
         </div>
         <div class="field-group diocese">
           <label>Diocese Name</label>
-          <select *ngIf="isArray(allDioceses) && dataLoaded" [(ngModel)]="selectedAdoration.dioceseId" (ngModelChange)="onDioceseChange();" [disabled]="dioceseDisabled || !dataLoaded">
+          <select *ngIf="isArray(filteredDioceses) && dataLoaded" [(ngModel)]="selectedAdoration.dioceseId" (ngModelChange)="onDioceseChange();" [disabled]="dioceseDisabled || !dataLoaded">
             <option [ngValue]="0">-- select diocese --</option>
-            <option *ngFor="let d of allDioceses" [ngValue]="d.dioceseId">
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseId">
               {{ d.dioceseName }}
             </option>
           </select>
@@ -75,9 +75,9 @@
         </div>
         <div class="field-group parish">
           <label>Parish Name</label>
-          <select *ngIf="isArray(allParishes) && dataLoaded" [(ngModel)]="selectedAdoration.parishId" (ngModelChange)="updateLocationFromParish();" [disabled]="parishDisabled || !dataLoaded">
+          <select *ngIf="isArray(filteredParishes) && dataLoaded" [(ngModel)]="selectedAdoration.parishId" (ngModelChange)="updateLocationFromParish();" [disabled]="parishDisabled || !dataLoaded">
             <option [ngValue]="0">-- select parish --</option>
-            <option *ngFor="let p of allParishes" [ngValue]="p.parishId">
+            <option *ngFor="let p of filteredParishes" [ngValue]="p.parishId">
               {{ p.parishName }}
             </option>
           </select>
