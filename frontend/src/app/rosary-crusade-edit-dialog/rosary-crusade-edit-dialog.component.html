@@ -48,7 +48,7 @@
         </div>
         <div class="field-group crusade-state">
           <label>State</label>
-          <select [(ngModel)]="selectedCrusade.stateId" [disabled]="stateDropdownDisabled">
+          <select *ngIf="isArray(allStates)" [(ngModel)]="selectedCrusade.stateId" (ngModelChange)="onStateChange();" [disabled]="stateDropdownDisabled || !dataLoaded">
             <option [ngValue]="0">-- select state --</option>
             <option *ngFor="let st of allStates" [ngValue]="st.stateId">
               {{ st.stateAbbreviation }}
@@ -60,9 +60,9 @@
         </div>
         <div class="field-group crusade-diocese">
           <label>Diocese</label>
-          <select [(ngModel)]="selectedCrusade.dioceseId" [disabled]="dioceseDropdownDisabled">
+          <select *ngIf="isArray(filteredDioceses) && dataLoaded" [(ngModel)]="selectedCrusade.dioceseId" (ngModelChange)="onDioceseChange();" [disabled]="dioceseDropdownDisabled || !dataLoaded">
             <option [ngValue]="0">-- select diocese --</option>
-            <option *ngFor="let d of allDioceses" [ngValue]="d.dioceseId">
+            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseId">
               {{ d.dioceseName }}
             </option>
           </select>
@@ -72,9 +72,9 @@
         </div>
         <div class="field-group crusade-parish">
           <label>Parish</label>
-          <select [(ngModel)]="selectedCrusade.parishId" [disabled]="parishDropdownDisabled">
+          <select *ngIf="isArray(filteredParishes) && dataLoaded" [(ngModel)]="selectedCrusade.parishId" [disabled]="parishDropdownDisabled || !dataLoaded">
             <option [ngValue]="0">-- select parish --</option>
-            <option *ngFor="let p of allParishes" [ngValue]="p.parishId">
+            <option *ngFor="let p of filteredParishes" [ngValue]="p.parishId">
               {{ p.parishName }}
             </option>
           </select>
