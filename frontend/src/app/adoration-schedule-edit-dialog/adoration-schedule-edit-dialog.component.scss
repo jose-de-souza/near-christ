@@ -98,6 +98,7 @@
     .section.diocese-parish-names .field-group.parish {
       flex: 0 0 42%;
       max-width: 42%;
+      padding-bottom: 20px; /* Added to ensure space for dropdown to open downward */
     }
     .section.diocese-parish-names .field-group select,
     .section.diocese-parish-names .field-group input {

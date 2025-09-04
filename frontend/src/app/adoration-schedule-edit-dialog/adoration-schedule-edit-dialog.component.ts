@@ -29,6 +29,8 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
   allStates: State[] = [];
   allDioceses: Diocese[] = [];
   allParishes: Parish[] = [];
+  filteredDioceses: Diocese[] = [];
+  filteredParishes: Parish[] = [];
   hasSubmitted = false;
   uiMode: 'view' | 'editing' = 'view';
   dioceseDisabled: boolean = true;
@@ -92,8 +94,8 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
         this.allStates = this.getData<State>(states);
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
-        this.dioceseDisabled = this.allDioceses.length === 0;
-        this.parishDisabled = this.allParishes.length === 0;
+        this.filteredDioceses = [];
+        this.filteredParishes = [];
         this.dataLoaded = true;
         // If editing, initialize dropdowns
         if (this.selectedAdoration.adorationId) {
@@ -118,6 +120,8 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
         this.allStates = [];
         this.allDioceses = [];
         this.allParishes = [];
+        this.filteredDioceses = [];
+        this.filteredParishes = [];
         this.dioceseDisabled = true;
         this.parishDisabled = true;
         this.dataLoaded = true;
@@ -147,6 +151,7 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
     }
     const currentDioceseId = Number(this.selectedAdoration.dioceseId || 0);
     if (!stateId) {
+      this.filteredDioceses = [];
       this.dioceseDisabled = true;
       this.parishDisabled = true;
       this.selectedAdoration.dioceseId = 0;
@@ -154,10 +159,10 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
     } else {
       const selectedState = this.allStates.find(s => s.stateId === stateId);
       const abbrev = selectedState?.stateAbbreviation || '';
-      const filteredDioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev));
-      this.dioceseDisabled = filteredDioceses.length === 0;
+      this.filteredDioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev));
+      this.dioceseDisabled = this.filteredDioceses.length === 0;
       // Preserve dioceseId if valid
-      if (currentDioceseId && !filteredDioceses.some(d => d.dioceseId === currentDioceseId)) {
+      if (currentDioceseId && !this.filteredDioceses.some(d => d.dioceseId === currentDioceseId)) {
         this.selectedAdoration.dioceseId = 0;
       }
       // Preserve parishId if valid
@@ -165,6 +170,7 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
       if (currentParishId && !this.allParishes.some(p => p.parishId === currentParishId)) {
         this.selectedAdoration.parishId = 0;
       }
+      this.filteredParishes = [];
       this.parishDisabled = true;
       console.log('Dialog State Changed:', {
         stateId,
@@ -188,28 +194,29 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
       return;
     }
     const currentParishId = Number(this.selectedAdoration.parishId || 0);
+    const selectedDiocese = this.allDioceses.find(d => d.dioceseId === dioceseId); // Define selectedDiocese
     if (!dioceseId) {
+      this.filteredParishes = [];
       this.parishDisabled = true;
       // Preserve parishId if valid
       if (currentParishId && !this.allParishes.some(p => p.parishId === currentParishId)) {
         this.selectedAdoration.parishId = 0;
       }
     } else {
-      const selectedDiocese = this.allDioceses.find(d => d.dioceseId === dioceseId);
-      const filteredParishes = this.allParishes.filter(p => p.dioceseId === dioceseId);
-      this.parishDisabled = filteredParishes.length === 0;
+      this.filteredParishes = this.allParishes.filter(p => p.dioceseId === dioceseId);
+      this.parishDisabled = this.filteredParishes.length === 0;
       if (this.parishDisabled) {
         this.showWarning(`No parishes found for diocese: ${selectedDiocese?.dioceseName || dioceseId}`);
       }
       // Preserve parishId if valid
-      if (currentParishId && !this.allParishes.some(p => p.parishId === currentParishId)) {
+      if (currentParishId && !this.filteredParishes.some(p => p.parishId === currentParishId)) {
         this.selectedAdoration.parishId = 0;
       }
       console.log('Dialog Diocese Changed:', {
         dioceseId,
         dioceseName: selectedDiocese?.dioceseName,
         parishDisabled: this.parishDisabled,
-        filteredParishes: filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })),
+        filteredParishes: this.filteredParishes.map(p => ({ parishId: p.parishId, parishName: p.parishName, dioceseId: p.dioceseId })),
         currentParishId,
         selectedParishId: this.selectedAdoration.parishId
       });
