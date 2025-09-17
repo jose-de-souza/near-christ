@@ -1,28 +1,27 @@
 <div class="parish-maintenance">
   <h2>Parish Maintenance</h2>
-
   <div class="buttons">
-    <button (click)="addParish()">Add</button>
+    <button matTooltip="Add new parish" (click)="addParish()">Add</button>
   </div>
 
-  <!-- Filter Section -->
   <div class="form-container">
     <div class="section filter" data-title="Filter">
       <div class="row-filter">
         <div class="field-group state">
-          <label>State</label>
-          <select [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
-            <option [ngValue]="0">All States</option>
-            <option *ngFor="let st of allStates" [ngValue]="st.stateId">
+          <label for="stateFilter">State</label>
+          <select id="stateFilter" name="stateFilter" [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
+            <option [value]="0">All States</option>
+            <option *ngFor="let st of allStates" [value]="st.stateId">
               {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>
+
         <div class="field-group diocese">
-          <label>Diocese</label>
-          <select [(ngModel)]="filterDioceseID" (change)="onFilterDioceseChange()" [disabled]="dioceseDisabled">
-            <option [ngValue]="null">All Dioceses</option>
-            <option *ngFor="let d of filteredDioceses" [ngValue]="d.dioceseId">
+          <label for="dioceseFilter">Diocese</label>
+          <select id="dioceseFilter" name="dioceseFilter" [(ngModel)]="filterDioceseID" (change)="onFilterDioceseChange()" [disabled]="dioceseDisabled">
+            <option [value]="null">All Dioceses</option>
+            <option *ngFor="let d of filteredDioceses" [value]="d.dioceseId">
               {{ d.dioceseName }}
             </option>
           </select>
@@ -31,15 +30,5 @@
     </div>
   </div>
 
-  <app-data-table
-    [columns]="columns"
-    [data]="parishes"
-    [pageSizeOptions]="[10, 25, 50]"
-    [defaultPageSize]="10"
-    [sortColumn]="'parishName'"
-    [sortDirection]="'asc'"
-    [clickable]="true"
-    [trackIdField]="'parishId'"
-    (rowClicked)="onRowClicked($event)">
-  </app-data-table>
+  <app-data-table [data]="parishes" [columns]="columns" [clickable]="true" (rowClicked)="onRowClicked($event)"></app-data-table>
 </div>

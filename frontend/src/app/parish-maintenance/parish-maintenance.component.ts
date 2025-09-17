@@ -9,6 +9,7 @@ import { DioceseService, Diocese } from '../diocese-maintenance/diocese.service'
 import { StateService, State } from '../state.service';
 import { DataTableComponent } from '../data-table/data-table.component';
 import { ParishEditDialogComponent } from '../parish-edit-dialog/parish-edit-dialog.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-parish-maintenance',
@@ -33,6 +34,7 @@ export class ParishMaintenanceComponent implements OnInit {
   filterStateID: number = 0;
   filterDioceseID: number | null = null;
   dioceseDisabled: boolean = true;
+  private isRestoring: boolean = false;
 
   columns = [
     { header: 'Parish Name', field: 'parishName' },
@@ -57,66 +59,130 @@ export class ParishMaintenanceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadAllStates();
-    this.loadAllDioceses();
-    this.loadAllParishes();
+    this.loadAllData(0, null);
   }
 
-  loadAllStates(): void {
-    this.stateService.getAllStates().subscribe({
-      next: (res: any) => {
-        this.allStates = res.data || [];
-      },
-      error: (err) => {
-        this.showError('Error loading states from server.');
-      }
-    });
-  }
+  private loadAllData(
+    restoreStateID: number,
+    restoreDioceseID: number | null
+  ): void {
+    forkJoin({
+      states: this.stateService.getAllStates(),
+      dioceses: this.dioceseService.getAllDioceses(),
+      parishes: this.parishService.getAllParishes()
+    }).subscribe({
+      next: ({ states, dioceses, parishes }) => {
+        this.allStates = this.getData<State>(states);
+        this.allDioceses = this.getData<Diocese>(dioceses);
+        this.allParishes = this.getData<Parish>(parishes);
 
-  loadAllDioceses(): void {
-    this.dioceseService.getAllDioceses().subscribe({
-      next: (res: any) => {
-        this.allDioceses = res.data || [];
-        this.filteredDioceses = [...this.allDioceses];
-        this.dioceseDisabled = this.allDioceses.length === 0;
-        this.onFilterStateChange();
-      },
-      error: (err) => {
-        this.showError('Error loading dioceses.');
-      }
-    });
-  }
+        console.log('loadAllData:', {
+          states: this.allStates.length,
+          dioceses: this.allDioceses.length,
+          parishes: this.allParishes.length,
+          restoreStateID,
+          restoreDioceseID,
+          dioceseIds: this.allDioceses.map(d => Number(d.dioceseId))
+        });
 
-  loadAllParishes(): void {
-    this.parishService.getAllParishes().subscribe({
-      next: (res: any) => {
-        this.allParishes = res.data || [];
-        this.parishes = this.mapParishData(this.allParishes);
+        this.filterStateID = restoreStateID;
+        this.filterDioceseID = restoreDioceseID;
+
+        this.reapplyFilters();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.showError('Fatal error loading parishes! Please contact support.');
+        this.showError('Error loading data from server.');
+        this.allStates = [];
+        this.allDioceses = [];
+        this.allParishes = [];
+        this.parishes = [];
+        this.filteredDioceses = [];
+        this.dioceseDisabled = true;
+        this.cdr.detectChanges();
       }
     });
   }
 
+  private getData<T>(res: any): T[] {
+    if (Array.isArray(res)) return res;
+    return Array.isArray(res.data) ? res.data : [];
+  }
+
+  private reapplyFilters(): void {
+    const savedStateID = Number(this.filterStateID);
+    const savedDioceseID = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
+
+    console.log('reapplyFilters start:', {
+      savedStateID,
+      savedDioceseID,
+      allDiocesesLength: this.allDioceses.length
+    });
+
+    this.isRestoring = true;
+    this.filterStateID = savedStateID;
+    this.onFilterStateChange();
+    this.isRestoring = false;
+
+    if (this.allDioceses.length === 0) {
+      console.warn('No dioceses available to filter');
+      this.filterDioceseID = null;
+      this.filteredDioceses = [];
+      this.dioceseDisabled = true;
+    } else if (savedDioceseID !== null && this.allDioceses.some(d => Number(d.dioceseId) === savedDioceseID)) {
+      this.filterDioceseID = savedDioceseID;
+      if (!this.filteredDioceses.some(d => Number(d.dioceseId) === savedDioceseID)) {
+        console.warn('Saved dioceseID valid globally but not in current filteredDioceses (post-delete); keeping filter but table may show broader results:', savedDioceseID);
+      }
+    } else {
+      console.warn('Saved dioceseID not found in allDioceses:', savedDioceseID);
+      this.filterDioceseID = null;
+    }
+    this.onFilterDioceseChange();
+
+    console.log('reapplyFilters end:', {
+      filterStateID: this.filterStateID,
+      filterDioceseID: this.filterDioceseID,
+      parishesLength: this.parishes.length
+    });
+
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
   private mapParishData(parishes: Parish[]): any[] {
-    return parishes.map(parish => {
+    if (!Array.isArray(parishes)) {
+      console.warn('mapParishData: Invalid parishes array');
+      return [];
+    }
+    const mapped = parishes.map(parish => {
       const state = this.allStates.find(s => s.stateId === parish.stateId);
-      const diocese = this.allDioceses.find(d => d.dioceseId === parish.dioceseId);
+      const diocese = this.allDioceses.find(d => Number(d.dioceseId) === Number(parish.dioceseId));
       return {
         ...parish,
         stateAbbreviation: state?.stateAbbreviation || '',
         dioceseName: diocese?.dioceseName || ''
       };
     });
+    console.log('mapParishData result:', {
+      inputLength: parishes.length,
+      outputLength: mapped.length,
+      sampleRow: mapped[0]
+    });
+    this.cdr.detectChanges();
+    return mapped;
   }
 
   onFilterStateChange(): void {
     const stateId = Number(this.filterStateID);
+    if (!Array.isArray(this.allDioceses)) {
+      this.filteredDioceses = [];
+    }
     if (stateId === 0) {
       this.filteredDioceses = [];
-      this.filterDioceseID = null;
+      if (!this.isRestoring) {
+        this.filterDioceseID = null;
+      }
       this.dioceseDisabled = true;
       this.parishes = this.mapParishData(this.allParishes);
     } else {
@@ -124,9 +190,16 @@ export class ParishMaintenanceComponent implements OnInit {
       const abbrev = selectedState?.stateAbbreviation || '';
       this.filteredDioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
       this.dioceseDisabled = this.filteredDioceses.length === 0;
-      this.filterDioceseID = null;
+      if (!this.isRestoring) {
+        this.filterDioceseID = null;
+      }
       this.parishes = this.mapParishData(this.allParishes.filter(p => p.stateId === stateId));
     }
+    console.log('onFilterStateChange:', {
+      stateId,
+      filteredDiocesesLength: this.filteredDioceses.length,
+      dioceseDisabled: this.dioceseDisabled
+    });
     this.cdr.detectChanges();
   }
 
@@ -138,13 +211,18 @@ export class ParishMaintenanceComponent implements OnInit {
       filtered = filtered.filter(p => p.stateId === stateId);
     }
     if (dioceseId !== null) {
-      filtered = filtered.filter(p => p.dioceseId === dioceseId);
+      filtered = filtered.filter(p => Number(p.dioceseId) === dioceseId);
     }
     this.parishes = this.mapParishData(filtered);
+    console.log('onFilterDioceseChange:', {
+      dioceseId,
+      parishesLength: this.parishes.length
+    });
     this.cdr.detectChanges();
   }
 
   onRowClicked(row: Parish): void {
+    console.log('Row clicked:', row);
     this.openEditDialog(row);
   }
 
@@ -153,18 +231,32 @@ export class ParishMaintenanceComponent implements OnInit {
   }
 
   openEditDialog(parish: Parish): void {
-    const dialogRef = this.dialog.open(ParishEditDialogComponent, {
-      data: parish,
-      maxWidth: '90vw',
-      height: '600px',
-      disableClose: true
-    });
+    try {
+      const currentFilters = {
+        stateId: this.filterStateID,
+        dioceseId: this.filterDioceseID
+      };
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadAllParishes();
-      }
-    });
+      const dialogRef = this.dialog.open(ParishEditDialogComponent, {
+        data: parish,
+        maxWidth: '90vw',
+        disableClose: true
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        console.log('Dialog closed with result:', result);
+        if (result) {
+          setTimeout(() => {
+            this.loadAllData(
+              currentFilters.stateId,
+              currentFilters.dioceseId
+            );
+          }, 500);
+        }
+      });
+    } catch (err) {
+      this.showError('Error opening edit dialog. Please try again.');
+    }
   }
 
   private showError(message: string): void {

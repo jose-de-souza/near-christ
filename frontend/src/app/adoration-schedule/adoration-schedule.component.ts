@@ -39,6 +39,7 @@ export class AdorationScheduleComponent implements OnInit {
   filterParishID: number | null = null;
   dioceseDisabled: boolean = true;
   parishDisabled: boolean = true;
+  private isRestoring: boolean = false;
 
   columns = [
     { header: 'Diocese', field: 'dioceseName' },
@@ -72,6 +73,14 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadAllData(0, null, null);
+  }
+
+  private loadAllData(
+    restoreStateID: number,
+    restoreDioceseID: number | null,
+    restoreParishID: number | null
+  ): void {
     forkJoin({
       states: this.stateService.getAllStates(),
       dioceses: this.dioceseService.getAllDioceses(),
@@ -83,12 +92,24 @@ export class AdorationScheduleComponent implements OnInit {
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
         this.allAdorations = this.getData<Adoration>(adorations);
-        this.adorations = this.mapAdorationData(this.allAdorations);
-        this.filteredDioceses = [];
-        this.filteredParishes = [];
-        this.dioceseDisabled = true;
-        this.parishDisabled = true;
-        this.cdr.detectChanges();
+
+        console.log('loadAllData:', {
+          states: this.allStates.length,
+          dioceses: this.allDioceses.length,
+          parishes: this.allParishes.length,
+          adorations: this.allAdorations.length,
+          restoreStateID,
+          restoreDioceseID,
+          restoreParishID,
+          dioceseIds: this.allDioceses.map(d => Number(d.dioceseId)),
+          parishIds: this.allParishes.map(p => Number(p.parishId))
+        });
+
+        this.filterStateID = restoreStateID;
+        this.filterDioceseID = restoreDioceseID;
+        this.filterParishID = restoreParishID;
+
+        this.reapplyFilters();
       },
       error: (err) => {
         this.showError('Error loading data from server.');
@@ -97,19 +118,86 @@ export class AdorationScheduleComponent implements OnInit {
         this.allParishes = [];
         this.allAdorations = [];
         this.adorations = [];
+        this.filteredDioceses = [];
+        this.filteredParishes = [];
+        this.dioceseDisabled = true;
+        this.parishDisabled = true;
         this.cdr.detectChanges();
       }
     });
   }
 
+  private reapplyFilters(): void {
+    const savedStateID = Number(this.filterStateID);
+    const savedDioceseID = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
+    const savedParishID = this.filterParishID !== null ? Number(this.filterParishID) : null;
+
+    console.log('reapplyFilters start:', {
+      savedStateID,
+      savedDioceseID,
+      savedParishID,
+      allDiocesesLength: this.allDioceses.length,
+      allParishesLength: this.allParishes.length
+    });
+
+    this.isRestoring = true;
+    this.filterStateID = savedStateID;
+    this.onFilterStateChange();
+    this.isRestoring = false;
+    console.log('After state filter:', {
+      filterStateID: this.filterStateID,
+      filteredDiocesesLength: this.filteredDioceses.length,
+      dioceseIds: this.filteredDioceses.map(d => Number(d.dioceseId))
+    });
+
+    if (this.allDioceses.length === 0) {
+      console.warn('No dioceses available to filter');
+      this.filterDioceseID = null;
+      this.filteredDioceses = [];
+      this.dioceseDisabled = true;
+    } else if (savedDioceseID !== null && this.filteredDioceses.some(d => Number(d.dioceseId) === savedDioceseID)) {
+      this.filterDioceseID = savedDioceseID;
+    } else {
+      console.warn('Saved dioceseID not found in filteredDioceses:', savedDioceseID);
+      this.filterDioceseID = null;
+    }
+    this.onFilterDioceseChange();
+    console.log('After diocese filter:', {
+      filterDioceseID: this.filterDioceseID,
+      filteredParishesLength: this.filteredParishes.length,
+      parishIds: this.filteredParishes.map(p => Number(p.parishId))
+    });
+
+    if (this.allParishes.length === 0) {
+      console.warn('No parishes available to filter');
+      this.filterParishID = null;
+      this.filteredParishes = [];
+      this.parishDisabled = true;
+    } else if (savedParishID !== null && this.filteredParishes.some(p => Number(p.parishId) === savedParishID)) {
+      this.filterParishID = savedParishID;
+    } else {
+      console.warn('Saved parishID not found in filteredParishes:', savedParishID);
+      this.filterParishID = null;
+    }
+    this.onFilterParishChange();
+    console.log('After parish filter:', {
+      filterParishID: this.filterParishID,
+      adorationsLength: this.adorations.length
+    });
+
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
   private mapAdorationData(adorations: Adoration[]): any[] {
     if (!Array.isArray(adorations)) {
+      console.warn('mapAdorationData: Invalid adorations array');
       return [];
     }
-    return adorations.map(adoration => {
+    const mapped = adorations.map(adoration => {
       const state = this.allStates.find(s => s.stateId === adoration.stateId);
-      const diocese = this.allDioceses.find(d => d.dioceseId === adoration.dioceseId);
-      const parish = this.allParishes.find(p => p.parishId === adoration.parishId); 
+      const diocese = this.allDioceses.find(d => Number(d.dioceseId) === Number(adoration.dioceseId));
+      const parish = this.allParishes.find(p => Number(p.parishId) === Number(adoration.parishId));
       return {
         ...adoration,
         stateAbbreviation: state?.stateAbbreviation || '',
@@ -117,6 +205,40 @@ export class AdorationScheduleComponent implements OnInit {
         parishName: parish?.parishName || ''
       };
     });
+    console.log('mapAdorationData result:', {
+      inputLength: adorations.length,
+      outputLength: mapped.length,
+      sampleRow: mapped[0]
+    });
+    this.cdr.detectChanges();
+    return mapped;
+  }
+
+  trackByStateId(index: number, state: State): number {
+    return state.stateId;
+  }
+
+  trackByDioceseId(index: number, diocese: Diocese): number {
+    return diocese.dioceseId;
+  }
+
+  trackByParishId(index: number, parish: Parish): number {
+    return parish.parishId;
+  }
+
+  onStateOptionClick(stateId: number): void {
+    this.filterStateID = stateId;
+    this.onFilterStateChange();
+  }
+
+  onDioceseOptionClick(dioceseId: number | null): void {
+    this.filterDioceseID = dioceseId;
+    this.onFilterDioceseChange();
+  }
+
+  onParishOptionClick(parishId: number | null): void {
+    this.filterParishID = parishId;
+    this.onFilterParishChange();
   }
 
   onFilterStateChange(): void {
@@ -129,10 +251,12 @@ export class AdorationScheduleComponent implements OnInit {
     }
     if (stateId === 0) {
       this.filteredDioceses = [];
-      this.filterDioceseID = null;
+      if (!this.isRestoring) {
+        this.filterDioceseID = null;
+        this.filterParishID = null;
+      }
       this.dioceseDisabled = true;
       this.filteredParishes = [];
-      this.filterParishID = null;
       this.parishDisabled = true;
       this.adorations = this.mapAdorationData(this.allAdorations);
     } else {
@@ -140,12 +264,20 @@ export class AdorationScheduleComponent implements OnInit {
       const abbrev = selectedState?.stateAbbreviation || '';
       this.filteredDioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev) || false);
       this.dioceseDisabled = this.filteredDioceses.length === 0;
-      this.filterDioceseID = null;
+      if (!this.isRestoring) {
+        this.filterDioceseID = null;
+        this.filterParishID = null;
+      }
       this.filteredParishes = [];
-      this.filterParishID = null;
       this.parishDisabled = true;
       this.adorations = this.mapAdorationData(this.allAdorations.filter(a => a.stateId === stateId));
     }
+    console.log('onFilterStateChange:', {
+      stateId,
+      filteredDiocesesLength: this.filteredDioceses.length,
+      dioceseDisabled: this.dioceseDisabled
+    });
+    this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
 
@@ -160,19 +292,29 @@ export class AdorationScheduleComponent implements OnInit {
     }
     if (dioceseId === null) {
       this.filteredParishes = [];
-      this.filterParishID = null;
+      if (!this.isRestoring) {
+        this.filterParishID = null;
+      }
       this.parishDisabled = true;
       this.adorations = this.mapAdorationData(
         this.allAdorations.filter(a => !stateId || a.stateId === stateId)
       );
     } else {
-      this.filteredParishes = this.allParishes.filter(p => p.dioceseId === dioceseId);
+      this.filteredParishes = this.allParishes.filter(p => Number(p.dioceseId) === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
-      this.filterParishID = null;
+      if (!this.isRestoring) {
+        this.filterParishID = null;
+      }
       this.adorations = this.mapAdorationData(
-        this.allAdorations.filter(a => a.dioceseId === dioceseId && (!stateId || a.stateId === stateId))
+        this.allAdorations.filter(a => Number(a.dioceseId) === dioceseId && (!stateId || a.stateId === stateId))
       );
     }
+    console.log('onFilterDioceseChange:', {
+      dioceseId,
+      filteredParishesLength: this.filteredParishes.length,
+      parishDisabled: this.parishDisabled
+    });
+    this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
 
@@ -188,16 +330,22 @@ export class AdorationScheduleComponent implements OnInit {
       filtered = filtered.filter(a => a.stateId === stateId);
     }
     if (dioceseId !== null) {
-      filtered = filtered.filter(a => a.dioceseId === dioceseId);
+      filtered = filtered.filter(a => Number(a.dioceseId) === dioceseId);
     }
     if (parishId !== null) {
-      filtered = filtered.filter(a => a.parishId === parishId);
+      filtered = filtered.filter(a => Number(a.parishId) === parishId);
     }
     this.adorations = this.mapAdorationData(filtered);
+    console.log('onFilterParishChange:', {
+      parishId,
+      adorationsLength: this.adorations.length
+    });
+    this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
 
   onRowClicked(row: Adoration): void {
+    console.log('Row clicked:', row);
     this.openEditDialog(row);
   }
 
@@ -207,6 +355,12 @@ export class AdorationScheduleComponent implements OnInit {
 
   openEditDialog(adoration: Adoration): void {
     try {
+      const currentFilters = {
+        stateId: this.filterStateID,
+        dioceseId: this.filterDioceseID,
+        parishId: this.filterParishID
+      };
+
       const dialogRef = this.dialog.open(AdorationScheduleEditDialogComponent, {
         data: adoration,
         maxWidth: '90vw',
@@ -215,28 +369,18 @@ export class AdorationScheduleComponent implements OnInit {
 
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          this.loadAllAdorations();
+          setTimeout(() => {
+            this.loadAllData(
+              currentFilters.stateId,
+              currentFilters.dioceseId,
+              currentFilters.parishId
+            );
+          }, 500);
         }
       });
     } catch (err) {
       this.showError('Error opening edit dialog. Please try again.');
     }
-  }
-
-  private loadAllAdorations(): void {
-    this.adorationService.getAllAdorations().subscribe({
-      next: (res: any) => {
-        this.allAdorations = this.getData<Adoration>(res);
-        this.adorations = this.mapAdorationData(this.allAdorations);
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.showError('Fatal error loading Adoration Schedules!');
-        this.allAdorations = [];
-        this.adorations = [];
-        this.cdr.detectChanges();
-      }
-    });
   }
 
   private showError(message: string): void {
