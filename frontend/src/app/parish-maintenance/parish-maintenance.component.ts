@@ -57,6 +57,11 @@ export class ParishMaintenanceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadAllData(); // Initial load for all data
+  }
+
+  // New method to load all necessary data
+  loadAllData(): void {
     this.loadAllStates();
     this.loadAllDioceses();
     this.loadAllParishes();
@@ -66,6 +71,7 @@ export class ParishMaintenanceComponent implements OnInit {
     this.stateService.getAllStates().subscribe({
       next: (res: any) => {
         this.allStates = res.data || [];
+        // No need to call onFilterStateChange here, as loadAllDioceses will handle it
       },
       error: (err) => {
         this.showError('Error loading states from server.');
@@ -77,9 +83,9 @@ export class ParishMaintenanceComponent implements OnInit {
     this.dioceseService.getAllDioceses().subscribe({
       next: (res: any) => {
         this.allDioceses = res.data || [];
-        this.filteredDioceses = [...this.allDioceses];
-        this.dioceseDisabled = this.allDioceses.length === 0;
-        this.onFilterStateChange();
+        // Re-apply filters after dioceses are loaded
+        this.onFilterStateChange(); // This correctly updates filteredDioceses and parishes
+        this.dioceseDisabled = this.filteredDioceses.length === 0; // Update based on filteredDioceses
       },
       error: (err) => {
         this.showError('Error loading dioceses.');
@@ -91,8 +97,15 @@ export class ParishMaintenanceComponent implements OnInit {
     this.parishService.getAllParishes().subscribe({
       next: (res: any) => {
         this.allParishes = res.data || [];
-        this.parishes = this.mapParishData(this.allParishes);
-        this.cdr.detectChanges();
+        // Only re-map and detect changes if filters are not applied
+        // If filters are active, onFilterStateChange/onFilterDioceseChange will handle setting this.parishes
+        if (this.filterStateID === 0 && this.filterDioceseID === null) {
+          this.parishes = this.mapParishData(this.allParishes);
+          this.cdr.detectChanges();
+        } else {
+            // Re-apply current filters to the newly loaded allParishes
+            this.onFilterDioceseChange(); // This will use the latest allParishes data
+        }
       },
       error: (err) => {
         this.showError('Fatal error loading parishes! Please contact support.');
@@ -162,7 +175,8 @@ export class ParishMaintenanceComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.loadAllParishes();
+        // Re-fetch all data to ensure dropdowns and table are fully refreshed
+        this.loadAllData();
       }
     });
   }

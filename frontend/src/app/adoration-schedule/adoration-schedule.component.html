@@ -1,40 +1,44 @@
 <div class="adoration-schedule">
   <h2>Adoration Schedule</h2>
   <div class="buttons">
-    <button (click)="addAdoration()">Add</button>
+    <button matTooltip="Add new adoration schedule" (click)="addAdoration()">Add</button>
   </div>
+
   <div class="form-container">
     <div class="section filter" data-title="Filter">
       <div class="row-filter">
         <div class="field-group state">
-          <label for="state">State</label>
-          <select *ngIf="isArray(allStates)" id="state" [(ngModel)]="filterStateID" (change)="onFilterStateChange()">
-            <option [value]="0">All States</option>
-            <option *ngFor="let st of allStates" [value]="st.stateId">
+          <label for="stateFilter">State</label>
+          <select id="stateFilter" name="stateFilter" [(ngModel)]="filterStateID" (change)="onFilterStateChange()" [ngModelOptions]="{updateOn: 'change'}">
+            <option [value]="0" (click)="onStateOptionClick(0)">All States</option>
+            <option *ngFor="let st of allStates; trackBy: trackByStateId" [value]="st.stateId" (click)="onStateOptionClick(st.stateId)">
               {{ st.stateAbbreviation }}
             </option>
           </select>
         </div>
+
         <div class="field-group diocese">
-          <label for="diocese">Diocese</label>
-          <select *ngIf="isArray(filteredDioceses)" id="diocese" [(ngModel)]="filterDioceseID" (change)="onFilterDioceseChange()" [disabled]="dioceseDisabled">
-            <option [value]="null">All Dioceses</option>
-            <option *ngFor="let d of filteredDioceses" [value]="d.dioceseId">
+          <label for="dioceseFilter">Diocese</label>
+          <select id="dioceseFilter" name="dioceseFilter" [(ngModel)]="filterDioceseID" (change)="onFilterDioceseChange()" [disabled]="dioceseDisabled" [ngModelOptions]="{updateOn: 'change'}">
+            <option [value]="null" (click)="onDioceseOptionClick(null)">All Dioceses</option>
+            <option *ngFor="let d of filteredDioceses; trackBy: trackByDioceseId" [value]="d.dioceseId" (click)="onDioceseOptionClick(d.dioceseId)">
               {{ d.dioceseName }}
             </option>
           </select>
         </div>
+
         <div class="field-group parish">
-          <label for="parish">Parish</label>
-          <select *ngIf="isArray(filteredParishes)" id="parish" [(ngModel)]="filterParishID" (change)="onFilterParishChange()" [disabled]="parishDisabled">
-            <option [value]="null">All Parishes</option>
-            <option *ngFor="let p of filteredParishes" [value]="p.parishId">
+          <label for="parishFilter">Parish</label>
+          <select id="parishFilter" name="parishFilter" [(ngModel)]="filterParishID" (change)="onFilterParishChange()" [disabled]="parishDisabled" [ngModelOptions]="{updateOn: 'change'}">
+            <option [value]="null" (click)="onParishOptionClick(null)">All Parishes</option>
+            <option *ngFor="let p of filteredParishes; trackBy: trackByParishId" [value]="p.parishId" (click)="onParishOptionClick(p.parishId)">
               {{ p.parishName }}
             </option>
           </select>
         </div>
       </div>
     </div>
-    <app-data-table *ngIf="isArray(adorations)" [data]="adorations" [columns]="columns" [clickable]="true" (rowClicked)="onRowClicked($event)"></app-data-table>
   </div>
+
+  <app-data-table [data]="adorations" [columns]="columns" (rowClicked)="onRowClicked($event)"></app-data-table>
 </div>

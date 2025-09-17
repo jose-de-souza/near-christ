@@ -84,24 +84,27 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
       dioceses: this.dioceseService.getAllDioceses(),
       parishes: this.parishService.getAllParishes()
     }).subscribe({
-      next: ({ states, dioceses, parishes }) => { 
+      next: ({ states, dioceses, parishes }) => {
         this.allStates = this.getData<State>(states);
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
-        this.filteredDioceses = [];
-        this.filteredParishes = [];
         this.dataLoaded = true;
-        // If editing, initialize dropdowns
+
+        // If editing, re-apply filters based on the loaded data
         if (this.selectedAdoration.adorationId) {
+          // Ensure state selection is valid, then trigger diocese and parish filtering
           if (this.selectedAdoration.stateId && this.allStates.some(s => s.stateId === this.selectedAdoration.stateId)) {
+            this.onStateChange(true); // Pass true to avoid resetting child dropdowns on initial load
+          } else {
+            // If the state ID on the adoration is invalid, clear it and disable subsequent dropdowns
+            this.selectedAdoration.stateId = 0;
             this.onStateChange();
           }
-          if (this.selectedAdoration.dioceseId && this.allDioceses.some(d => d.dioceseId === this.selectedAdoration.dioceseId)) {
-            this.onDioceseChange();
-          }
-          if (this.selectedAdoration.parishId && this.allParishes.some(p => p.parishId === this.selectedAdoration.parishId)) {
-            this.updateLocationFromParish();
-          }
+          // After onStateChange, onDioceseChange will be called if selectedAdoration.dioceseId is present.
+          // The updateLocationFromParish is handled there or if parishId is already set.
+        } else {
+          // For new adorations, just set initial dropdown states
+          this.onStateChange();
         }
       },
       error: (err) => {
@@ -113,7 +116,7 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
         this.filteredParishes = [];
         this.dioceseDisabled = true;
         this.parishDisabled = true;
-        this.dataLoaded = true;
+        this.dataLoaded = true; // Still set to true to enable UI, even if empty
       }
     });
   }
@@ -130,71 +133,70 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
     }
   }
 
-  onStateChange(): void {
+  // Modified onStateChange to handle initial load vs user interaction
+  onStateChange(isInitialLoad: boolean = false): void {
     const stateId = Number(this.selectedAdoration.stateId || 0);
-    if (!Array.isArray(this.allDioceses)) {
-      this.dioceseDisabled = true;
-      this.showWarning('No dioceses available for selection.');
-      return;
-    }
-    const currentDioceseId = Number(this.selectedAdoration.dioceseId || 0);
-    if (!stateId) {
+
+    // Filter Dioceses
+    if (stateId === 0) {
       this.filteredDioceses = [];
       this.dioceseDisabled = true;
-      this.parishDisabled = true;
-      this.selectedAdoration.dioceseId = 0;
-      this.selectedAdoration.parishId = 0;
+      if (!isInitialLoad) {
+        this.selectedAdoration.dioceseId = 0;
+        this.selectedAdoration.parishId = 0;
+      }
     } else {
       const selectedState = this.allStates.find(s => s.stateId === stateId);
       const abbrev = selectedState?.stateAbbreviation || '';
       this.filteredDioceses = this.allDioceses.filter(d => d.associatedStateAbbreviations?.includes(abbrev));
       this.dioceseDisabled = this.filteredDioceses.length === 0;
-      // Preserve dioceseId if valid
-      if (currentDioceseId && !this.filteredDioceses.some(d => d.dioceseId === currentDioceseId)) {
+
+      // If existing diocese is no longer valid for the selected state, reset it
+      if (!isInitialLoad && this.selectedAdoration.dioceseId && !this.filteredDioceses.some(d => d.dioceseId === this.selectedAdoration.dioceseId)) {
         this.selectedAdoration.dioceseId = 0;
       }
-      // Preserve parishId if valid
-      const currentParishId = Number(this.selectedAdoration.parishId || 0);
-      if (currentParishId && !this.allParishes.some(p => p.parishId === currentParishId)) {
+    }
+    // Always clear parish filter if state or diocese changed
+    if (!isInitialLoad) {
+        this.filteredParishes = [];
+        this.parishDisabled = true;
         this.selectedAdoration.parishId = 0;
-      }
-      this.filteredParishes = [];
-      this.parishDisabled = true;
     }
-    if (this.selectedAdoration.dioceseId) {
-      this.onDioceseChange();
-    }
+
+    // Trigger onDioceseChange if a valid diocese is still selected or needs to be reset
+    this.onDioceseChange(isInitialLoad);
   }
 
-  onDioceseChange(): void {
+  // Modified onDioceseChange to handle initial load vs user interaction
+  onDioceseChange(isInitialLoad: boolean = false): void {
     const dioceseId = Number(this.selectedAdoration.dioceseId || 0);
-    if (!Array.isArray(this.allParishes)) {
-      this.parishDisabled = true;
-      this.showWarning('No parishes available for selection.');
-      return;
-    }
-    const currentParishId = Number(this.selectedAdoration.parishId || 0);
-    const selectedDiocese = this.allDioceses.find(d => d.dioceseId === dioceseId); // Define selectedDiocese
-    if (!dioceseId) {
+    const selectedDiocese = this.allDioceses.find(d => d.dioceseId === dioceseId);
+
+    // Filter Parishes
+    if (dioceseId === 0) {
       this.filteredParishes = [];
       this.parishDisabled = true;
-      // Preserve parishId if valid
-      if (currentParishId && !this.allParishes.some(p => p.parishId === currentParishId)) {
+      if (!isInitialLoad) {
         this.selectedAdoration.parishId = 0;
       }
     } else {
       this.filteredParishes = this.allParishes.filter(p => p.dioceseId === dioceseId);
       this.parishDisabled = this.filteredParishes.length === 0;
-      if (this.parishDisabled) {
+      if (this.parishDisabled && !isInitialLoad) {
         this.showWarning(`No parishes found for diocese: ${selectedDiocese?.dioceseName || dioceseId}`);
       }
-      // Preserve parishId if valid
-      if (currentParishId && !this.filteredParishes.some(p => p.parishId === currentParishId)) {
+
+      // If existing parish is no longer valid for the selected diocese, reset it
+      if (!isInitialLoad && this.selectedAdoration.parishId && !this.filteredParishes.some(p => p.parishId === this.selectedAdoration.parishId)) {
         this.selectedAdoration.parishId = 0;
       }
     }
+
+    // Update location only if data is loaded and parish is selected
     if (this.dataLoaded && this.selectedAdoration.parishId) {
       this.updateLocationFromParish();
+    } else if (!isInitialLoad) { // Clear location if parish isn't selected or valid after change
+        this.selectedAdoration.adorationLocation = '';
     }
   }
 
@@ -205,7 +207,7 @@ export class AdorationScheduleEditDialogComponent implements OnInit {
   updateLocationFromParish(): void {
     if (!this.isParishChurch() || !this.dataLoaded) {
       this.selectedAdoration.adorationLocation = '';
-         return;
+      return;
     }
     const pID = Number(this.selectedAdoration.parishId || 0);
     if (!pID) {
