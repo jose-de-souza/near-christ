@@ -40,5 +40,5 @@
     </div>
   </div>
 
-  <app-data-table [data]="adorations" [columns]="columns" (rowClicked)="onRowClicked($event)"></app-data-table>
+  <app-data-table [data]="adorations" [columns]="columns" [clickable]="true" (rowClicked)="onRowClicked($event)"></app-data-table>
 </div>

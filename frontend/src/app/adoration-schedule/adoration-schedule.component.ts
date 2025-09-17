@@ -73,11 +73,9 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Initial load: no filters to restore, so pass defaults
     this.loadAllData(0, null, null);
   }
 
-  // Centralized method to load all base data and then apply (or re-apply) filters
   private loadAllData(
     restoreStateID: number,
     restoreDioceseID: number | null,
@@ -95,7 +93,6 @@ export class AdorationScheduleComponent implements OnInit {
         this.allParishes = this.getData<Parish>(parishes);
         this.allAdorations = this.getData<Adoration>(adorations);
 
-        // Log for debugging
         console.log('loadAllData:', {
           states: this.allStates.length,
           dioceses: this.allDioceses.length,
@@ -108,12 +105,10 @@ export class AdorationScheduleComponent implements OnInit {
           parishIds: this.allParishes.map(p => Number(p.parishId))
         });
 
-        // Set the component's filter IDs to the values we want to restore
         this.filterStateID = restoreStateID;
         this.filterDioceseID = restoreDioceseID;
         this.filterParishID = restoreParishID;
 
-        // Re-evaluate and apply the filters
         this.reapplyFilters();
       },
       error: (err) => {
@@ -132,7 +127,6 @@ export class AdorationScheduleComponent implements OnInit {
     });
   }
 
-  // Reapply filters with synchronous sequence and validation
   private reapplyFilters(): void {
     const savedStateID = Number(this.filterStateID);
     const savedDioceseID = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
@@ -146,8 +140,7 @@ export class AdorationScheduleComponent implements OnInit {
       allParishesLength: this.allParishes.length
     });
 
-    // Step 1: Apply State Filter
-    this.isRestoring = true; // Prevent resetting diocese/parish in onFilterStateChange
+    this.isRestoring = true;
     this.filterStateID = savedStateID;
     this.onFilterStateChange();
     this.isRestoring = false;
@@ -157,7 +150,6 @@ export class AdorationScheduleComponent implements OnInit {
       dioceseIds: this.filteredDioceses.map(d => Number(d.dioceseId))
     });
 
-    // Step 2: Apply Diocese Filter
     if (this.allDioceses.length === 0) {
       console.warn('No dioceses available to filter');
       this.filterDioceseID = null;
@@ -176,7 +168,6 @@ export class AdorationScheduleComponent implements OnInit {
       parishIds: this.filteredParishes.map(p => Number(p.parishId))
     });
 
-    // Step 3: Apply Parish Filter
     if (this.allParishes.length === 0) {
       console.warn('No parishes available to filter');
       this.filterParishID = null;
@@ -194,16 +185,16 @@ export class AdorationScheduleComponent implements OnInit {
       adorationsLength: this.adorations.length
     });
 
-    // Final change detection
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
 
   private mapAdorationData(adorations: Adoration[]): any[] {
     if (!Array.isArray(adorations)) {
+      console.warn('mapAdorationData: Invalid adorations array');
       return [];
     }
-    return adorations.map(adoration => {
+    const mapped = adorations.map(adoration => {
       const state = this.allStates.find(s => s.stateId === adoration.stateId);
       const diocese = this.allDioceses.find(d => Number(d.dioceseId) === Number(adoration.dioceseId));
       const parish = this.allParishes.find(p => Number(p.parishId) === Number(adoration.parishId));
@@ -214,9 +205,15 @@ export class AdorationScheduleComponent implements OnInit {
         parishName: parish?.parishName || ''
       };
     });
+    console.log('mapAdorationData result:', {
+      inputLength: adorations.length,
+      outputLength: mapped.length,
+      sampleRow: mapped[0]
+    });
+    this.cdr.detectChanges();
+    return mapped;
   }
 
-  // TrackBy functions for ngFor
   trackByStateId(index: number, state: State): number {
     return state.stateId;
   }
@@ -229,7 +226,6 @@ export class AdorationScheduleComponent implements OnInit {
     return parish.parishId;
   }
 
-  // Option click handlers for reselection
   onStateOptionClick(stateId: number): void {
     this.filterStateID = stateId;
     this.onFilterStateChange();
@@ -349,6 +345,7 @@ export class AdorationScheduleComponent implements OnInit {
   }
 
   onRowClicked(row: Adoration): void {
+    console.log('Row clicked:', row);
     this.openEditDialog(row);
   }
 
@@ -358,7 +355,6 @@ export class AdorationScheduleComponent implements OnInit {
 
   openEditDialog(adoration: Adoration): void {
     try {
-      // Capture current filter state BEFORE opening the dialog
       const currentFilters = {
         stateId: this.filterStateID,
         dioceseId: this.filterDioceseID,
@@ -373,7 +369,6 @@ export class AdorationScheduleComponent implements OnInit {
 
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          // Re-load all base data with a delay to ensure backend sync
           setTimeout(() => {
             this.loadAllData(
               currentFilters.stateId,
