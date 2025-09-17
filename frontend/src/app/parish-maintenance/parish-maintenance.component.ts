@@ -59,11 +59,9 @@ export class ParishMaintenanceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Initial load: no filters to restore, so pass defaults
     this.loadAllData(0, null);
   }
 
-  // Centralized method to load all base data and then apply (or re-apply) filters
   private loadAllData(
     restoreStateID: number,
     restoreDioceseID: number | null
@@ -78,13 +76,20 @@ export class ParishMaintenanceComponent implements OnInit {
         this.allDioceses = this.getData<Diocese>(dioceses);
         this.allParishes = this.getData<Parish>(parishes);
 
-        // Set the component's filter IDs to the values we want to restore
+        console.log('loadAllData:', {
+          states: this.allStates.length,
+          dioceses: this.allDioceses.length,
+          parishes: this.allParishes.length,
+          restoreStateID,
+          restoreDioceseID,
+          dioceseIds: this.allDioceses.map(d => Number(d.dioceseId))
+        });
+
         this.filterStateID = restoreStateID;
         this.filterDioceseID = restoreDioceseID;
 
-        // Re-evaluate and apply the filters
         this.reapplyFilters();
-        this.cdr.detectChanges(); // Ensure UI updates
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.showError('Error loading data from server.');
@@ -108,38 +113,64 @@ export class ParishMaintenanceComponent implements OnInit {
     const savedStateID = Number(this.filterStateID);
     const savedDioceseID = this.filterDioceseID !== null ? Number(this.filterDioceseID) : null;
 
-    // Step 1: Apply State Filter
-    this.isRestoring = true; // Prevent resetting diocese in onFilterStateChange
+    console.log('reapplyFilters start:', {
+      savedStateID,
+      savedDioceseID,
+      allDiocesesLength: this.allDioceses.length
+    });
+
+    this.isRestoring = true;
     this.filterStateID = savedStateID;
     this.onFilterStateChange();
     this.isRestoring = false;
 
-    // Step 2: Apply Diocese Filter
     if (this.allDioceses.length === 0) {
+      console.warn('No dioceses available to filter');
       this.filterDioceseID = null;
       this.filteredDioceses = [];
       this.dioceseDisabled = true;
-    } else if (savedDioceseID !== null && this.filteredDioceses.some(d => Number(d.dioceseId) === savedDioceseID)) {
+    } else if (savedDioceseID !== null && this.allDioceses.some(d => Number(d.dioceseId) === savedDioceseID)) {
       this.filterDioceseID = savedDioceseID;
+      if (!this.filteredDioceses.some(d => Number(d.dioceseId) === savedDioceseID)) {
+        console.warn('Saved dioceseID valid globally but not in current filteredDioceses (post-delete); keeping filter but table may show broader results:', savedDioceseID);
+      }
     } else {
+      console.warn('Saved dioceseID not found in allDioceses:', savedDioceseID);
       this.filterDioceseID = null;
     }
     this.onFilterDioceseChange();
+
+    console.log('reapplyFilters end:', {
+      filterStateID: this.filterStateID,
+      filterDioceseID: this.filterDioceseID,
+      parishesLength: this.parishes.length
+    });
 
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
 
   private mapParishData(parishes: Parish[]): any[] {
-    return parishes.map(parish => {
+    if (!Array.isArray(parishes)) {
+      console.warn('mapParishData: Invalid parishes array');
+      return [];
+    }
+    const mapped = parishes.map(parish => {
       const state = this.allStates.find(s => s.stateId === parish.stateId);
-      const diocese = this.allDioceses.find(d => d.dioceseId === parish.dioceseId);
+      const diocese = this.allDioceses.find(d => Number(d.dioceseId) === Number(parish.dioceseId));
       return {
         ...parish,
         stateAbbreviation: state?.stateAbbreviation || '',
         dioceseName: diocese?.dioceseName || ''
       };
     });
+    console.log('mapParishData result:', {
+      inputLength: parishes.length,
+      outputLength: mapped.length,
+      sampleRow: mapped[0]
+    });
+    this.cdr.detectChanges();
+    return mapped;
   }
 
   onFilterStateChange(): void {
@@ -164,6 +195,11 @@ export class ParishMaintenanceComponent implements OnInit {
       }
       this.parishes = this.mapParishData(this.allParishes.filter(p => p.stateId === stateId));
     }
+    console.log('onFilterStateChange:', {
+      stateId,
+      filteredDiocesesLength: this.filteredDioceses.length,
+      dioceseDisabled: this.dioceseDisabled
+    });
     this.cdr.detectChanges();
   }
 
@@ -178,10 +214,15 @@ export class ParishMaintenanceComponent implements OnInit {
       filtered = filtered.filter(p => Number(p.dioceseId) === dioceseId);
     }
     this.parishes = this.mapParishData(filtered);
+    console.log('onFilterDioceseChange:', {
+      dioceseId,
+      parishesLength: this.parishes.length
+    });
     this.cdr.detectChanges();
   }
 
   onRowClicked(row: Parish): void {
+    console.log('Row clicked:', row);
     this.openEditDialog(row);
   }
 
@@ -191,7 +232,6 @@ export class ParishMaintenanceComponent implements OnInit {
 
   openEditDialog(parish: Parish): void {
     try {
-      // Capture current filter state BEFORE opening the dialog
       const currentFilters = {
         stateId: this.filterStateID,
         dioceseId: this.filterDioceseID
@@ -204,12 +244,14 @@ export class ParishMaintenanceComponent implements OnInit {
       });
 
       dialogRef.afterClosed().subscribe(result => {
+        console.log('Dialog closed with result:', result);
         if (result) {
-          // Re-load all base data, then re-apply the captured filters
-          this.loadAllData(
-            currentFilters.stateId,
-            currentFilters.dioceseId
-          );
+          setTimeout(() => {
+            this.loadAllData(
+              currentFilters.stateId,
+              currentFilters.dioceseId
+            );
+          }, 500);
         }
       });
     } catch (err) {
