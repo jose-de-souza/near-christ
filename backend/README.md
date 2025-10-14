@@ -1,44 +1,44 @@
-# backend
+# Backend (Clojure)
 
-FIXME: description
+The Backend is a Clojure application providing RESTful APIs for managing dioceses, parishes, adorations, crusades, and users, with JWT-based authentication and role-based access control. This is a migration from Java/Spring Boot, preserving the same API contracts for the Angular frontend.
 
-## Installation
+## About The Project
 
-Download from https://example.com/FIXME.
+This is a full-stack web application called "Near Christ", a service of the Australian Medjugorje Centre. It manages Catholic dioceses, parishes, adoration schedules, and rosary crusades.
 
-## Usage
+### Project Architecture
 
-FIXME: explanation
+- **Backend:** RESTful API in Clojure with Reitit, next.jdbc, Buddy (JWT/Bcrypt).
+- **Frontend:** Angular SPA (unchanged).
 
-    $ java -jar backend-0.1.0-standalone.jar [args]
+### Backend Features
 
-## Options
+- **Technologies:**
+    - Clojure 1.11.1
+    - Leiningen
+    - next.jdbc + HikariCP (DB)
+    - PostgreSQL
+    - Flyway (migrations)
+    - Buddy (JWT, Bcrypt)
+    - Cheshire (JSON)
+    - http-kit (server)
+    - Docker
 
-FIXME: listing of options this app accepts.
+- **Functionality:**
+    - **Authentication:** `/auth/login` issues JWT.
+    - **CRUD:** Endpoints for States, Dioceses, Parishes, Adorations, Crusades, Users, Roles.
+    - **RBAC:** Roles (ADMIN, SUPERVISOR, STANDARD) via JWT claims.
 
-## Examples
+## Prerequisites
 
-...
+- Clojure 1.11+ and Leiningen
+- PostgreSQL 14+
+- Docker (optional, for containerization)
 
-### Bugs
+## Project Setup
 
-...
+### Clone the Repository
 
-### Any Other Sections
-### That You Think
-### Might be Useful
-
-## License
-
-Copyright © 2025 FIXME
-
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-https://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+```bash
+git clone <repository-url>
+cd backend
