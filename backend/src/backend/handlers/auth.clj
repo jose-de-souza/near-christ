@@ -4,7 +4,8 @@
             [backend.services.auth :as auth-svc]
             [backend.dto.api-response :as api]
             [backend.middleware.auth :as auth-mw]
-            [backend.db.core :as db]))
+            [backend.db.core :as db]
+            [backend.auth.jwt :as jwt]))
 
 (defn api-response [success status message data]
   {:status status
@@ -19,10 +20,14 @@
     (if (or (nil? email) (nil? password))
       (api-response false 400 "Missing email or password" nil)
       (if-let [token (auth-svc/authenticate tx email password)]
-        (let [claims (json/parse-string token true)  ;; Simplified; use jwt/unsign in prod
-              user-info {:id (:user_id claims) :name (:username claims) :email email :roles (:roles claims)}
-              response-data {:accessToken token :user user-info}]
-          (api-response true 200 "Login successful" response-data))
+        (if-let [claims (jwt/unsign token)]
+          (let [user-info {:id (:user_id claims)
+                           :name (:username claims)
+                           :email email
+                           :roles (:roles claims)}
+                response-data {:accessToken token :user user-info}]
+            (api-response true 200 "Login successful" response-data))
+          (api-response false 401 "Invalid token generated" nil))
         (api-response false 401 "Invalid credentials" nil)))))
 
 (def routes

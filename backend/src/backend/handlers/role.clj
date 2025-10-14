@@ -50,10 +50,10 @@
   ["/roles"
    {:get {:handler get-all-handler}
     :post {:middleware [auth-mw/require-role "ADMIN"]
-           :handler create-handler}
-    :path "/:id"
+           :handler create-handler}}
+   ["/:id"
     {:get {:handler get-by-id-handler}
      :put {:middleware [auth-mw/require-role "ADMIN"]
            :handler update-handler}
      :delete {:middleware [auth-mw/require-role "ADMIN"]
-              :handler delete-handler}}}])
+              :handler delete-handler}}]])

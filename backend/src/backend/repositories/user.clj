@@ -17,10 +17,10 @@
 
 (defn find-by-email [tx email]
   (first (jdbc/execute! tx ["SELECT u.*, r.name as role_name
-                             FROM users u
+                              FROM users u
                              LEFT JOIN user_roles ur ON u.id = ur.user_id
                              LEFT JOIN roles r ON ur.role_id = r.id
-                             WHERE u.user_email = ?" email])))
+                              WHERE u.user_email = ?" email])))
 
 (defn exists-by-id [tx id]
   (pos? (count (jdbc/execute! tx ["SELECT 1 FROM users WHERE id = ?" id]))))
@@ -40,3 +40,6 @@
 
 (defn assign-role! [tx user-id role-id]
   (jdbc/execute! tx ["INSERT INTO user_roles (user_id, role_id) VALUES (?, ?) ON CONFLICT DO NOTHING" user-id role-id]))
+
+(defn clear-user-roles! [tx user-id]
+  (jdbc/execute! tx ["DELETE FROM user_roles WHERE user_id = ?" user-id]))

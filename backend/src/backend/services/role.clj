@@ -1,6 +1,7 @@
 (ns backend.services.role
   (:require [backend.repositories.role :as repo]
             [backend.mappers.role :as mapper]
+            [clojure.string :as str]
             [backend.db.core :as db]))
 
 (defn get-all [tx]

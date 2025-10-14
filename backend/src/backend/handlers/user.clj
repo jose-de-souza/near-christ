@@ -48,10 +48,11 @@
 
 (def routes
   ["/users"
-   {:middleware [auth-mw/require-role "ADMIN"]
-    :get {:handler get-all-handler}
-    :post {:handler create-handler}
-    :path "/:id"
+   {:middleware [auth-mw/require-role "ADMIN"]}
+   [""
+    {:get {:handler get-all-handler}
+     :post {:handler create-handler}}]
+   ["/:id"
     {:get {:handler get-by-id-handler}
      :put {:handler update-handler}
-     :delete {:handler delete-handler}}}])
+     :delete {:handler delete-handler}}]])

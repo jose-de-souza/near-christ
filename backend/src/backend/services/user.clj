@@ -23,7 +23,8 @@
   (some-> (repo/find-by-email tx email) mapper/to-dto))
 
 (defn create [tx upsert-dto]
-  (when (or (str/blank? (:user-full-name upsert-dto)) (str/blank? (:user-email upsert-dto)) (str/blank? (:password upsert-dto)))
+  (when (or (str/blank? (:user-full-name upsert-dto)) (str/blank? (:user-email upsert-dto)) (str/blank?
+                                                                                              (:password upsert-dto)))
     (throw (ex-info "User full name, email, and password are required" {})))
   (let [hashed-pw (bc/encrypt (:password upsert-dto))
         entity (-> upsert-dto (assoc :password hashed-pw :enabled true) mapper/to-entity)
@@ -40,17 +41,17 @@
   (if (repo/exists-by-id tx id)
     (let [entity (assoc (mapper/to-entity upsert-dto) :id id)
           hashed-pw (when (not-empty (:password upsert-dto)) (bc/encrypt (:password upsert-dto)))
-          entity (if hashed-pw (assoc entity :password hashed-pw) entity)
-          updated (db/with-transaction tx (fn [t]
-                                            (let [updated-user (repo/update! t entity)
-                                                  role-names (:roles upsert-dto)
-                                                  _ (when role-names
-                                                      (doseq [name role-names]
-                                                        (if-let [role (role-repo/find-by-name t name)]
-                                                          (repo/assign-role! t id (:id role))
-                                                          (throw (ex-info (str "Role not found: " name) {})))))]
-                                              updated-user)))]
-      (assoc (mapper/to-dto updated) :roles (set (:roles upsert-dto))))
+          entity (if hashed-pw (assoc entity :password hashed-pw) entity)]
+      (db/with-transaction tx
+                           (fn [t]
+                             (repo/update! t entity)
+                             (when-let [role-names (:roles upsert-dto)]
+                               (repo/clear-user-roles! t id)
+                               (doseq [name role-names]
+                                 (if-let [role (role-repo/find-by-name t name)]
+                                   (repo/assign-role! t id (:id role))
+                                   (throw (ex-info (str "Role not found: " name) {})))))))
+      (assoc (mapper/to-dto (repo/find-by-id tx id)) :roles (set (:roles upsert-dto))))
     nil))
 
 (defn delete [tx id]
