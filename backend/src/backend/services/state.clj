@@ -1,7 +1,7 @@
 (ns backend.services.state
   (:require [backend.repositories.state :as repo]
             [backend.mappers.state :as mapper]
-            [clojure.string :as str]  ;; Added for str/blank?
+            [clojure.string :as str]
             [backend.db.core :as db]))
 
 (defn get-all [tx]
@@ -17,7 +17,7 @@
         saved (db/with-transaction tx (fn [t] (repo/save! t entity)))]
     (mapper/to-dto saved)))
 
-(defn update [tx id upsert-dto]
+(defn update-state! [tx id upsert-dto]
   (when (str/blank? (:state-name upsert-dto))
     (throw (ex-info "State name is required" {})))
   (if (repo/exists-by-id tx id)

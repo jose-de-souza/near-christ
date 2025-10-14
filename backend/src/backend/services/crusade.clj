@@ -25,7 +25,7 @@
         saved (db/with-transaction tx (fn [t] (repo/save! t entity)))]
     (mapper/to-dto saved)))
 
-(defn update [tx id upsert-dto]
+(defn update-crusade! [tx id upsert-dto]
   (when (or (nil? (:state-id upsert-dto)) (nil? (:diocese-id upsert-dto)) (nil? (:parish-id upsert-dto)))
     (throw (ex-info "State ID, Diocese ID, and Parish ID are required" {})))
   (when-not (diocese-repo/exists-by-id tx (:diocese-id upsert-dto))

@@ -14,7 +14,8 @@
             [backend.handlers.diocese :as diocese-h]
             [backend.handlers.parish :as parish-h]
             [backend.handlers.adoration :as adoration-h]
-            [backend.handlers.crusade :as crusade-h]))
+            [backend.handlers.crusade :as crusade-h]
+            [backend.db.flyway :as flyway]))
 
 (def all-routes
   [auth-h/routes
@@ -36,19 +37,10 @@
       auth-mw/wrap-jwt-auth
       error-mw/wrap-error))
 
-(defn migrate []
-  (try
-    (let [ds (db/make-datasource)]
-      (when ds
-        (org.flywaydb.core.api.Flyway/migrate {:dataSource ds :locations ["filesystem:resources/db/migration"]})
-        (println "Migrations applied successfully")))
-    (catch Exception e
-      (println "Warning: Migrations skipped (DB not available):" (.getMessage e)))))
-
 (defn -main [& _]
   (let [env (config/env)
         port (config/port)]
-    (migrate)  ;; Safe call—catches connect errors
+    (flyway/migrate)  ;; Safe call—catches connect errors
     (if (= env :prod)
       (server/run-server app {:port port :ssl? true})
       (server/run-server app {:port port}))

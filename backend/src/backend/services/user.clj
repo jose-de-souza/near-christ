@@ -7,14 +7,8 @@
             [backend.db.core :as db]))
 
 (defn get-all [tx]
-  (let [raw (repo/find-all tx)
-        users (group-by :id raw)
-        users-with-roles (map (fn [[id data]]
-                                (let [user (first (filter :user_full_name data))
-                                      roles (set (map :role_name (filter :role_name data)))]
-                                  (assoc user :roles roles)))
-                              users)]
-    (map mapper/to-dto users-with-roles)))
+  (let [users (repo/find-all-with-roles tx)]
+    (mapper/to-dto-list users)))
 
 (defn get-by-id [tx id]
   (some-> (repo/find-by-id tx id) mapper/to-dto))
@@ -23,8 +17,7 @@
   (some-> (repo/find-by-email tx email) mapper/to-dto))
 
 (defn create [tx upsert-dto]
-  (when (or (str/blank? (:user-full-name upsert-dto)) (str/blank? (:user-email upsert-dto)) (str/blank?
-                                                                                              (:password upsert-dto)))
+  (when (or (str/blank? (:user-full-name upsert-dto)) (str/blank? (:user-email upsert-dto)) (str/blank? (:password upsert-dto)))
     (throw (ex-info "User full name, email, and password are required" {})))
   (let [hashed-pw (bc/encrypt (:password upsert-dto))
         entity (-> upsert-dto (assoc :password hashed-pw :enabled true) mapper/to-entity)
@@ -37,7 +30,7 @@
                                           saved-user)))]
     (assoc (mapper/to-dto saved) :roles (set (:roles upsert-dto)))))
 
-(defn update [tx id upsert-dto]
+(defn update-user! [tx id upsert-dto]
   (if (repo/exists-by-id tx id)
     (let [entity (assoc (mapper/to-entity upsert-dto) :id id)
           hashed-pw (when (not-empty (:password upsert-dto)) (bc/encrypt (:password upsert-dto)))

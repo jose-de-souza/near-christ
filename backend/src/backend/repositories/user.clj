@@ -8,6 +8,16 @@
                       LEFT JOIN user_roles ur ON u.id = ur.user_id
                       LEFT JOIN roles r ON ur.role_id = r.id"]))
 
+(defn find-all-with-roles [tx]
+  (let [raw (find-all tx)
+        users (group-by :id raw)
+        users-with-roles (map (fn [[id data]]
+                                (let [user (first (filter :user_full_name data))
+                                      roles (set (map :role_name (filter :role_name data)))]
+                                  (assoc user :roles roles)))
+                              users)]
+    users-with-roles))
+
 (defn find-by-id [tx id]
   (first (jdbc/execute! tx ["SELECT u.*, r.name as role_name
                              FROM users u
@@ -17,10 +27,10 @@
 
 (defn find-by-email [tx email]
   (first (jdbc/execute! tx ["SELECT u.*, r.name as role_name
-                              FROM users u
+                             FROM users u
                              LEFT JOIN user_roles ur ON u.id = ur.user_id
                              LEFT JOIN roles r ON ur.role_id = r.id
-                              WHERE u.user_email = ?" email])))
+                             WHERE u.user_email = ?" email])))
 
 (defn exists-by-id [tx id]
   (pos? (count (jdbc/execute! tx ["SELECT 1 FROM users WHERE id = ?" id]))))

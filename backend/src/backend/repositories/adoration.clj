@@ -37,16 +37,3 @@
 
 (defn delete! [tx id]
   (jdbc/execute! tx ["DELETE FROM adorations WHERE adoration_id = ?" id]))
-
-(defn find-by-filters [tx state-id diocese-id parish-id]
-  (let [sql-base "SELECT a.*, s.state_abbreviation, d.diocese_name, p.parish_name
-                  FROM adorations a
-                  LEFT JOIN states s ON a.state_id = s.state_id
-                  LEFT JOIN dioceses d ON a.diocese_id = d.diocese_id
-                  LEFT JOIN parishes p ON a.parish_id = p.parish_id
-                  WHERE 1=1"]
-    params (cond-> []
-                   state-id (conj state-id)
-                   diocese-id (conj diocese-id)
-                   parish-id (conj parish-id))]
-(jdbc/execute! tx (into [sql-base] params))))

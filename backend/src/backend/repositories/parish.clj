@@ -1,5 +1,6 @@
 (ns backend.repositories.parish
   (:require [next.jdbc :as jdbc]
+            [clojure.string :as str]
             [backend.db.core :as db]))
 
 (defn find-all [tx]
@@ -45,7 +46,8 @@
                                                WHERE p.diocese_id = ?" diocese-id])))
 
 (defn find-state-abbrevs-for-dioceses [db diocese-ids]
-  (jdbc/execute! db ["SELECT DISTINCT p.diocese_id, s.state_abbreviation
-                      FROM parishes p
-                      JOIN states s ON p.state_id = s.state_id
-                      WHERE p.diocese_id IN (?)" (clojure.string/join "," diocese-ids)]))
+  (let [sql (str "SELECT DISTINCT p.diocese_id, s.state_abbreviation
+                 FROM parishes p
+                 JOIN states s ON p.state_id = s.state_id
+                 WHERE p.diocese_id IN (" (str/join "," (repeat (count diocese-ids) "?")) ")")]
+    (jdbc/execute! db (into [sql] diocese-ids))))

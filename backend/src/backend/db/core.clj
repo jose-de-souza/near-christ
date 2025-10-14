@@ -7,7 +7,10 @@
 
 (defn make-datasource []
   (pool/make-datasource
-    {:auto-commit        true
+    {:jdbc-url (config/db-url)
+     :username (config/db-user)
+     :password (config/db-pass)
+     :auto-commit        true
      :read-only          false
      :connection-timeout 30000
      :validation-timeout 5000
@@ -16,12 +19,7 @@
      :minimum-idle       10
      :maximum-pool-size  10
      :pool-name          "db-pool"
-     :adapter            "postgresql"
-     :username           (config/db-user)
-     :password           (config/db-pass)
-     :database-name      "nearchrist"
-     :server-name        "localhost"
-     :port-number        5432}))
+     :adapter            "postgresql"}))
 
 (defn get-datasource []
   (or @db-spec (reset! db-spec (make-datasource))))

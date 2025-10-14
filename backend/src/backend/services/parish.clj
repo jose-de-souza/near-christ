@@ -2,6 +2,7 @@
   (:require [backend.repositories.parish :as repo]
             [backend.repositories.diocese :as diocese-repo]
             [backend.mappers.parish :as mapper]
+            [clojure.string :as str]
             [backend.db.core :as db]))
 
 (defn get-all [tx]
@@ -19,7 +20,7 @@
         saved (db/with-transaction tx (fn [t] (repo/save! t entity)))]
     (mapper/to-dto saved)))
 
-(defn update [tx id upsert-dto]
+(defn update-parish! [tx id upsert-dto]
   (when (or (str/blank? (:parish-name upsert-dto)) (nil? (:diocese-id upsert-dto)) (nil? (:state-id upsert-dto)))
     (throw (ex-info "Diocese ID, Parish Name, and State ID are required" {})))
   (when-not (diocese-repo/exists-by-id tx (:diocese-id upsert-dto))

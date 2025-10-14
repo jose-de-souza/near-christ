@@ -1,8 +1,14 @@
 (ns backend.db.flyway
-  (:require [org.flywaydb.core.api :as flyway]
-            [backend.db.core :as db]))
+  (:require [backend.db.core :as db])
+  (:import [org.flywaydb.core Flyway]))
 
 (defn migrate []
-  (flyway/migrate
-    {:dataSource (:datasource db/db)
-     :locations  ["filesystem:resources/db/migration"]}))
+  (try
+    (let [flyway (-> (Flyway/configure)
+                     (.dataSource (db/get-datasource))
+                     (.locations (into-array String ["filesystem:resources/db/migration"]))
+                     (.load))]
+      (.migrate flyway)
+      (println "Migrations applied successfully"))
+    (catch Exception e
+      (println "Warning: Migrations skipped (DB not available):" (.getMessage e)))))

@@ -17,7 +17,7 @@
         saved (db/with-transaction tx (fn [t] (repo/save! t entity)))]
     (mapper/to-dto saved)))
 
-(defn update [tx id upsert-dto]
+(defn update-role! [tx id upsert-dto]
   (when (str/blank? (:name upsert-dto))
     (throw (ex-info "Role name is required" {})))
   (if (repo/exists-by-id tx id)

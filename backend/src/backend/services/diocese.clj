@@ -2,7 +2,7 @@
   (:require [backend.repositories.diocese :as repo]
             [backend.repositories.parish :as parish-repo]
             [backend.mappers.diocese :as mapper]
-            [clojure.string :as str]  ;; Added for str/blank?
+            [clojure.string :as str]
             [backend.db.core :as db]))
 
 (defn get-all [tx]
@@ -18,7 +18,7 @@
         saved (db/with-transaction tx (fn [t] (repo/save! t entity)))]
     (mapper/to-dto tx saved)))
 
-(defn update [tx id upsert-dto]
+(defn update-diocese! [tx id upsert-dto]
   (if (repo/exists-by-id tx id)
     (let [entity (assoc (mapper/to-entity upsert-dto) :diocese-id id)
           updated (db/with-transaction tx (fn [t] (repo/update! t entity)))]

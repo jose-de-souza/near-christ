@@ -2,19 +2,19 @@
   (:require [environ.core :as environ]))
 
 (defn env []
-  (keyword (or (environ/env :env) "dev")))
+  (keyword (environ/env :env)))
 
 (defn port []
-  (Integer/parseInt (or (environ/env :server-port) "8080")))
+  (Integer/parseInt (environ/env :server-port)))
 
 (defn db-url []
-  (or (environ/env :db-url) "jdbc:postgresql://localhost:5432/nearchrist"))
+  (environ/env :db-url))
 
 (defn db-user []
-  (or (environ/env :db-user) "postgres"))
+  (environ/env :db-user))
 
 (defn db-pass []
-  (or (environ/env :db-pass) "postgres"))
+  (environ/env :db-pass))
 
 (defn jwt-secret []
-  (or (environ/env :jwt-secret-key) "your_local_dev_secret_key_that_is_long_and_secure"))
+  (environ/env :jwt-secret-key))
