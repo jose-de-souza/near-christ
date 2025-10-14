@@ -51,9 +51,10 @@
 
 (def routes
   ["/adorations"
-   {:get {:handler get-all-handler}
-    :post {:middleware [auth-mw/require-role "ADMIN"]
-           :handler create-handler}}
+   [""
+    {:get {:handler get-all-handler}
+     :post {:middleware [auth-mw/require-role "ADMIN"]
+            :handler create-handler}}]
    ["/:id"
     {:get {:handler get-by-id-handler}
      :put {:middleware [auth-mw/require-role "ADMIN"]
